@@ -47,17 +47,6 @@ filters = {
 
 def main():
 
-    """
-class Filter_CVKernel(Filter):
-
-    def __init__(self,
-                avg_matrix=[],
-                avg_factor=1.0,
-                avg_bias=0.0,
-                median_size=3,
-                method="average"):
-    """
-
     in_file = 'images/image02.png'
     out_file_fmt = 'example4_%s.png'
     input = imagekit.Image.fromPNG(in_file)
