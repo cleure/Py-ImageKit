@@ -8,7 +8,7 @@ def main():
 
     print('Applying median filter to %s' % (in_file))
 
-    input = imagekit.Image.fromPNG()
+    input = imagekit.Image.fromPNG(in_file)
     filter = imagekit.Filter_CVKernel(median_size=3, method='median')
     filter.apply(input).savePNG(out_file)
     

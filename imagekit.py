@@ -13,10 +13,11 @@ def chunks(source, n):
         yield source[i:i+n]
 
 class Image(object):
-    def __init__(self, width, height, data=[], pitch=None):
+    def __init__(self, width, height, data=[], pitch=None, channels=3):
         if pitch is None:
             pitch = width
         
+        self.channels = channels
         self.width = width
         self.height = height
         self.pitch = pitch
@@ -34,7 +35,7 @@ class Image(object):
         return self.data[self.get_pixel_idx(x, y)]
     
     def set_pixel(self, x, y, rgb):
-        self.data[self.get_pixel_idx(x, y)] = [i for i in rgb]
+        self.data[self.get_pixel_idx(x, y)] = [rgb[i] for i in xrange(self.channels)]
     
     def get_box(self, center_x, center_y, size=3):
         """
@@ -73,12 +74,12 @@ class Image(object):
     def savePNG(self, filename):
         if not HAVE_PNG:
             raise StandardError('SavePNG() not available without PyPNG')
-    
+        
         tmp = []
         for i in self.data:
             tmp.extend(i)
         
-        tmp = list(chunks(tmp, self.width * 3))
+        tmp = list(chunks(tmp, self.width * self.channels))
         out = png.Writer(width=self.width, height=self.height)
         out.write(open(filename, 'w'), tmp)
         del out
@@ -88,21 +89,28 @@ class Image(object):
     def fromPNG(filename):
         if not HAVE_PNG:
             raise StandardError('SavePNG() not available without PyPNG')
-    
+        
         r = png.Reader(filename=filename)
         r.read()
-        width, height, pixels, meta = r.asRGB8()
-        data = []
+        ch = 3
         
+        try:
+            width, height, pixels, meta = r.asRGB8()
+        except png.Error:
+            width, height, pixels, meta = r.asRGBA8()
+            ch = 4
+        
+        data = []
         for row in pixels:
-            data.extend(list(chunks(row, 3)))
+            data.extend(list(chunks(row, ch)))
         
         del r
         del pixels
         return Image(
             width=width,
             height=height,
-            data=data)
+            data=data,
+            channels=ch)
 
 class Filter(object):
     def apply(self, input):
