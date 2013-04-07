@@ -13,6 +13,7 @@
 /*
 
 TODO:
+        - Cleanup error messages
         - get_box()
         - Convert between colorspaces.
         - Convert colorspace to native in save*()/load*() methods.
@@ -59,13 +60,13 @@ static const enum {
     COLORSPACE_FORMAT_SIZE
 } _COLORSPACE_FORMAT;
 
-static const double COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][6] = {
-    {0.0,   0.0,    0.0,    31.0,      31.0,       31.0},
-    {0.0,   0.0,    0.0,    31.0,      63.0,       31.0},
-    {0.0,   0.0,    0.0,   255.0,     255.0,      255.0},
-    {0.0,   0.0,    0.0,  1023.0,    1023.0,     1023.0},
-    {0.0,   0.0,    0.0, 65535.0,   65535.0,    65535.0},
-    {0.0,   0.0,    0.0,   360.0,       1.0,        1.0},
+static const double COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8] = {
+    {0.0, 0.0, 0.0, 0.0,    31.0,      31.0,       31.0,     0.0},
+    {0.0, 0.0, 0.0, 0.0,    31.0,      63.0,       31.0,     0.0},
+    {0.0, 0.0, 0.0, 0.0,   255.0,     255.0,      255.0,   255.0},
+    {0.0, 0.0, 0.0, 0.0,  1023.0,    1023.0,     1023.0,     0.0},
+    {0.0, 0.0, 0.0, 0.0, 65535.0,   65535.0,    65535.0, 65535.0},
+    {0.0, 0.0, 0.0, 0.0,   360.0,       1.0,        1.0,     1.0},
 };
 
 struct ListTypeMethods {
@@ -96,6 +97,7 @@ typedef struct {
     PyObject_HEAD
     
     REAL_TYPE scale;
+    REAL_TYPE channel_scales[4];
     int colorspace;
     int colorspace_format;
     
@@ -112,6 +114,9 @@ typedef struct {
 static PyTypeObject ImageBuffer_Type = {
     PyObject_HEAD_INIT(NULL)
 };
+
+//#include "sort.c"
+#include "cs-convert.c"
 
 static void ImageBuffer_init_defaults(ImageBuffer *self)
 {
@@ -181,6 +186,23 @@ ImageBuffer_init_real(  ImageBuffer *self,
     
     if (colorspace_format > 0 && colorspace < COLORSPACE_FORMAT_SIZE) {
         self->colorspace_format = colorspace_format;
+    }
+    
+    /* Get channel scales */
+    if (self->scale <= 0.0) {
+        self->channel_scales[0] = (REAL_TYPE)1.0;
+        self->channel_scales[1] = (REAL_TYPE)1.0;
+        self->channel_scales[2] = (REAL_TYPE)1.0;
+        self->channel_scales[3] = (REAL_TYPE)1.0;
+    } else {
+        self->channel_scales[0] =
+            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][4];
+        self->channel_scales[1] =
+            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][5];
+        self->channel_scales[2] =
+            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][6];
+        self->channel_scales[3] =
+            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][7];
     }
     
     self->width = width;
@@ -325,6 +347,7 @@ static PyObject *ImageBuffer_set_pixel(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
+/*
 static PyObject *ImageBuffer_get_channel(ImageBuffer *self, PyObject *args)
 {
     uint32_t x, y, c;
@@ -359,6 +382,7 @@ static PyObject *ImageBuffer_set_channel(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+*/
 
 static PyObject *ImageBuffer_set1(ImageBuffer *self, PyObject *args)
 {
@@ -622,6 +646,54 @@ static PyObject *ImageBuffer_vtline_out(ImageBuffer *self, PyObject *args)
     return tuple_out;
 }
 
+static PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
+{
+    if (self->colorspace == COLORSPACE_RGB) {
+        ImageBuffer_rgb_to_hsv(self);
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwargs_names[] = {
+        "colorspace_format",
+        "scale_max",
+        NULL
+    };
+
+    int colorspace_format = -1;
+    REAL_TYPE scale_max = -1;
+    
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kwargs,
+            "|i|f",
+            kwargs_names,
+            &colorspace_format,
+            &scale_max)) {
+        return NULL;
+    }
+    
+    if (colorspace_format < 0) {
+        colorspace_format = CS_FMT(RGB24);
+    }
+
+    if (colorspace_format < CS_FMT(RGB15) || colorspace_format > CS_FMT(RGB48)) {
+        PyErr_SetString(PyExc_ValueError, "colorspace_format must be in RGB color space");
+        return NULL;
+    }
+
+    if (self->colorspace == COLORSPACE_HSV) {
+        ImageBuffer_hsv_to_rgb(self, colorspace_format, scale_max);
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 /*
 
 from imagekit import *
@@ -704,6 +776,7 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
+    /*
     {
         "get_channel",
          (void *)ImageBuffer_get_channel,
@@ -717,7 +790,7 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS,
          "Set channel at x/y. "
          "(int x, int y, int c, float v)"
-    },
+    },*/
     {
         "get_pixel",
          (void *)ImageBuffer_get_pixel,
@@ -781,6 +854,18 @@ static PyMethodDef ImageBuffer_methods[] = {
         "apply_matrix",
          (void *)ImageBuffer_apply_matrix,
          METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "toHSV",
+         (void *)ImageBuffer_to_hsv,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "toRGB",
+         (void *)ImageBuffer_to_rgb,
+         METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
     {NULL, NULL, 0, NULL}

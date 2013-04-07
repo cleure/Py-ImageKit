@@ -115,10 +115,6 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
     // Setup buffers
     row_pointers = png_get_rows(png_ptr, info_ptr);
     
-    if (scale <= 0.0) {
-        scale = (REAL_TYPE)format[3];
-    }
-    
     // Get data pointer
     ptr_out = (REAL_TYPE *)&(self->data[0]);
     
@@ -126,7 +122,7 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
             for (c = 0; c < channels; c++) {
-                *ptr_out++ =    (REAL_TYPE)(scale/format[c+3]) *
+                *ptr_out++ =    (REAL_TYPE)(self->channel_scales[c]) *
                                 (REAL_TYPE)row_pointers[y][x * channels + c];
             }
         }
@@ -154,7 +150,7 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     char *filepath;
     
     REAL_TYPE *ptr_in;
-    REAL_TYPE scale;
+    REAL_TYPE scales[4];
     size_t x, y, c;
     uint32_t depth;
     double *format;
@@ -195,12 +191,12 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     }
     
     format = (double *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
-
-    if (scale <= 0.0) {
-        scale = (REAL_TYPE)format[3];
-    } else {
-        scale = self->scale;
-    }
+    
+    /* Get output scales */
+    scales[0] = (REAL_TYPE)1.0 / self->channel_scales[0];
+    scales[1] = (REAL_TYPE)1.0 / self->channel_scales[1];
+    scales[2] = (REAL_TYPE)1.0 / self->channel_scales[2];
+    scales[3] = (REAL_TYPE)1.0 / self->channel_scales[3];
 
     fp = fopen(filepath, "wb");
     if (!fp) {
@@ -254,11 +250,12 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
         row_pointers[y] = png_malloc(png_ptr, sizeof(png_byte) * self->width * self->channels);
         for (x = 0; x < self->width; x++) {
             for (c = 0; c < self->channels; c++) {
-                value = (png_byte)((*ptr_in++) * (format[3+c]/scale));
+                value = (png_byte)((*ptr_in++) * scales[c]);
+                
                 if (value < format[c]) {
                     value = (int)(format[c]);
-                } else if (value > format[3+c]) {
-                    value = (int)(format[3+c]);
+                } else if (value > format[4+c]) {
+                    value = (int)(format[4+c]);
                 }
                 
                 row_pointers[y][x * self->channels + c] = value;
