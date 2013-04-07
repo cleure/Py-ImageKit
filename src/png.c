@@ -8,7 +8,7 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
     /*
     
     FIXME: Perform colorspace conversion
-    TODO: Test with 30/48 bit RGB
+    TODO: Test with 30/48 bit RGB (probably broken)
     
     */
 
@@ -117,7 +117,7 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
     
     // Get data pointer
     ptr_out = (REAL_TYPE *)&(self->data[0]);
-    
+        
     // Copy data, perform scaling, etc
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
@@ -143,6 +143,8 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     /*
     
     FIXME: Convert from self->colorspace to RGB
+    TODO: Test with 30/48 bit RGB (probably broken)
+    TODO: Allow user to change PNG parameters (alpha, interlacing, color format, etc)
     
     */
     
@@ -159,8 +161,10 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     png_byte **row_pointers = NULL;
+    int png_colortype = PNG_COLOR_TYPE_RGB;
     
     int colorspace_format = -1;
+    int _colorspace_format;
     int value;
 
     if (!PyArg_ParseTupleAndKeywords(
@@ -171,6 +175,17 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
             &filepath,
             &colorspace_format)) {
         return NULL;
+    }
+    
+    _colorspace_format = colorspace_format;
+    
+    /* Convert HSV to RGB */
+    if (self->colorspace == COLORSPACE_HSV) {
+        if (_colorspace_format < 0 || _colorspace_format > CS_FMT(RGB48)) {
+            _colorspace_format = CS_FMT(RGB24);
+        }
+        
+        ImageBuffer_hsv_to_rgb(self, _colorspace_format, -1);
     }
     
     if (colorspace_format < 0) {
@@ -231,12 +246,17 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
         return NULL;
     }
     
+    /* Add alpha channel? */
+    if (self->channels > 3) {
+        png_colortype = PNG_COLOR_TYPE_RGBA;
+    }
+    
     png_set_IHDR(   png_ptr,
                     info_ptr,
                     self->width,
                     self->height,
                     8,
-                    PNG_COLOR_TYPE_RGB,
+                    png_colortype,
                     PNG_INTERLACE_NONE,
                     PNG_COMPRESSION_TYPE_DEFAULT,
                     PNG_FILTER_TYPE_DEFAULT);

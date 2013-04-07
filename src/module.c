@@ -16,6 +16,7 @@ TODO:
         - Cleanup error messages
         - get_box()
         - Convert between colorspaces.
+        - Grayscale support
         - Convert colorspace to native in save*()/load*() methods.
         - Filters
             - apply_cvkernel()
@@ -346,43 +347,6 @@ static PyObject *ImageBuffer_set_pixel(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
-
-/*
-static PyObject *ImageBuffer_get_channel(ImageBuffer *self, PyObject *args)
-{
-    uint32_t x, y, c;
-
-    if (!PyArg_ParseTuple(args, "III", &x, &y, &c)) {
-        return NULL;
-    }
-    
-    x = x % self->width;
-    y = y % self->height;
-    c = c % self->channels;
-
-    return PyFloat_FromDouble(
-        self->data[PIXEL_INDEX(self, x, y) + c]);
-}
-
-static PyObject *ImageBuffer_set_channel(ImageBuffer *self, PyObject *args)
-{
-    uint32_t x, y, c;
-    REAL_TYPE v;
-
-    if (!PyArg_ParseTuple(args, "IIIf", &x, &y, &c, &v)) {
-        return NULL;
-    }
-    
-    x = x % self->width;
-    y = y % self->height;
-    c = c % self->channels;
-    
-    self->data[PIXEL_INDEX(self, x, y) + c] = v;
-    
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-*/
 
 static PyObject *ImageBuffer_set1(ImageBuffer *self, PyObject *args)
 {
@@ -776,21 +740,6 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
-    /*
-    {
-        "get_channel",
-         (void *)ImageBuffer_get_channel,
-         METH_VARARGS,
-         "Get value of channel at x/y (fast). "
-         "(int x, int y, int c)"
-    },
-    {
-        "set_channel",
-         (void *)ImageBuffer_set_channel,
-         METH_VARARGS,
-         "Set channel at x/y. "
-         "(int x, int y, int c, float v)"
-    },*/
     {
         "get_pixel",
          (void *)ImageBuffer_get_pixel,

@@ -1,4 +1,4 @@
-#ifndef IK_FILTER_DOT_C
+#ifndef IK_SORT_DOT_C
 #ifdef IK_INTERNAL
 
 /* Routines and structures for sorting image buffers **/
@@ -86,4 +86,4 @@ SortIndex_UsingLuma(ImageBuffer *self)
 }
 
 #endif /* IK_INTERNAL */
-#endif /* IK_PNG_DOT_C */
+#endif /* IK_SORT_DOT_C */

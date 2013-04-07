@@ -1,4 +1,4 @@
-#ifndef IK_FILTER_DOT_C
+#ifndef IK_CS_CONVERT_DOT_C
 #ifdef IK_INTERNAL
 
 /* Converts HSV ImageBuffer object to RGB */
@@ -200,4 +200,4 @@ static void ImageBuffer_rgb_to_hsv(ImageBuffer *self)
 }
 
 #endif /* IK_INTERNAL */
-#endif /* IK_PNG_DOT_C */
+#endif /* IK_CS_CONVERT_DOT_C */

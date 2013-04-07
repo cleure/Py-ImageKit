@@ -77,4 +77,4 @@ static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 }
 
 #endif /* IK_INTERNAL */
-#endif /* IK_PNG_DOT_C */
+#endif /* IK_FILTER_DOT_C */
