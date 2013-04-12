@@ -13,10 +13,8 @@
 /*
 
 TODO:
+        - Mono colorspace
         - Cleanup error messages
-        - get_box()
-        - Convert between colorspaces.
-        - Grayscale support
         - Convert colorspace to native in save*()/load*() methods.
         - Filters
             - apply_cvkernel()
@@ -118,158 +116,7 @@ static PyTypeObject ImageBuffer_Type = {
 
 //#include "sort.c"
 #include "cs-convert.c"
-
-static void ImageBuffer_init_defaults(ImageBuffer *self)
-{
-    if (self) {
-        self->scale = -1.0f;
-        self->colorspace = COLORSPACE_RGB;
-        self->colorspace_format = COLORSPACE_FORMAT_RGB24;
-        self->width = 0;
-        self->height = 0;
-        self->channels = 0;
-        self->pitch = 0;
-        self->data_size = 0;
-        self->data_items = 0;
-    }
-}
-
-static int
-ImageBuffer_init_real(  ImageBuffer *self,
-                        uint32_t width,
-                        uint32_t height,
-                        uint32_t channels,
-                        REAL_TYPE scale,
-                        int colorspace,
-                        int colorspace_format)
-{
-
-    size_t bsize;
-    size_t bitems;
-    
-    bitems = width * height * channels;
-    bsize = sizeof(REAL_TYPE) * bitems;
-    
-    self->data = malloc(bsize);
-    if (!self->data) {
-        PyErr_NoMemory();
-        return -1;
-    }
-    
-    self->data_size = bsize;
-    self->data_items = bitems;
-    memset(self->data, 0, bsize);
-    
-    self->scale = scale;
-    
-    // Check colorspace format is valid
-    if (colorspace == COLORSPACE_RGB) {
-        switch (colorspace_format) {
-            case CS_FMT(RGB15):
-            case CS_FMT(RGB16):
-            case CS_FMT(RGB24):
-            case CS_FMT(RGB30):
-            case CS_FMT(RGB48):
-                break;
-            default:
-                PyErr_SetString(PyExc_ValueError, "RGB Colorspace must use RGB format");
-                return -1;
-                break;
-        }
-    } else if (colorspace == COLORSPACE_HSV && colorspace_format != CS_FMT(HSV_NATURAL)) {
-        PyErr_SetString(PyExc_ValueError, "HSV Colorspace must use HSV format");
-        return -1;
-    }
-    
-    if (colorspace > 0 && colorspace < COLORSPACE_SIZE) {
-        self->colorspace = colorspace;
-    }
-    
-    if (colorspace_format > 0 && colorspace < COLORSPACE_FORMAT_SIZE) {
-        self->colorspace_format = colorspace_format;
-    }
-    
-    /* Get channel scales */
-    if (self->scale <= 0.0) {
-        self->channel_scales[0] = (REAL_TYPE)1.0;
-        self->channel_scales[1] = (REAL_TYPE)1.0;
-        self->channel_scales[2] = (REAL_TYPE)1.0;
-        self->channel_scales[3] = (REAL_TYPE)1.0;
-    } else {
-        self->channel_scales[0] =
-            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][4];
-        self->channel_scales[1] =
-            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][5];
-        self->channel_scales[2] =
-            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][6];
-        self->channel_scales[3] =
-            self->scale / (REAL_TYPE)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][7];
-    }
-    
-    self->width = width;
-    self->height = height;
-    self->channels = channels;
-    self->pitch = width * channels;
-
-    return 0;
-}
-
-static int ImageBuffer_init(ImageBuffer *self, PyObject *args, PyObject *kwargs)
-{
-    static char *kwargs_names[] = {
-                    "width",
-                    "height",
-                    "channels",
-                    "scale_max",
-                    "colorspace",
-                    "colorspace_format",
-                    NULL
-    };
-    
-    REAL_TYPE scale = -1;
-    int colorspace = -1;
-    int colorspace_format = -1;
-    
-    uint32_t width;
-    uint32_t height;
-    uint32_t channels;
-
-    /* Defaults */
-    ImageBuffer_init_defaults(self);
-
-    /* Parse arguments */
-    if (!PyArg_ParseTupleAndKeywords(
-            args,
-            kwargs,
-            "III|fii",
-            kwargs_names,
-            &width,
-            &height,
-            &channels,
-            &scale,
-            &colorspace,
-            &colorspace_format)) {
-        return -1;
-    }
-    
-    /* Call real init */
-    return ImageBuffer_init_real(
-                self,
-                width,
-                height,
-                channels,
-                scale,
-                colorspace,
-                colorspace_format
-    );
-}
-
-static void ImageBuffer_dealloc(ImageBuffer *self)
-{
-    //printf("Object Destroyed\n");
-    free(self->data);
-    self->ob_type->tp_free((PyObject *)self);
-}
+#include "imagebuffer.c"
 
 static PyObject *ImageBuffer_get_pixel(ImageBuffer *self, PyObject *args)
 {
@@ -455,6 +302,21 @@ static PyObject *ImageBuffer_hzline_in(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+/*
+
+from imagekit import *
+i = ImageBuffer.fromPNG('/Users/cleure/Development/Projects/image-processing/py_src/source/source-img30.png')
+o = ImageBuffer(i.width, i.height, i.channels)
+
+for y in xrange(i.width):
+    l = i.vtline_out(y)
+    l.sort()
+    o.vtline_in(y, l)
+
+o.savePNG('output.png')
+
+*/
 
 /*
 
@@ -658,6 +520,83 @@ static PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject 
     return Py_None;
 }
 
+static PyObject *ImageBuffer_get_box(ImageBuffer *self, PyObject *args)
+{
+    int32_t center_x, center_y, c, sx, sy, ex, ey, mid;
+    int32_t size = 3;
+    
+    uint32_t i;
+    PyObject *tuple;
+    PyObject *nested;
+    
+    if (!PyArg_ParseTuple(args, "ii|i", &center_x, &center_y, &size)) {
+        return NULL;
+    }
+    
+    if (center_x < 0 || center_x >= self->width) {
+        PyErr_SetString(PyExc_ValueError, "x must be within width");
+        return NULL;
+    }
+    
+    if (center_y < 0 || center_y >= self->height) {
+        PyErr_SetString(PyExc_ValueError, "y must be within height");
+        return NULL;
+    }
+    
+    if (size < 3) {
+        PyErr_SetString(PyExc_ValueError, "size must be at least 3");
+        return NULL;
+    }
+    
+    if (size % 2 == 0) {
+        PyErr_SetString(PyExc_ValueError, "size must be an odd number");
+        return NULL;
+    }
+    
+    mid = size / 2;
+    ex = center_x + mid;
+    sy = center_y - mid;
+    ey = center_y + mid;
+    
+    tuple = PyList_New(size * size);
+    if (!tuple) {
+        return NULL;
+    }
+    
+    i = 0;
+    while (sy <= ey) {
+        sx = center_x - mid;
+        while (sx <= ex) {
+            nested = PyList_New(self->channels);
+            if (!nested) {
+                Py_DECREF(tuple);
+                return NULL;
+            }
+            
+            if (sx < 0 || sy < 0 || sx >= self->width || sy > self->height) {
+                for (c = 0; c < self->channels; c++) {
+                    /* Out of range (zero) */
+                    PyList_SetItem(nested, c, PyFloat_FromDouble(0.0));
+                }
+            } else {
+                for (c = 0; c < self->channels; c++) {
+                    /* Get pixels */
+                    PyList_SetItem(nested, c, PyFloat_FromDouble(
+                        self->data[PIXEL_INDEX(self, sx, sy) + c]));
+                }
+            }
+            
+            PyList_SetItem(tuple, i, nested);
+            i++;
+            sx++;
+        }
+        
+        sy++;
+    }
+    
+    return tuple;
+}
+
 /*
 
 from imagekit import *
@@ -729,6 +668,18 @@ static PyMemberDef ImageBuffer_members[] = {
 
 static PyMethodDef ImageBuffer_methods[] = {
     {
+        "__copy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
+    },
+    {
+        "__deepcopy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
+    },
+    {
         "fromPNG",
          (void *)ImageBuffer_from_png,
          METH_STATIC | METH_KEYWORDS,
@@ -796,6 +747,12 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "vtline_out",
          (void *)ImageBuffer_vtline_out,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "get_box",
+         (void *)ImageBuffer_get_box,
          METH_VARARGS,
         "DUMMY"
     },
