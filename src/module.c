@@ -1,10 +1,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
-#include <setjmp.h>
 #include <memory.h>
 #include <math.h>
-#include <png.h>
 #include <Python.h>
 #include <structmember.h>
 
@@ -20,7 +18,7 @@ TODO:
             - apply_cvkernel()
             - apply_median()
         - Scale nearest/linear
-        - fromJPG() / saveJPG().
+        - saveJPG().
         - Test with RGB30 and RGB48.
         - Python 3.x support.
         - Documentation.
@@ -303,35 +301,6 @@ static PyObject *ImageBuffer_hzline_in(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
-/*
-
-from imagekit import *
-i = ImageBuffer.fromPNG('/Users/cleure/Development/Projects/image-processing/py_src/source/source-img30.png')
-o = ImageBuffer(i.width, i.height, i.channels)
-
-for y in xrange(i.width):
-    l = i.vtline_out(y)
-    l.sort()
-    o.vtline_in(y, l)
-
-o.savePNG('output.png')
-
-*/
-
-/*
-
-from imagekit import *
-bi = ImageBuffer.fromPNG('/Users/cleure/Development/Projects/image-processing/py_src/source/source-img2.png')
-bo = ImageBuffer(width=bi.height, height=bi.width, channels=bi.channels)
-
-for y in xrange(bi.height):
-    li = bi.hzline_out(y)
-    bo.vtline_in(bi.height-y-1, li)
-
-bo.savePNG('output.png')
-
-*/
-
 static PyObject *ImageBuffer_hzline_out(ImageBuffer *self, PyObject *args)
 {
     PyObject *list_out;
@@ -597,28 +566,10 @@ static PyObject *ImageBuffer_get_box(ImageBuffer *self, PyObject *args)
     return tuple;
 }
 
-/*
-
-from imagekit import *
-matrix = [
-    0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0,
-]
-b = ImageBuffer(256, 256, 3)
-for x in range(256):
-    for y in range(10):
-        b.set_pixel(x, y+32, [255, 255, 255])
-
-b.savePNG('1.png')
-b.apply_matrix(matrix)
-b.savePNG('2.png')
-
-*/
-
 /* Include source files */
 #include "filter.c"
 #include "png.c"
+#include "jpeg.c"
 
 static PyMemberDef ImageBuffer_members[] = {
     {
@@ -689,6 +640,12 @@ static PyMethodDef ImageBuffer_methods[] = {
         "savePNG",
          (void *)ImageBuffer_save_png,
          METH_VARARGS | METH_KEYWORDS,
+        "DUMMY"
+    },
+    {
+        "fromJPEG",
+         (void *)ImageBuffer_from_jpeg,
+         METH_STATIC | METH_KEYWORDS,
         "DUMMY"
     },
     {

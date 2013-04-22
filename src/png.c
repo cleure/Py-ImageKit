@@ -2,6 +2,8 @@
 #ifdef IK_INTERNAL
 #ifdef HAVE_LIBPNG
 
+#include <png.h>
+
 static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
 
