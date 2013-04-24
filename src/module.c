@@ -12,9 +12,7 @@
 
 TODO:
         - Proper exception hierarchy
-        - Mono colorspace
         - Cleanup error messages
-        - Convert colorspace to native in save*()/load*() methods.
         - Filters
             - apply_cvkernel()
             - apply_median()
