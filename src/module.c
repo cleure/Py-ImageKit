@@ -460,6 +460,8 @@ static PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
 {
     if (self->colorspace == COLORSPACE_RGB) {
         ImageBuffer_rgb_to_hsv(self);
+    } else if (self->colorspace == COLORSPACE_HSV) {
+        ImageBuffer_mono_to_hsv(self);
     }
 
     Py_INCREF(Py_None);

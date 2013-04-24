@@ -90,6 +90,51 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
 /* Converts Mono ImageBuffer object to HSV */
 static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
 {
+    REAL_TYPE *ptr_in, *ptr_out;
+    REAL_TYPE *buffer;
+    int channels_out = 3;
+    double *csfmt;
+    size_t i, l;
+    
+    if (self->channels == 2) {
+        self->channels = 4;
+    }
+    
+    buffer = malloc(sizeof(*buffer) * self->width * self->height * channels_out);
+    if (!buffer) {
+        /* FIXME: Error out */
+        return;
+    }
+    
+    l = self->width * self->height;
+    ptr_in = (REAL_TYPE *)&(self->data[0]);
+    ptr_out = (REAL_TYPE *)buffer;
+
+    if (channels_out == 3) {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (REAL_TYPE)0.0;
+            *ptr_out++ = (REAL_TYPE)0.0;
+            *ptr_out++ = *ptr_in++;
+        }
+    } else {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (REAL_TYPE)0.0;
+            *ptr_out++ = (REAL_TYPE)0.0;
+            *ptr_out++ = *ptr_in++;
+            *ptr_out++ = *ptr_in++;
+        }
+    }
+
+    free(self->data);
+    self->data = buffer;
+    self->colorspace = COLORSPACE_HSV;
+    self->colorspace_format = CS_FMT(HSV_NATURAL);
+    self->channels = channels_out;
+    self->scale = -1;
+    self->channel_scales[0] = (REAL_TYPE)1.0;
+    self->channel_scales[1] = (REAL_TYPE)1.0;
+    self->channel_scales[2] = (REAL_TYPE)1.0;
+    self->channel_scales[3] = (REAL_TYPE)1.0;
 }
 
 /* Converts HSV ImageBuffer object to RGB */
