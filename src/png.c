@@ -181,13 +181,40 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     
     _colorspace_format = colorspace_format;
     
-    /* Convert HSV to RGB */
     if (self->colorspace == COLORSPACE_HSV) {
+        /* Convert HSV to RGB */
         if (_colorspace_format < 0 || _colorspace_format > CS_FMT(RGB48)) {
             _colorspace_format = CS_FMT(RGB24);
         }
         
         ImageBuffer_hsv_to_rgb(self, _colorspace_format, -1);
+        
+        /* Get output scales */
+        scales[0] = (REAL_TYPE)1.0 / self->channel_scales[0];
+        scales[1] = (REAL_TYPE)1.0 / self->channel_scales[1];
+        scales[2] = (REAL_TYPE)1.0 / self->channel_scales[2];
+        scales[3] = (REAL_TYPE)1.0 / self->channel_scales[3];
+    } else if (self->colorspace == COLORSPACE_MONO) {
+        /* Grayscale */
+        if (self->channels == 1) {
+            png_colortype = PNG_COLOR_TYPE_GRAY;
+        } else {
+            png_colortype = PNG_COLOR_TYPE_GRAY_ALPHA;
+        }
+        
+        colorspace_format = CS_FMT(RGB24);
+        
+        /* Get output scales */
+        scales[0] = (REAL_TYPE)255.0;
+        scales[1] = (REAL_TYPE)255.0;
+        scales[2] = (REAL_TYPE)255.0;
+        scales[3] = (REAL_TYPE)255.0;
+    } else {
+        /* Get output scales */
+        scales[0] = (REAL_TYPE)1.0 / self->channel_scales[0];
+        scales[1] = (REAL_TYPE)1.0 / self->channel_scales[1];
+        scales[2] = (REAL_TYPE)1.0 / self->channel_scales[2];
+        scales[3] = (REAL_TYPE)1.0 / self->channel_scales[3];
     }
     
     if (colorspace_format < 0) {
@@ -208,12 +235,6 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     }
     
     format = (double *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
-    
-    /* Get output scales */
-    scales[0] = (REAL_TYPE)1.0 / self->channel_scales[0];
-    scales[1] = (REAL_TYPE)1.0 / self->channel_scales[1];
-    scales[2] = (REAL_TYPE)1.0 / self->channel_scales[2];
-    scales[3] = (REAL_TYPE)1.0 / self->channel_scales[3];
 
     fp = fopen(filepath, "wb");
     if (!fp) {

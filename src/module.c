@@ -11,6 +11,7 @@
 /*
 
 TODO:
+        - Proper exception hierarchy
         - Mono colorspace
         - Cleanup error messages
         - Convert colorspace to native in save*()/load*() methods.
@@ -54,6 +55,7 @@ static const enum {
     CS_FMT(RGB30),
     CS_FMT(RGB48),
     CS_FMT(HSV_NATURAL),
+    CS_FMT(MONO_NATURAL),
     COLORSPACE_FORMAT_SIZE
 } _COLORSPACE_FORMAT;
 
@@ -64,6 +66,7 @@ static const double COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8] = {
     {0.0, 0.0, 0.0, 0.0,  1023.0,    1023.0,     1023.0,     0.0},
     {0.0, 0.0, 0.0, 0.0, 65535.0,   65535.0,    65535.0, 65535.0},
     {0.0, 0.0, 0.0, 0.0,   360.0,       1.0,        1.0,     1.0},
+    {0.0, 0.0, 0.0, 0.0,     1.0,       0.0,        0.0,     1.0},
 };
 
 struct ListTypeMethods {
@@ -441,6 +444,18 @@ static PyObject *ImageBuffer_vtline_out(ImageBuffer *self, PyObject *args)
     return tuple_out;
 }
 
+static PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
+{
+    if (self->colorspace == COLORSPACE_RGB) {
+        ImageBuffer_rgb_to_mono(self);
+    } else if (self->colorspace == COLORSPACE_HSV) {
+        ImageBuffer_hsv_to_mono(self);
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 static PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
 {
     if (self->colorspace == COLORSPACE_RGB) {
@@ -728,6 +743,12 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "toRGB",
          (void *)ImageBuffer_to_rgb,
+         METH_VARARGS | METH_KEYWORDS,
+        "DUMMY"
+    },
+    {
+        "toMono",
+         (void *)ImageBuffer_to_mono,
          METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
