@@ -93,7 +93,6 @@ static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE *buffer;
     int channels_out = 3;
-    double *csfmt;
     size_t i, l;
     
     if (self->channels == 2) {
