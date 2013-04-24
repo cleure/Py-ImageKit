@@ -222,11 +222,6 @@ static void ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, flo
         ptr += self->channels;
     }
     
-    /*
-    
-    FIXME: Set these somewhere else (in common code)
-    
-    */
     self->colorspace = COLORSPACE_RGB;
     self->colorspace_format = colorspace_format;
     self->scale = scale_max;
@@ -316,11 +311,6 @@ static void ImageBuffer_rgb_to_hsv(ImageBuffer *self)
         ptr += self->channels;
     }
     
-    /*
-    
-    FIXME: Set these somewhere else (in common code)
-    
-    */
     self->colorspace = COLORSPACE_HSV;
     self->colorspace_format = CS_FMT(HSV_NATURAL);
     self->scale = -1;
