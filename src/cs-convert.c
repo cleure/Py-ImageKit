@@ -16,6 +16,7 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
     int channels_out = 3;
     double *csfmt;
     size_t i, l;
+    size_t bitems, bsize;
     
     if (colorspace_format < 0) {
         colorspace_format = CS_FMT(RGB24);
@@ -39,7 +40,10 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
         scale_a = (REAL_TYPE)scale_max;
     }
     
-    buffer = malloc(sizeof(*buffer) * self->width * self->height * channels_out);
+    bitems = self->width * self->height * channels_out;
+    bsize = bitems * sizeof(REAL_TYPE);
+    
+    buffer = malloc(bsize);
     if (!buffer) {
         /* FIXME: Error out */
         return;
@@ -73,6 +77,9 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
     self->colorspace_format = colorspace_format;
     self->scale = scale_max;
     self->channels = channels_out;
+    self->data_items = bitems;
+    self->data_size = bsize;
+    self->pitch = self->width * self->channels;
     
     if (scale_max <= 0.0) {
         self->channel_scales[0] = (REAL_TYPE)1.0;
@@ -94,12 +101,16 @@ static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
     REAL_TYPE *buffer;
     int channels_out = 3;
     size_t i, l;
+    size_t bitems, bsize;
+    
+    bitems = self->width * self->height * channels_out;
+    bsize = bitems * sizeof(REAL_TYPE);
     
     if (self->channels == 2) {
         self->channels = 4;
     }
     
-    buffer = malloc(sizeof(*buffer) * self->width * self->height * channels_out);
+    buffer = malloc(bsize);
     if (!buffer) {
         /* FIXME: Error out */
         return;
@@ -129,7 +140,11 @@ static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
     self->colorspace = COLORSPACE_HSV;
     self->colorspace_format = CS_FMT(HSV_NATURAL);
     self->channels = channels_out;
+    self->data_items = bitems;
+    self->data_size = bsize;
+    self->pitch = self->width * self->channels;
     self->scale = -1;
+    
     self->channel_scales[0] = (REAL_TYPE)1.0;
     self->channel_scales[1] = (REAL_TYPE)1.0;
     self->channel_scales[2] = (REAL_TYPE)1.0;
@@ -331,7 +346,6 @@ static void ImageBuffer_rgb_to_mono(ImageBuffer *self)
     REAL_TYPE value;
     REAL_TYPE scales[4];
     double *csfmt;
-    
     size_t i, l;
     int out_channels = 1;
     int colorspace_format = CS_FMT(MONO_NATURAL);
@@ -382,6 +396,8 @@ static void ImageBuffer_rgb_to_mono(ImageBuffer *self)
     self->colorspace_format = colorspace_format;
     self->channels = out_channels;
     self->scale = (REAL_TYPE)1.0;
+    self->pitch = self->width * self->channels;
+    self->data_items = self->width * self->height * self->channels;
     
     self->channel_scales[0] = (REAL_TYPE)1.0;
     self->channel_scales[1] = (REAL_TYPE)1.0;
