@@ -2,13 +2,17 @@
 from imagekit import *
 
 def main():
-    b = ImageBuffer.fromPNG('images/image01.png')
-    for x in xrange(b.width):
-        line = b.vtline_out(x)
-        line.sort()
-        b.vtline_in(x, line)
+    input = ImageBuffer.fromPNG('images/image01.png')
+    output = ImageBuffer(   width=input.height,
+                            height=input.width,
+                            channels=input.channels)
     
-    b.savePNG('output.png')
+    # Rotate image by 90 degrees
+    for y in xrange(input.height):
+        line = input.hzline_out(y)
+        output.vtline_in(input.height - y - 1, line)
+    
+    output.savePNG('example1-output.png')
 
 if __name__ == '__main__':
     main()
