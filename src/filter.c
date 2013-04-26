@@ -3,8 +3,7 @@
 
 /*
 
-Filter Methods:
-    apply_matrix()
+TODO:
     apply_median()
 
 */
@@ -31,10 +30,9 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
     
     REAL_TYPE *output = NULL;
     REAL_TYPE *ptr_out;
-    REAL_TYPE *pixels = NULL;
     REAL_TYPE *matrix = NULL;
     
-    int matrix_size;
+    int32_t matrix_size;
     float matrix_size_f;
     float factor = 1.0f;
     float bias = 0.0f;
@@ -127,13 +125,6 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
         }
     }
     
-    pixels = malloc(sizeof(*pixels) * tuple_size);
-    if (!pixels) {
-        free(matrix);
-        Py_DECREF(tuple);
-        return PyErr_NoMemory();
-    }
-    
     output = malloc(sizeof(*output) * self->width * self->height * self->channels);
     if (!output) {
         free(matrix);
@@ -195,7 +186,6 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
     free(self->data);
     self->data = output;
     
-    free(pixels);
     free(matrix);
     
     Py_DECREF(tuple);
