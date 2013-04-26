@@ -11,6 +11,7 @@
 /*
 
 TODO:
+        - Perform clamp in ImageBuffer_apply_matrix()
         - Proper exception hierarchy
         - Cleanup error messages
         - Filters
@@ -733,6 +734,12 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "apply_matrix",
          (void *)ImageBuffer_apply_matrix,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "apply_cvkernel",
+         (void *)ImageBuffer_apply_cvkernel,
          METH_VARARGS,
         "DUMMY"
     },

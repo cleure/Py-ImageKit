@@ -9,6 +9,7 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
 
     /*
     
+    FIXME: Broken on greyscale images
     FIXME: Perform colorspace conversion
     TODO: Test with 30/48 bit RGB (probably broken)
     
