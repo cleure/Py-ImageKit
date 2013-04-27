@@ -32,6 +32,8 @@ TODO:
 
 #define CS_FMT(in) COLORSPACE_FORMAT_##in
 
+#define SORT_FN(ptr, size, elsize, cmpfn) (qsort((ptr), (size), (elsize), (cmpfn)))
+
 static PyObject *MODULE = NULL;
 
 /* Constants */
