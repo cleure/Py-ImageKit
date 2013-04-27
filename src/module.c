@@ -11,6 +11,8 @@
 /*
 
 TODO:
+        - fill()
+        - blit()
         - Perform clamp in ImageBuffer_apply_matrix()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
@@ -562,7 +564,7 @@ static PyObject *ImageBuffer_get_box(ImageBuffer *self, PyObject *args)
                 return NULL;
             }
             
-            if (sx < 0 || sy < 0 || sx >= self->width || sy > self->height) {
+            if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
                 for (c = 0; c < self->channels; c++) {
                     /* Out of range (zero) */
                     PyList_SetItem(nested, c, PyFloat_FromDouble(0.0));
