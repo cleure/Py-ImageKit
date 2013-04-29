@@ -748,6 +748,12 @@ static PyMethodDef ImageBuffer_methods[] = {
         "DUMMY"
     },
     {
+        "apply_median",
+         (void *)ImageBuffer_apply_median,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    {
         "toHSV",
          (void *)ImageBuffer_to_hsv,
          METH_VARARGS,

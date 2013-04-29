@@ -7,7 +7,178 @@ TODO:
     crop()
     apply_median()
 
+TODO: Sorting Networks for 3x3, 5x5, and 7x7
+
 */
+
+static int compare_rgb_luma(const void *A, const void *B)
+{
+    #define RESULT(in) (in[0] * 0.299 + in[1] * 0.587 + in[2] * 0.114)
+    REAL_TYPE *a = (REAL_TYPE *)A;
+    REAL_TYPE *b = (REAL_TYPE *)B;
+    
+    if (RESULT(a) > RESULT(b)) {
+        return 1;
+    }
+    
+    return -1;
+    #undef RESULT
+}
+
+static int compare_mono_luma(const void *A, const void *B)
+{
+    REAL_TYPE *a = (REAL_TYPE *)A;
+    REAL_TYPE *b = (REAL_TYPE *)B;
+    
+    if (a > b) {
+        return 1;
+    }
+    
+    return -1;
+    #undef RESULT
+}
+
+static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
+{
+    double *csfmt;
+    REAL_TYPE min[4];
+    REAL_TYPE max[4];
+    
+    REAL_TYPE *output = NULL;
+    REAL_TYPE *ptr_out;
+    REAL_TYPE *matrix = NULL;
+    
+    int32_t matrix_size, matrix_mid;
+    size_t matrix_elm_size = sizeof(REAL_TYPE) * self->channels;
+    size_t matrix_elements;
+    float midpoint = 0.5f;
+    
+    int (*sort_cmpfn)(const void *A, const void *B);
+    
+    int32_t x, y;
+    int32_t c, sx, sy, ex, ey, mid, i;
+
+    if (!PyArg_ParseTuple(args, "i|f", &matrix_size, &midpoint)) {
+        return NULL;
+    }
+    
+    if (matrix_size < 3) {
+        PyErr_SetString(PyExc_ValueError, "Matrix size must be a minimum of 3");
+        return NULL;
+    }
+    
+    if ((matrix_size % 2) == 0) {
+        PyErr_SetString(PyExc_ValueError, "Matrix size must be odd value");
+        return NULL;
+    }
+    
+    if (midpoint < 0.0 || midpoint > 1.0) {
+        PyErr_SetString(PyExc_ValueError, "Midpoint must be between 0.0 and 1.0");
+        return NULL;
+    }
+    
+    csfmt = (double *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    
+    /* Get min/max */
+    if (self->scale <= 0.0) {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL_TYPE)csfmt[c];
+            max[c] = (REAL_TYPE)csfmt[c+4];
+        }
+    } else {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL_TYPE)0.0;
+            max[c] = (REAL_TYPE)self->scale;
+        }
+    }
+    
+    if (self->colorspace == COLORSPACE_RGB) {
+        sort_cmpfn = &compare_rgb_luma;
+    } else if (self->colorspace == COLORSPACE_MONO) {
+        sort_cmpfn = &compare_mono_luma;
+    } else if (self->colorspace == COLORSPACE_HSV) {
+        // FIXME: HSV
+    }
+    
+    matrix = malloc(sizeof(*matrix) * matrix_size * matrix_size * self->channels);
+    if (!matrix) {
+        return PyErr_NoMemory();
+    }
+    
+    output = malloc(sizeof(*output) * self->width * self->height * self->channels);
+    if (!output) {
+        free(matrix);
+        return PyErr_NoMemory();
+    }
+    
+    ptr_out = output;
+    mid = matrix_size / 2;
+    matrix_elements = matrix_size * matrix_size;
+    matrix_mid = (int)(matrix_elements * midpoint) * self->channels;
+    
+    /* Clamp Midpoint */
+    if (matrix_mid > (matrix_elements * self->channels) - self->channels) {
+        matrix_mid = (matrix_elements * self->channels) - self->channels;
+    }
+    
+    for (y = 0; y < self->height; y++) {
+        for (x = 0; x < self->width; x++) {
+            
+            /* Reset */
+            i = 0;
+            ex = x + mid;
+            ey = y + mid;
+            sy = y - mid;
+            
+            /* Get box */
+            while (sy <= ey) {
+                sx = x - mid;
+                
+                while (sx <= ex) {
+                    
+                    if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
+                        for (c = 0; c < self->channels; c++) {
+                            matrix[i] = self->data[PIXEL_INDEX(self, x, y) + c];
+                            i++;
+                        }
+                    } else {
+                        for (c = 0; c < self->channels; c++) {
+                            matrix[i] = self->data[PIXEL_INDEX(self, sx, sy) + c];
+                            i++;
+                        }
+                    }
+                    
+                    sx++;
+                }
+        
+                sy++;
+            }
+            
+            SORT_FN(matrix, matrix_elements, matrix_elm_size, sort_cmpfn);
+            
+            /* Output */
+            for (c = 0; c < self->channels; c++) {
+            
+                /* Clamp */
+                if (matrix[matrix_mid+c] > max[c]) {
+                    matrix[matrix_mid+c] = max[c];
+                } else if (matrix[matrix_mid+c] < min[c]) {
+                    matrix[matrix_mid+c] = min[c];
+                }
+                
+                 *ptr_out++ = matrix[matrix_mid+c];
+            }
+        }
+    }
+    
+    /* Free old buffer, and link up new one */
+    free(self->data);
+    self->data = output;
+    
+    free(matrix);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 /**
 * Apply Convolution Kernel.
@@ -129,7 +300,6 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
     output = malloc(sizeof(*output) * self->width * self->height * self->channels);
     if (!output) {
         free(matrix);
-        free(output);
         Py_DECREF(tuple);
         return PyErr_NoMemory();
     }
