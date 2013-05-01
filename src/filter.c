@@ -40,43 +40,6 @@ static int compare_mono_luma(const void *A, const void *B)
     #undef RESULT
 }
 
-/*
-
-void qsort (void* base, size_t num, size_t size,
-            int (*compar)(const void*,const void*));
-
- for i ← 1 to i ← length(A)-1
-   {
-     //The values in A[ i ] are checked in-order, starting at the second one
-     // save A[i] to make a hole that will move as elements are shifted
-     // the value being checked will be inserted into the hole's final position
-     valueToInsert ← A[i]
-     holePos ← i
-     // keep moving the hole down until the value being checked is larger than 
-     // what's just below the hole <!-- until A[holePos - 1] is <= item -->
-     while holePos > 0 and valueToInsert < A[holePos - 1]
-       { //value to insert doesn't belong where the hole currently is, so shift 
-         A[holePos] ← A[holePos - 1] //shift the larger value up
-         holePos ← holePos - 1       //move the hole position down
-       }
-     // hole is in the right position, so put value being checked into the hole
-     A[holePos] ← valueToInsert 
-   }
-
-    for i in xrange(start, end + 1):
-        # Insert a[i] into the sorted sublist
-        v = a[i]
-        for j in xrange(i-1, -1, -1):
-            if a[j] <= v:
-                a[j + 1] = v
-                break
-            a[j + 1] = a[j]
-        else:
-            a[0] = v
-    return a
-
-*/
-
 static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
 {
     double *csfmt;
