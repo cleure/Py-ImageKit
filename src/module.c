@@ -11,6 +11,11 @@
 /*
 
 TODO:
+        - Better build system
+            - Instead of including .c files, write simple preprocessor in Python,
+              which is invoked from setup.py. This way, the module can be split
+              into multiple files, with global function visibility, but also wont
+              expose symbols to Python.
         - fill()
         - blit()
         - Perform clamp in ImageBuffer_apply_matrix()
