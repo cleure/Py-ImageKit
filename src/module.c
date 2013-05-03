@@ -16,6 +16,7 @@ TODO:
               which is invoked from setup.py. This way, the module can be split
               into multiple files, with global function visibility, but also wont
               expose symbols to Python.
+        - savePNG() converts HSV to RGB, but doesn't convert it back.
         - fill()
         - blit()
         - Perform clamp in ImageBuffer_apply_matrix()
