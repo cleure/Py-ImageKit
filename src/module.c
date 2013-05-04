@@ -21,7 +21,6 @@ TODO:
         - blit()
         - crop()
         - scale()
-        - Perform clamp in ImageBuffer_apply_matrix()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
         - Cleanup error messages

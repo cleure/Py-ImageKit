@@ -348,16 +348,14 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
 /* Apply matrix to image channels */
 static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 {
-    /*
-    
-    FIXME: Clamp
-    
-    */
 
     PyObject *tuple;
     PyObject *tmp;
     struct ListTypeMethods *lm;
+    double *csfmt;
     REAL_TYPE matrix[16];
+    REAL_TYPE min[4];
+    REAL_TYPE max[4];
     REAL_TYPE *ptr;
     REAL_TYPE value[4];
     size_t wh, a, b;
@@ -407,7 +405,22 @@ static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
-    // Apply matrix to image
+    csfmt = (double *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    
+    /* Get min/max */
+    if (self->scale <= 0.0) {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL_TYPE)csfmt[c];
+            max[c] = (REAL_TYPE)csfmt[c+4];
+        }
+    } else {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL_TYPE)0.0;
+            max[c] = (REAL_TYPE)self->scale;
+        }
+    }
+    
+    /* Apply matrix to image */
     ptr = (REAL_TYPE *)&(self->data[0]);
     wh = self->width * self->height;
     for (i = 0; i < wh; i++) {
@@ -416,6 +429,13 @@ static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
             
             for (b = 0; b < self->channels; b++) {
                 value[a] += *(ptr+b) * matrix[(a*self->channels)+b];
+                
+                /* Clamp */
+                if (value[a] > max[a]) {
+                    value[a] = max[a];
+                } else if (value[a] < min[a]) {
+                    value[a] = min[a];
+                }
             }
         }
         

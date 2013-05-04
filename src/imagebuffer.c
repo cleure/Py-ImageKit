@@ -32,6 +32,11 @@ ImageBuffer_init_real(  ImageBuffer *self,
     bitems = width * height * channels;
     bsize = sizeof(REAL_TYPE) * bitems;
     
+    if (channels > 4) {
+        PyErr_SetString(PyExc_ValueError, "Channels cannot exceed 4");
+        return -1;
+    }
+    
     self->data = malloc(bsize);
     if (!self->data) {
         PyErr_NoMemory();
