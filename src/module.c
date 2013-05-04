@@ -19,13 +19,12 @@ TODO:
         - savePNG() converts HSV to RGB, but doesn't convert it back.
         - fill()
         - blit()
+        - crop()
+        - scale()
         - Perform clamp in ImageBuffer_apply_matrix()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
         - Cleanup error messages
-        - Filters
-            - apply_median()
-        - Scale nearest/linear
         - saveJPG().
         - Test with RGB30 and RGB48.
         - Python 3.x support.

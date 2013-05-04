@@ -1,18 +1,12 @@
 #ifndef IK_FILTER_DOT_C
 #ifdef IK_INTERNAL
 
-/*
-
-TODO:
-    crop()
-    apply_median()
-
-*/
-
 #define QUICK_SELECT_TYPE REAL_TYPE
 #define QUICK_SELECT_SYMBOL(sym) sym##_rt
 #define QUICK_SELECT_LINKAGE static inline
+
 #include "quickselect.h"
+
 #undef QUICK_SELECT_TYPE
 #undef QUICK_SELECT_SYMBOL
 #undef QUICK_SELECT_LINKAGE
@@ -33,12 +27,6 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
     size_t matrix_elm_size = sizeof(REAL_TYPE) * self->channels;
     size_t matrix_elements;
     float midpoint = 0.5f;
-    
-    /*
-    
-    TODO: Sort channels separately, instead of by luma.
-    
-    */
     
     int32_t x, y;
     int32_t c, sx, sy, ex, ey, mid, i;
@@ -76,10 +64,6 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
             max[c] = (REAL_TYPE)self->scale;
         }
     }
-    
-    //
-    //
-    //
     
     matrix = malloc(sizeof(*matrix) * matrix_size * matrix_size * self->channels);
     if (!matrix) {
