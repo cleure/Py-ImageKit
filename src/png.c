@@ -151,6 +151,8 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     
     */
     
+    ImageBuffer *copy = NULL;
+    
     FILE *fp;
     char *filepath;
     
@@ -188,7 +190,14 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
             _colorspace_format = CS_FMT(RGB24);
         }
         
-        ImageBuffer_hsv_to_rgb(self, _colorspace_format, -1);
+        /* Make temporary copy of self object, and convert it to RGB */
+        copy = (ImageBuffer *)PyObject_CallMethod((PyObject *)self, "__copy__", NULL);
+        if (!copy) {
+            return NULL;
+        }
+        
+        ImageBuffer_hsv_to_rgb(copy, _colorspace_format, -1);
+        self = copy;
         
         /* Get output scales */
         scales[0] = (REAL_TYPE)1.0 / self->channel_scales[0];
@@ -239,6 +248,7 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
 
     fp = fopen(filepath, "wb");
     if (!fp) {
+        Py_XDECREF(copy);
         PyErr_SetString(PyExc_IOError, "Unable to open file");
         return NULL;
     }
@@ -246,14 +256,15 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     // Initialize
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     if (png_ptr == NULL) {
+        Py_XDECREF(copy);
         fclose(fp);
-
         PyErr_SetString(PyExc_StandardError, "PNG Error");
         return NULL;
     }
     
     info_ptr = png_create_info_struct(png_ptr);
     if (info_ptr == NULL) {
+        Py_XDECREF(copy);
         png_destroy_write_struct(&png_ptr, NULL);
         fclose(fp);
         
@@ -263,6 +274,7 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
 
     // Error Handling
     if (setjmp(png_jmpbuf(png_ptr))) {
+        Py_XDECREF(copy);
         png_destroy_write_struct(&png_ptr, &info_ptr);
         fclose(fp);
         
@@ -320,6 +332,7 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
     png_destroy_write_struct(&png_ptr, &info_ptr);
     fclose(fp);
 
+    Py_XDECREF(copy);
     Py_INCREF(Py_None);
     return Py_None;
 }

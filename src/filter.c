@@ -7,38 +7,15 @@ TODO:
     crop()
     apply_median()
 
-TODO: Sorting Networks for 3x3, 5x5, and 7x7
-TODO: Real sort, or sort network? Real sort has advantages, as it can be used
-      for things besides median.
-
 */
 
-static int compare_rgb_luma(const void *A, const void *B)
-{
-    #define RESULT(in) (in[0] * 0.299 + in[1] * 0.587 + in[2] * 0.114)
-    REAL_TYPE *a = (REAL_TYPE *)A;
-    REAL_TYPE *b = (REAL_TYPE *)B;
-    
-    if (RESULT(a) > RESULT(b)) {
-        return 1;
-    }
-    
-    return -1;
-    #undef RESULT
-}
-
-static int compare_mono_luma(const void *A, const void *B)
-{
-    REAL_TYPE *a = (REAL_TYPE *)A;
-    REAL_TYPE *b = (REAL_TYPE *)B;
-    
-    if (a > b) {
-        return 1;
-    }
-    
-    return -1;
-    #undef RESULT
-}
+#define QUICK_SELECT_TYPE REAL_TYPE
+#define QUICK_SELECT_SYMBOL(sym) sym##_rt
+#define QUICK_SELECT_LINKAGE static inline
+#include "quickselect.h"
+#undef QUICK_SELECT_TYPE
+#undef QUICK_SELECT_SYMBOL
+#undef QUICK_SELECT_LINKAGE
 
 static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
 {
@@ -48,7 +25,9 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
     
     REAL_TYPE *output = NULL;
     REAL_TYPE *ptr_out;
+    
     REAL_TYPE *matrix = NULL;
+    REAL_TYPE *matrix_ptr = NULL;
     
     int32_t matrix_size, matrix_mid;
     size_t matrix_elm_size = sizeof(REAL_TYPE) * self->channels;
@@ -60,8 +39,6 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
     TODO: Sort channels separately, instead of by luma.
     
     */
-    
-    int (*sort_cmpfn)(const void *A, const void *B);
     
     int32_t x, y;
     int32_t c, sx, sy, ex, ey, mid, i;
@@ -100,13 +77,9 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
         }
     }
     
-    if (self->colorspace == COLORSPACE_RGB) {
-        sort_cmpfn = &compare_rgb_luma;
-    } else if (self->colorspace == COLORSPACE_MONO) {
-        sort_cmpfn = &compare_mono_luma;
-    } else if (self->colorspace == COLORSPACE_HSV) {
-        // FIXME: HSV
-    }
+    //
+    //
+    //
     
     matrix = malloc(sizeof(*matrix) * matrix_size * matrix_size * self->channels);
     if (!matrix) {
@@ -122,11 +95,11 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
     ptr_out = output;
     mid = matrix_size / 2;
     matrix_elements = matrix_size * matrix_size;
-    matrix_mid = (int)(matrix_elements * midpoint) * self->channels;
+    matrix_mid = (int)(matrix_elements * midpoint);
     
     /* Clamp Midpoint */
-    if (matrix_mid > (matrix_elements * self->channels) - self->channels) {
-        matrix_mid = (matrix_elements * self->channels) - self->channels;
+    if (matrix_mid > (matrix_elements) - self->channels) {
+        matrix_mid = (matrix_elements) - self->channels;
     }
     
     for (y = 0; y < self->height; y++) {
@@ -143,38 +116,41 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
                 sx = x - mid;
                 
                 while (sx <= ex) {
-                    
+                
+                    /* Fill Matrix, checking bounds */
                     if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
                         for (c = 0; c < self->channels; c++) {
-                            matrix[i] = self->data[PIXEL_INDEX(self, x, y) + c];
-                            i++;
+                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, x, y) + c];
                         }
                     } else {
                         for (c = 0; c < self->channels; c++) {
-                            matrix[i] = self->data[PIXEL_INDEX(self, sx, sy) + c];
-                            i++;
+                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, sx, sy) + c];
                         }
                     }
                     
+                    i++;
                     sx++;
                 }
-        
+                
                 sy++;
             }
             
-            SORT_FN(matrix, matrix_elements, matrix_elm_size, sort_cmpfn);
-            
             /* Output */
             for (c = 0; c < self->channels; c++) {
-            
+                matrix_ptr = (matrix+(c*matrix_elements));
+                
+                /* QuickSelect Algorithm */
+                matrix_ptr[0] =
+                    quick_select_rt(matrix_ptr, 0, matrix_elements-1, matrix_mid);
+                
                 /* Clamp */
-                if (matrix[matrix_mid+c] > max[c]) {
-                    matrix[matrix_mid+c] = max[c];
-                } else if (matrix[matrix_mid+c] < min[c]) {
-                    matrix[matrix_mid+c] = min[c];
+                if (matrix_ptr[0] > max[c]) {
+                    matrix_ptr[0] = max[c];
+                } else if (matrix_ptr[0] < min[c]) {
+                    matrix_ptr[0] = min[c];
                 }
                 
-                 *ptr_out++ = matrix[matrix_mid+c];
+                *ptr_out++ = matrix_ptr[0];
             }
         }
     }
