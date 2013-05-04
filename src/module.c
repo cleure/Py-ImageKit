@@ -21,6 +21,7 @@ TODO:
         - blit()
         - crop()
         - scale()
+        - rotate()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
         - Cleanup error messages
@@ -453,10 +454,17 @@ static PyObject *ImageBuffer_vtline_out(ImageBuffer *self, PyObject *args)
 
 static PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
 {
+    int result;
+
     if (self->colorspace == COLORSPACE_RGB) {
-        ImageBuffer_rgb_to_mono(self);
+        result = ImageBuffer_rgb_to_mono(self);
     } else if (self->colorspace == COLORSPACE_HSV) {
-        ImageBuffer_hsv_to_mono(self);
+        result = ImageBuffer_hsv_to_mono(self);
+    }
+
+    if (!result) {
+        PyErr_SetString(PyExc_StandardError, "Conversion failed");
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -465,10 +473,17 @@ static PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
 
 static PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
 {
+    int result;
+
     if (self->colorspace == COLORSPACE_RGB) {
-        ImageBuffer_rgb_to_hsv(self);
-    } else if (self->colorspace == COLORSPACE_HSV) {
-        ImageBuffer_mono_to_hsv(self);
+        result = ImageBuffer_rgb_to_hsv(self);
+    } else if (self->colorspace == COLORSPACE_MONO) {
+        result = ImageBuffer_mono_to_hsv(self);
+    }
+    
+    if (!result) {
+        PyErr_SetString(PyExc_StandardError, "Conversion failed");
+        return NULL;
     }
 
     Py_INCREF(Py_None);
@@ -483,6 +498,7 @@ static PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject 
         NULL
     };
 
+    int result;
     int colorspace_format = -1;
     REAL_TYPE scale_max = -1;
     
@@ -506,9 +522,14 @@ static PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject 
     }
 
     if (self->colorspace == COLORSPACE_HSV) {
-        ImageBuffer_hsv_to_rgb(self, colorspace_format, scale_max);
+        result = ImageBuffer_hsv_to_rgb(self, colorspace_format, scale_max);
     } else if (self->colorspace == COLORSPACE_MONO) {
-        ImageBuffer_mono_to_rgb(self, colorspace_format, scale_max);
+        result = ImageBuffer_mono_to_rgb(self, colorspace_format, scale_max);
+    }
+    
+    if (!result) {
+        PyErr_SetString(PyExc_StandardError, "Conversion failed");
+        return NULL;
     }
 
     Py_INCREF(Py_None);

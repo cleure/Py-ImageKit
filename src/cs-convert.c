@@ -1,14 +1,8 @@
 #ifndef IK_CS_CONVERT_DOT_C
 #ifdef IK_INTERNAL
 
-/*
-
-TODO: These functions should error out, if an error occurs.
-
-*/
-
 /* Converts Mono ImageBuffer object to RGB */
-static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
+static int ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE *buffer;
@@ -45,8 +39,7 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
     
     buffer = malloc(bsize);
     if (!buffer) {
-        /* FIXME: Error out */
-        return;
+        return 0;
     }
     
     l = self->width * self->height;
@@ -92,10 +85,12 @@ static void ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, fl
         self->channel_scales[2] = (REAL_TYPE)scale_max / (REAL_TYPE)csfmt[6];
         self->channel_scales[3] = (REAL_TYPE)scale_max / (REAL_TYPE)csfmt[7];
     }
+    
+    return 1;
 }
 
 /* Converts Mono ImageBuffer object to HSV */
-static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
+static int ImageBuffer_mono_to_hsv(ImageBuffer *self)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE *buffer;
@@ -112,8 +107,7 @@ static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
     
     buffer = malloc(bsize);
     if (!buffer) {
-        /* FIXME: Error out */
-        return;
+        return 0;
     }
     
     l = self->width * self->height;
@@ -149,10 +143,12 @@ static void ImageBuffer_mono_to_hsv(ImageBuffer *self)
     self->channel_scales[1] = (REAL_TYPE)1.0;
     self->channel_scales[2] = (REAL_TYPE)1.0;
     self->channel_scales[3] = (REAL_TYPE)1.0;
+    
+    return 1;
 }
 
 /* Converts HSV ImageBuffer object to RGB */
-static void ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
+static int ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
 {
     REAL_TYPE hsv[4];
     REAL_TYPE rgb[4];
@@ -252,10 +248,12 @@ static void ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, flo
         self->channel_scales[2] = (REAL_TYPE)scale_max / (REAL_TYPE)csfmt[6];
         self->channel_scales[3] = (REAL_TYPE)scale_max / (REAL_TYPE)csfmt[7];
     }
+    
+    return 1;
 }
 
 /* Converts RGB ImageBuffer object to HSV */
-static void ImageBuffer_rgb_to_hsv(ImageBuffer *self)
+static int ImageBuffer_rgb_to_hsv(ImageBuffer *self)
 {
     REAL_TYPE scale_r, scale_g, scale_b, scale_a;
     REAL_TYPE rgb[4];
@@ -336,11 +334,11 @@ static void ImageBuffer_rgb_to_hsv(ImageBuffer *self)
     self->channel_scales[2] = (REAL_TYPE)1.0;
     self->channel_scales[3] = (REAL_TYPE)1.0;
 
-    return;
+    return 1;
 }
 
 /* Converts RGB ImageBuffer object to Mono */
-static void ImageBuffer_rgb_to_mono(ImageBuffer *self)
+static int ImageBuffer_rgb_to_mono(ImageBuffer *self)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE value;
@@ -403,15 +401,19 @@ static void ImageBuffer_rgb_to_mono(ImageBuffer *self)
     self->channel_scales[1] = (REAL_TYPE)1.0;
     self->channel_scales[2] = (REAL_TYPE)1.0;
     self->channel_scales[3] = (REAL_TYPE)1.0;
+    
+    return 1;
 }
 
 /* Converts HSV ImageBuffer object to Mono */
-static void ImageBuffer_hsv_to_mono(ImageBuffer *self)
+static int ImageBuffer_hsv_to_mono(ImageBuffer *self)
 {
     /* Convert to RGB, then convert RGB to Mono (more accurate than desaturating) */
-    ImageBuffer_hsv_to_rgb(self, CS_FMT(RGB24), (REAL_TYPE)-1.0);
-    ImageBuffer_rgb_to_mono(self);
-    return;
+    if (!ImageBuffer_hsv_to_rgb(self, CS_FMT(RGB24), (REAL_TYPE)-1.0)) {
+        return 0;
+    }
+    
+    return ImageBuffer_rgb_to_mono(self);
 }
 
 #endif /* IK_INTERNAL */
