@@ -24,7 +24,6 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
     REAL_TYPE *matrix_ptr = NULL;
     
     int32_t matrix_size, matrix_mid;
-    size_t matrix_elm_size = sizeof(REAL_TYPE) * self->channels;
     size_t matrix_elements;
     float midpoint = 0.5f;
     
@@ -409,14 +408,14 @@ static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
     
     /* Get min/max */
     if (self->scale <= 0.0) {
-        for (c = 0; c < self->channels; c++) {
-            min[c] = (REAL_TYPE)csfmt[c];
-            max[c] = (REAL_TYPE)csfmt[c+4];
+        for (a = 0; a < self->channels; a++) {
+            min[a] = (REAL_TYPE)csfmt[a];
+            max[a] = (REAL_TYPE)csfmt[a+4];
         }
     } else {
-        for (c = 0; c < self->channels; c++) {
-            min[c] = (REAL_TYPE)0.0;
-            max[c] = (REAL_TYPE)self->scale;
+        for (a = 0; a < self->channels; a++) {
+            min[a] = (REAL_TYPE)0.0;
+            max[a] = (REAL_TYPE)self->scale;
         }
     }
     
