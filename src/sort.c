@@ -1,5 +1,6 @@
-#ifndef IK_SORT_DOT_C
-#ifdef IK_INTERNAL
+
+#include "imagekit.h"
+#include "imagekit_functions.h"
 
 /* Routines and structures for sorting image buffers **/
 
@@ -44,6 +45,3 @@ SORT_FN(self->data,
         &compare_rgb_luma);
 
 */
-
-#endif /* IK_INTERNAL */
-#endif /* IK_SORT_DOT_C */

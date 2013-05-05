@@ -1,6 +1,8 @@
-#ifndef IK_JPEG_DOT_C
-#ifdef IK_INTERNAL
+
 #ifdef HAVE_LIBJPEG
+
+#include "imagekit.h"
+#include "imagekit_functions.h"
 
 #include <jpeglib.h>
 #include <stddef.h>
@@ -12,7 +14,7 @@ struct _jpeg_error_handler {
     jmp_buf jmpbuf;
 };
 
-static void _jpeg_error_exit(j_common_ptr ptr)
+PRIVATE void _jpeg_error_exit(j_common_ptr ptr)
 {
     /* Get error pointer */
     struct _jpeg_error_handler *err = (struct _jpeg_error_handler *)(ptr->err);
@@ -26,10 +28,10 @@ static void _jpeg_error_exit(j_common_ptr ptr)
     return;
 }
 
-static void _jpeg_emit_message(j_common_ptr ptr, int level) {return;}
-static void _jpeg_output_message(j_common_ptr ptr) {return;}
+PRIVATE void _jpeg_emit_message(j_common_ptr ptr, int level) {return;}
+PRIVATE void _jpeg_output_message(j_common_ptr ptr) {return;}
 
-static ImageBuffer *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
 
     static char *kwargs_names[] = {
@@ -150,7 +152,7 @@ static ImageBuffer *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyO
     return self;
 }
 
-static PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     static char *kwargs_names[] = {
                     "path",
@@ -187,18 +189,16 @@ static PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObje
 
 #else
 
-static PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     PyErr_SetString(PyExc_StandardError, "Library was not compiled with JPEG support");
     return NULL;
 }
 
-static PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     PyErr_SetString(PyExc_StandardError, "Library was not compiled with JPEG support");
     return NULL;
 }
 
 #endif /* HAVE_LIBJPEG */
-#endif /* IK_INTERNAL */
-#endif /* IK_JPEG_DOT_C */

@@ -1,17 +1,16 @@
-#ifndef IK_FILTER_DOT_C
-#ifdef IK_INTERNAL
 
 #define QUICK_SELECT_TYPE REAL_TYPE
 #define QUICK_SELECT_SYMBOL(sym) sym##_rt
 #define QUICK_SELECT_LINKAGE static inline
-
-#include "quickselect.h"
-
+    #include "quickselect.h"
 #undef QUICK_SELECT_TYPE
 #undef QUICK_SELECT_SYMBOL
 #undef QUICK_SELECT_LINKAGE
 
-static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
+#include "imagekit.h"
+#include "imagekit_functions.h"
+
+API PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
 {
     double *csfmt;
     REAL_TYPE min[4];
@@ -156,7 +155,7 @@ static PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
 * See this link for more information on CV Kernels:
 * http://lodev.org/cgtutor/filtering.html
 **/
-static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
+API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
 {
     PyObject *tuple;
     PyObject *tmp;
@@ -345,7 +344,7 @@ static PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
 }
 
 /* Apply matrix to image channels */
-static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
+API PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 {
 
     PyObject *tuple;
@@ -449,6 +448,3 @@ static PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
-
-#endif /* IK_INTERNAL */
-#endif /* IK_FILTER_DOT_C */

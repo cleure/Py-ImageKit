@@ -1,10 +1,12 @@
-#ifndef IK_PNG_DOT_C
-#ifdef IK_INTERNAL
+
 #ifdef HAVE_LIBPNG
+
+#include "imagekit.h"
+#include "imagekit_functions.h"
 
 #include <png.h>
 
-static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
 
     /*
@@ -135,7 +137,7 @@ static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObjec
     return (PyObject *)self;
 }
 
-static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     static char *kwargs_names[] = {
                     "path",
@@ -339,18 +341,16 @@ static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObjec
 
 #else
 
-static PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     PyErr_SetString(PyExc_StandardError, "Library was not compiled with PNG support");
     return NULL;
 }
 
-static PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+API PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     PyErr_SetString(PyExc_StandardError, "Library was not compiled with PNG support");
     return NULL;
 }
 
 #endif /* HAVE_LIBPNG */
-#endif /* IK_INTERNAL */
-#endif /* IK_PNG_DOT_C */

@@ -1,8 +1,9 @@
-#ifndef IK_CS_CONVERT_DOT_C
-#ifdef IK_INTERNAL
+
+#include "imagekit.h"
+#include "imagekit_functions.h"
 
 /* Converts Mono ImageBuffer object to RGB */
-static int ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
+API int ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE *buffer;
@@ -90,7 +91,7 @@ static int ImageBuffer_mono_to_rgb(ImageBuffer *self, int colorspace_format, flo
 }
 
 /* Converts Mono ImageBuffer object to HSV */
-static int ImageBuffer_mono_to_hsv(ImageBuffer *self)
+API int ImageBuffer_mono_to_hsv(ImageBuffer *self)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE *buffer;
@@ -148,7 +149,7 @@ static int ImageBuffer_mono_to_hsv(ImageBuffer *self)
 }
 
 /* Converts HSV ImageBuffer object to RGB */
-static int ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
+API int ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, float scale_max)
 {
     REAL_TYPE hsv[4];
     REAL_TYPE rgb[4];
@@ -253,7 +254,7 @@ static int ImageBuffer_hsv_to_rgb(ImageBuffer *self, int colorspace_format, floa
 }
 
 /* Converts RGB ImageBuffer object to HSV */
-static int ImageBuffer_rgb_to_hsv(ImageBuffer *self)
+API int ImageBuffer_rgb_to_hsv(ImageBuffer *self)
 {
     REAL_TYPE scale_r, scale_g, scale_b, scale_a;
     REAL_TYPE rgb[4];
@@ -338,7 +339,7 @@ static int ImageBuffer_rgb_to_hsv(ImageBuffer *self)
 }
 
 /* Converts RGB ImageBuffer object to Mono */
-static int ImageBuffer_rgb_to_mono(ImageBuffer *self)
+API int ImageBuffer_rgb_to_mono(ImageBuffer *self)
 {
     REAL_TYPE *ptr_in, *ptr_out;
     REAL_TYPE value;
@@ -406,7 +407,7 @@ static int ImageBuffer_rgb_to_mono(ImageBuffer *self)
 }
 
 /* Converts HSV ImageBuffer object to Mono */
-static int ImageBuffer_hsv_to_mono(ImageBuffer *self)
+API int ImageBuffer_hsv_to_mono(ImageBuffer *self)
 {
     /* Convert to RGB, then convert RGB to Mono (more accurate than desaturating) */
     if (!ImageBuffer_hsv_to_rgb(self, CS_FMT(RGB24), (REAL_TYPE)-1.0)) {
@@ -415,6 +416,3 @@ static int ImageBuffer_hsv_to_mono(ImageBuffer *self)
     
     return ImageBuffer_rgb_to_mono(self);
 }
-
-#endif /* IK_INTERNAL */
-#endif /* IK_CS_CONVERT_DOT_C */
