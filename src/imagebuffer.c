@@ -664,3 +664,69 @@ API PyObject *ImageBuffer_get_box(ImageBuffer *self, PyObject *args)
     
     return tuple;
 }
+
+API PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
+{
+    size_t i, l, c;
+    REAL_TYPE *ptr;
+    REAL_TYPE value[4];
+    
+    PyObject *tuple, *tmp;
+    size_t tuple_size;
+    struct ListTypeMethods *lm;
+    
+    if (!PyArg_ParseTuple(args, "O", &tuple)) {
+        return NULL;
+    }
+    
+    Py_INCREF(tuple);
+    if (PyTuple_Check(tuple)) {
+        lm = &TUPLE_METHODS;
+    } else if (PyList_Check(tuple)) {
+        lm = &LIST_METHODS;
+    } else {
+        Py_DECREF(tuple);
+        PyErr_SetString(PyExc_ValueError, "Argument must be list or tuple");
+        return NULL;
+    }
+    
+    tuple_size = lm->Size(tuple);
+    if (tuple_size != self->channels) {
+        Py_DECREF(tuple);
+        PyErr_SetString(PyExc_ValueError,
+            "Argument must have the same number of elements as color channels");
+        return NULL;
+    }
+    
+    for (i = 0; i < self->channels; i++) {
+        tmp = lm->GetItem(tuple, i);
+        Py_INCREF(tmp);
+        
+        if (PyFloat_Check(tmp)) {
+            value[i] = (REAL_TYPE)PyFloat_AsDouble(tmp);
+        } else if (PyInt_Check(tmp)) {
+            value[i] = (REAL_TYPE)PyInt_AsLong(tmp);
+        } else if (PyLong_Check(tmp)) {
+            value[i] = (REAL_TYPE)PyLong_AsDouble(tmp);
+        } else {
+            Py_DECREF(tmp);
+            Py_DECREF(tuple);
+            PyErr_SetString(PyExc_ValueError, "Elements must be of type int or float");
+        }
+        
+        Py_DECREF(tmp);
+    }
+
+    ptr = (REAL_TYPE *)&(self->data[0]);
+    l = self->width * self->height;
+    
+    for (i = 0; i < l; i++) {
+        for (c = 0; c < self->channels; c++) {
+            *ptr++ = value[c];
+        }
+    }
+    
+    Py_DECREF(tuple);
+    Py_INCREF(Py_None);
+    return Py_None;
+}

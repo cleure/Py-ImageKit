@@ -19,6 +19,7 @@ TODO:
         - crop()
         - scale()
         - rotate()
+        - histogram()???
         - get_line(start_xy, end_xy, width, algorithm='bresenham')
         - get_rect()
         - get_circle()
@@ -177,6 +178,12 @@ static PyMethodDef ImageBuffer_methods[] = {
         "get_box",
          (void *)ImageBuffer_get_box,
          METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "fill_image",
+        (void *)ImageBuffer_fill_image,
+        METH_VARARGS,
         "DUMMY"
     },
     {
