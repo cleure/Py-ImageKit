@@ -16,7 +16,6 @@ TODO:
         - fill()
         - blit()
         - crop()
-        - scale()
         - rotate()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
@@ -93,26 +92,28 @@ static PyMethodDef ImageBuffer_methods[] = {
         "fromPNG",
          (void *)ImageBuffer_from_png,
          METH_STATIC | METH_KEYWORDS,
-        "DUMMY"
+        "Creates an ImageBuffer instance from a PNG file"
     },
     {
         "savePNG",
          (void *)ImageBuffer_save_png,
          METH_VARARGS | METH_KEYWORDS,
-        "DUMMY"
+        "Saves data contained in instance to PNG file"
     },
     {
         "fromJPEG",
          (void *)ImageBuffer_from_jpeg,
          METH_STATIC | METH_KEYWORDS,
-        "DUMMY"
+        "Creates an ImageBuffer instance from a JPEG file"
     },
     {
         "channel_ranges",
          (void *)ImageBuffer_channel_ranges,
          METH_VARARGS,
          "Get channel min/max ranges. "
-         "Returns: ((min), (max))"
+         "Returns: ((min), (max)). "
+         "min and max tuples contain the same number of elements "
+         "as self.channels"
     },
     {
         "get_histogram",
@@ -160,13 +161,15 @@ static PyMethodDef ImageBuffer_methods[] = {
         "hzline_in",
          (void *)ImageBuffer_hzline_in,
          METH_VARARGS,
-        "DUMMY"
+        "Copy horizontal line of pixels in. List must be in the "
+        "following format: [A, B, C, A, B, C] where A, B, and C "
+        "are the color channel values."
     },
     {
         "hzline_out",
          (void *)ImageBuffer_hzline_out,
          METH_VARARGS,
-        "DUMMY"
+        "Copy horizontal line out to list."
     },
     {
         "vtline_in",
@@ -226,6 +229,18 @@ static PyMethodDef ImageBuffer_methods[] = {
         "toMono",
          (void *)ImageBuffer_to_mono,
          METH_VARARGS | METH_KEYWORDS,
+        "DUMMY"
+    },
+    {
+        "scale_nearest",
+         (void *)ImageBuffer_scale_nearest,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    {
+        "scale_bilinear",
+         (void *)ImageBuffer_scale_bilinear,
+         METH_VARARGS,
         "DUMMY"
     },
     {NULL, NULL, 0, NULL}

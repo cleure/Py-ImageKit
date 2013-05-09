@@ -292,11 +292,6 @@ API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
                 sx = x - mid;
                 
                 while (sx <= ex) {
-                    /*
-                    for (c = 0; c < self->channels; c++) {
-                        result[c] += self->data[PIXEL_INDEX(self, (sx % self->width), (sy % self->height)) + c] * matrix[i];
-                    }*/
-                    
                     
                     if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
                         for (c = 0; c < self->channels; c++) {
