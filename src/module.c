@@ -10,7 +10,6 @@
 /*
 
 TODO:
-        - Ability to get channel min / max
         - Cleanup build system
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
         - in filter methods, ability to take x, y, width, height so boxes can be filtered.
@@ -19,7 +18,6 @@ TODO:
         - crop()
         - scale()
         - rotate()
-        - histogram()???
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
         - Cleanup error messages
