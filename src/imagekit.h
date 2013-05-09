@@ -29,6 +29,7 @@ typedef struct {
     
     REAL_TYPE scale;
     REAL_TYPE channel_scales[4];
+    
     int colorspace;
     int colorspace_format;
     

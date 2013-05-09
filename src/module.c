@@ -10,9 +10,9 @@
 /*
 
 TODO:
+        - Ability to get channel min / max
         - Cleanup build system
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
-        - savePNG() converts HSV to RGB, but doesn't convert it back.
         - in filter methods, ability to take x, y, width, height so boxes can be filtered.
         - fill()
         - blit()
@@ -20,12 +20,6 @@ TODO:
         - scale()
         - rotate()
         - histogram()???
-        - get_line(start_xy, end_xy, width, algorithm='bresenham')
-        - get_rect()
-        - get_circle()
-        - draw_line()
-        - draw_circle()
-        - draw_rect()
         - Fix loading grayscale images in ImageBuffer_from_png()
         - Proper exception hierarchy
         - Cleanup error messages
@@ -114,6 +108,20 @@ static PyMethodDef ImageBuffer_methods[] = {
          (void *)ImageBuffer_from_jpeg,
          METH_STATIC | METH_KEYWORDS,
         "DUMMY"
+    },
+    {
+        "channel_ranges",
+         (void *)ImageBuffer_channel_ranges,
+         METH_VARARGS,
+         "Get channel min/max ranges. "
+         "Returns: ((min), (max))"
+    },
+    {
+        "get_histogram",
+         (void *)ImageBuffer_get_histogram,
+         METH_VARARGS,
+         "Takes: int samples, int channel"
+         "Returns list of length samples"
     },
     {
         "get_pixel",

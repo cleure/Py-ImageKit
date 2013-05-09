@@ -179,6 +179,132 @@ API ImageBuffer *ImageBuffer_copy(ImageBuffer *self, PyObject *args)
     return new_self;
 }
 
+API PyObject *ImageBuffer_channel_ranges(ImageBuffer *self, PyObject *args)
+{
+    volatile int error = 0;
+    size_t i;
+    
+    PyObject *tuple;
+    PyObject *min;
+    PyObject *max;
+    PyObject *a, *b;
+    
+    double *csfmt;
+    
+    tuple = PyTuple_New(2);
+    if (!tuple) goto out1;
+    
+    min = PyTuple_New(self->channels);
+    if (!min) goto out2;
+    
+    max = PyTuple_New(self->channels);
+    if (!max) goto out3;
+    
+    csfmt = (double *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    for (i = 0; i < self->channels; i++) {
+        if (    !(a = PyFloat_FromDouble(csfmt[i])) ||
+                !(b = PyFloat_FromDouble(csfmt[i+4]))) {
+            goto out4;
+        }
+        
+        PyTuple_SetItem(min, i, a);
+        PyTuple_SetItem(max, i, b);
+    }
+    
+    PyTuple_SetItem(tuple, 0, min);
+    PyTuple_SetItem(tuple, 1, max);
+    
+    if (error) {
+        out4:   Py_DECREF(max);
+        out3:   Py_DECREF(min);
+        out2:   Py_DECREF(tuple);
+        out1:   return NULL;
+    }
+    
+    return tuple;
+}
+
+API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
+{
+    PyObject *list;
+    PyObject *tmp;
+    uint32_t *hist;
+    
+    double *csfmt;
+    int32_t channel, samples;
+    
+    REAL_TYPE scale;
+    REAL_TYPE *ptr;
+    size_t i, l, c;
+    
+    csfmt = (double *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    c = self->channels;
+    l = self->width * self->height;
+    
+    if (!PyArg_ParseTuple(args, "ii", &samples, &channel)) {
+        return NULL;
+    }
+    
+    /* Check Errors */
+    if (channel <= 0) {
+        PyErr_SetString(PyExc_ValueError, "channel must be greater than zero");
+        return NULL;
+    }
+    
+    if (samples <= 0) {
+        PyErr_SetString(PyExc_ValueError, "samples must be greater than zero");
+        return NULL;
+    }
+    
+    if (channel > self->channels) {
+        PyErr_SetString(PyExc_ValueError, "channel must not exceed self.channels");
+        return NULL;
+    }
+    
+    /* Calculate scale for array index */
+    if (self->scale <= 0) {
+        scale = (REAL_TYPE)samples / (REAL_TYPE)csfmt[channel + 4];
+    } else {
+        scale = (REAL_TYPE)samples / (REAL_TYPE)self->scale;
+    }
+    
+    /* Allocate */
+    list = PyList_New(samples);
+    if (!list) {
+        return NULL;
+    }
+    
+    hist = malloc(sizeof(*hist) * samples);
+    if (!hist) {
+        Py_DECREF(list);
+        return PyErr_NoMemory();
+    }
+    
+    memset(hist, 0, sizeof(*hist) * samples);
+    
+    /* Get histogram */
+    ptr = (REAL_TYPE *)&(self->data[channel]);
+    for (i = 0; i < l; i++) {
+        hist[((size_t) floor(*ptr * scale)) - 1] += 1;
+        ptr += c;
+    }
+    
+    /* Set output list */
+    for (i = 0; i < samples; i++) {
+        tmp = PyInt_FromLong(hist[i]);
+        if (!tmp) {
+            free(hist);
+            Py_DECREF(list);
+            return NULL;
+        }
+        
+        PyList_SetItem(list, i, tmp);
+    }
+    
+    free(hist);
+    return list;
+}
+
 API PyObject *ImageBuffer_get_pixel(ImageBuffer *self, PyObject *args)
 {
     PyObject *tuple;
