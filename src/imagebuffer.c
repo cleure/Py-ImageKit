@@ -263,9 +263,9 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
     
     /* Calculate scale for array index */
     if (self->scale <= 0) {
-        scale = (REAL_TYPE)samples / (REAL_TYPE)csfmt[channel + 4];
+        scale = (REAL_TYPE)(samples - 1) / (REAL_TYPE)csfmt[channel + 4];
     } else {
-        scale = (REAL_TYPE)samples / (REAL_TYPE)self->scale;
+        scale = (REAL_TYPE)(samples - 1) / (REAL_TYPE)self->scale;
     }
     
     /* Allocate */
@@ -284,8 +284,9 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
     
     /* Get histogram */
     ptr = (REAL_TYPE *)&(self->data[channel]);
+    
     for (i = 0; i < l; i++) {
-        hist[((size_t) floor(*ptr * scale)) - 1] += 1;
+        hist[(((size_t) floor(*ptr * scale)))] += 1;
         ptr += c;
     }
     
