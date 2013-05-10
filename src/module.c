@@ -10,9 +10,18 @@
 /*
 
 TODO:
-        - Cleanup build system
+        - Sorting networks for small N rank filters (median).
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
+        - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.
+        - scale_lanczos3()?
+        - save() / load(), wrapping around save*() / load*().
+        - Mode filter?
+        - De-blur?
+        - Cleanup build system.
         - in filter methods, ability to take x, y, width, height so boxes can be filtered.
+        - brightness / contrast
+        - gamma
+        - polynomial functions
         - fill()
         - blit()
         - crop()
@@ -208,8 +217,8 @@ static PyMethodDef ImageBuffer_methods[] = {
         "DUMMY"
     },
     {
-        "apply_median",
-         (void *)ImageBuffer_apply_median,
+        "apply_rankfilter",
+         (void *)ImageBuffer_apply_rankfilter,
          METH_VARARGS,
         "DUMMY"
     },

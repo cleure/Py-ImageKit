@@ -10,7 +10,7 @@
 #include "imagekit.h"
 #include "imagekit_functions.h"
 
-API PyObject *ImageBuffer_apply_median(ImageBuffer *self, PyObject *args)
+API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
 {
     double *csfmt;
     REAL_TYPE min[4];
