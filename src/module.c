@@ -11,6 +11,7 @@
 
 TODO:
         - Multi-threaded neighbor functions? Would increase performance of rank filters, and convolution kernels. Fairly easy to implement for a small, fixed size of threads.
+        - Look into OpenCL.
         - Split project into library and Python API Interface?
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
         - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.

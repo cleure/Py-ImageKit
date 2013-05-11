@@ -202,10 +202,8 @@ API PyObject *ImageBuffer_channel_ranges(ImageBuffer *self, PyObject *args)
     
     csfmt = (double *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
     for (i = 0; i < self->channels; i++) {
-        if (    !(a = PyFloat_FromDouble(csfmt[i])) ||
-                !(b = PyFloat_FromDouble(csfmt[i+4]))) {
-            goto out4;
-        }
+        if (!(a = PyFloat_FromDouble(csfmt[i]))) goto out4;
+        if (!(b = PyFloat_FromDouble(csfmt[i+4]))) goto out5;
         
         PyTuple_SetItem(min, i, a);
         PyTuple_SetItem(max, i, b);
@@ -215,6 +213,7 @@ API PyObject *ImageBuffer_channel_ranges(ImageBuffer *self, PyObject *args)
     PyTuple_SetItem(tuple, 1, max);
     
     if (error) {
+        out5:   Py_DECREF(a);
         out4:   Py_DECREF(max);
         out3:   Py_DECREF(min);
         out2:   Py_DECREF(tuple);
