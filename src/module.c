@@ -10,7 +10,8 @@
 /*
 
 TODO:
-        - Sorting networks for small N rank filters (median).
+        - Multi-threaded neighbor functions? Would increase performance of rank filters, and convolution kernels. Fairly easy to implement for a small, fixed size of threads.
+        - Split project into library and Python API Interface?
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
         - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.
         - scale_lanczos3()?
@@ -19,9 +20,10 @@ TODO:
         - De-blur?
         - Cleanup build system.
         - in filter methods, ability to take x, y, width, height so boxes can be filtered.
-        - brightness / contrast
-        - gamma
-        - polynomial functions
+        - Point Functions
+            - brightness / contrast
+            - gamma
+            - polynomial functions
         - fill()
         - blit()
         - crop()
