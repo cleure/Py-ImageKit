@@ -149,7 +149,7 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
 /**
 * Apply Convolution Kernel.
 *
-* Convolution filters can be used to perform basic filtering, such as moiton blur,
+* Convolution filters can be used to perform basic filtering, such as motion blur,
 * edge detection, and sharpen, and emboss.
 *
 * See this link for more information on CV Kernels:
