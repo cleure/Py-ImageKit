@@ -12,6 +12,9 @@
 
 API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
 {
+    Coordinates *coords = NULL;
+    size_t coords_length;
+
     double *csfmt;
     REAL_TYPE min[4];
     REAL_TYPE max[4];
@@ -27,9 +30,9 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
     float midpoint = 0.5f;
     
     int32_t x, y;
-    int32_t c, sx, sy, ex, ey, mid, i;
+    int32_t c, sx, sy, ex, ey, mid, i, i2;
 
-    if (!PyArg_ParseTuple(args, "i|f", &matrix_size, &midpoint)) {
+    if (!PyArg_ParseTuple(args, "i|f|O", &matrix_size, &midpoint, &coords)) {
         return NULL;
     }
     
@@ -84,57 +87,75 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
         matrix_mid = (matrix_elements) - self->channels;
     }
     
-    for (y = 0; y < self->height; y++) {
-        for (x = 0; x < self->width; x++) {
-            
-            /* Reset */
-            i = 0;
-            ex = x + mid;
-            ey = y + mid;
-            sy = y - mid;
-            
-            /* Get box */
-            while (sy <= ey) {
-                sx = x - mid;
-                
-                while (sx <= ex) {
-                
-                    /* Fill Matrix, checking bounds */
-                    if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
-                        for (c = 0; c < self->channels; c++) {
-                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, x, y) + c];
-                        }
-                    } else {
-                        for (c = 0; c < self->channels; c++) {
-                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, sx, sy) + c];
-                        }
-                    }
-                    
-                    i++;
-                    sx++;
-                }
-                
-                sy++;
-            }
-            
-            /* Output */
-            for (c = 0; c < self->channels; c++) {
-                matrix_ptr = (matrix+(c*matrix_elements));
-                
-                /* QuickSelect Algorithm */
-                matrix_ptr[0] =
-                    quick_select_rt(matrix_ptr, 0, matrix_elements-1, matrix_mid);
-                
-                /* Clamp */
-                if (matrix_ptr[0] > max[c]) {
-                    matrix_ptr[0] = max[c];
-                } else if (matrix_ptr[0] < min[c]) {
-                    matrix_ptr[0] = min[c];
-                }
-                
-                *ptr_out++ = matrix_ptr[0];
+    #define FUNCTION_BODY()\
+            /* Reset */\
+            i = 0;\
+            ex = x + mid;\
+            ey = y + mid;\
+            sy = y - mid;\
+            \
+            /* Get box */\
+            while (sy <= ey) {\
+                sx = x - mid;\
+                \
+                while (sx <= ex) {\
+                \
+                    /* Fill Matrix, checking bounds */\
+                    if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {\
+                        for (c = 0; c < self->channels; c++) {\
+                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, x, y) + c];\
+                        }\
+                    } else {\
+                        for (c = 0; c < self->channels; c++) {\
+                            matrix[matrix_elements*c+i] = self->data[PIXEL_INDEX(self, sx, sy) + c];\
+                        }\
+                    }\
+                    \
+                    i++;\
+                    sx++;\
+                }\
+                \
+                sy++;\
+            }\
+            \
+            /* Output */\
+            for (c = 0; c < self->channels; c++) {\
+                matrix_ptr = (matrix+(c*matrix_elements));\
+                \
+                /* QuickSelect Algorithm */\
+                matrix_ptr[0] =\
+                    quick_select_rt(matrix_ptr, 0, matrix_elements-1, matrix_mid);\
+                \
+                /* Clamp */\
+                if (matrix_ptr[0] > max[c]) {\
+                    matrix_ptr[0] = max[c];\
+                } else if (matrix_ptr[0] < min[c]) {\
+                    matrix_ptr[0] = min[c];\
+                }\
+                \
+                ptr_out[self->pitch * y + x * self->channels + c] = matrix_ptr[0];\
+            }\
+    
+    
+    if (coords == NULL) {
+        for (y = 0; y < self->height; y++) {
+            for (x = 0; x < self->width; x++) {
+                FUNCTION_BODY();
             }
         }
+    } else {
+        Py_INCREF(coords);
+        coords_length = coords->data_items / 2;
+        
+        memcpy(ptr_out, self->data, self->data_size);
+        for (i2 = 0; i2 < coords_length; i2++) {
+            x = coords->coords[i2*2];
+            y = coords->coords[i2*2+1];
+            
+            FUNCTION_BODY();
+        }
+        
+        Py_DECREF(coords);
     }
     
     /* Free old buffer, and link up new one */
@@ -144,6 +165,8 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
     free(matrix);
     Py_INCREF(Py_None);
     return Py_None;
+    
+    #undef FUNCTION_BODY
 }
 
 /**

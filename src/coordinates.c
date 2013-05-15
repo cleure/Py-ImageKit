@@ -109,8 +109,8 @@ API int Coordinates_init(Coordinates *self, PyObject *args, PyObject *kwargs)
                 return -1;
             }
             
-            self->coords[idx] = x;
-            self->coords[idx+1] = y;
+            self->coords[idx] = (uint32_t)x;
+            self->coords[idx+1] = (uint32_t)y;
         }
         
         Py_DECREF(list);
@@ -231,8 +231,8 @@ API PyObject *Coordinates_append(Coordinates *self, PyObject *args)
         return NULL;
     }
     
-    self->coords[self->data_items++] = x;
-    self->coords[self->data_items++] = y;
+    self->coords[self->data_items++] = (uint32_t)x;
+    self->coords[self->data_items++] = (uint32_t)y;
     
     Py_DECREF(a);
     Py_DECREF(b);
