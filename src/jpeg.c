@@ -159,19 +159,20 @@ API PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args, PyObject 
                     "colorspace_format",
                     NULL
     };
-        
-    FILE *fp;
+    
+    //FILE *fp;
     char *filepath;
     
+    /*
     REAL_TYPE *ptr_in;
     REAL_TYPE scales[4];
     size_t x, y, c;
     uint32_t depth;
-    double *format;
+    double *format;*/
     
     int colorspace_format = -1;
-    int _colorspace_format;
-    int value;
+    //int _colorspace_format;
+    //int value;
 
     if (!PyArg_ParseTupleAndKeywords(
             args,

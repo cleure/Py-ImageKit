@@ -12,7 +12,7 @@
 TODO:
         - Multi-threaded neighbor functions? Would increase performance of rank filters, and convolution kernels. Fairly easy to implement for a small, fixed size of threads.
         - Look into OpenCL.
-        - Split project into library and Python API Interface?
+        - Split project into library and Python Interface?
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
         - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.
         - scale_lanczos3()?
@@ -73,6 +73,32 @@ static struct ListTypeMethods TUPLE_METHODS = {
 static const char *documentation =
     "TODO: Description";
 
+/* Coordinates Type */
+static PyTypeObject Coordinates_Type = {
+    PyObject_HEAD_INIT(NULL)
+};
+
+static PyMemberDef Coordinates_members[] = {
+    {NULL}
+};
+
+static PyMethodDef Coordinates_methods[] = {
+    {
+        "to_list",
+         (void *)Coordinates_to_list,
+         METH_VARARGS,
+        ""
+    },
+    {
+        "append",
+         (void *)Coordinates_append,
+         METH_VARARGS,
+        ""
+    },
+    {NULL, NULL, 0, NULL}
+};
+
+/* ImageBuffer Type */
 static PyTypeObject ImageBuffer_Type = {
     PyObject_HEAD_INIT(NULL)
 };
@@ -296,10 +322,28 @@ static PyMethodDef moduleMethods[] = {
         if (PyType_Ready(&ImageBuffer_Type) < 0) {
             return;
         }
+        
+        /* Init Coordinates Type */
+        Coordinates_Type.tp_new = PyType_GenericNew;
+        Coordinates_Type.tp_name = "imagekit.Coordinates";
+        Coordinates_Type.tp_basicsize = sizeof(Coordinates);
+        Coordinates_Type.tp_getattro = PyObject_GenericGetAttr;
+        Coordinates_Type.tp_setattro = PyObject_GenericSetAttr;
+        Coordinates_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+        Coordinates_Type.tp_init = (initproc)Coordinates_init;
+        Coordinates_Type.tp_dealloc = (destructor)Coordinates_dealloc;
+        Coordinates_Type.tp_methods = Coordinates_methods;
+        Coordinates_Type.tp_members = Coordinates_members;
+        Coordinates_Type.tp_doc = "Doc string for class Bar in module Foo.";
+        
+        if (PyType_Ready(&Coordinates_Type) < 0) {
+            return;
+        }
 
         Py_INCREF(&ImageBuffer_Type);
         PyModule_AddObject(MODULE, "ImageBuffer", (PyObject*)&ImageBuffer_Type);
         PyModule_AddObject(MODULE, "Image", (PyObject*)&ImageBuffer_Type);
+        PyModule_AddObject(MODULE, "Coordinates", (PyObject*)&Coordinates_Type);
         
         /* Module Constants */
         PyModule_AddStringConstant(MODULE, "__version__", "2.0");

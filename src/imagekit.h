@@ -43,9 +43,20 @@ typedef struct {
     float *data;
 } ImageBuffer;
 
+typedef struct {
+    PyObject_HEAD
+
+    uint32_t max_width;
+    uint32_t max_height;
+    size_t data_size;
+    size_t data_items;
+    uint32_t *coords;
+} Coordinates;
+
 static PyObject *MODULE;
 static const char *documentation;
 static PyTypeObject ImageBuffer_Type;
+static PyTypeObject Coordinates_Type;
 
 /* Constants */
 static const int HAVE_PNG;
