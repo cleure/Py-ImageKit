@@ -289,8 +289,6 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         ptr += c;
     }
     
-    printf("A\n");
-    
     /* Set output list */
     for (i = 0; i < samples; i++) {
         tmp = PyInt_FromLong(hist[i]);
@@ -302,8 +300,6 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         
         PyList_SetItem(list, i, tmp);
     }
-    
-    printf("B\n");
     
     free(hist);
     return list;
