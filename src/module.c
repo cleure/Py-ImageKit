@@ -10,10 +10,13 @@
 /*
 
 TODO:
+        - Implement coordinate system for apply_matrix()
+        - apply_cvkernel() and apply_rankfilter() have common parts which could be consolidated.
         - Multi-threaded neighbor functions? Would increase performance of rank filters, and convolution kernels. Fairly easy to implement for a small, fixed size of threads.
         - Look into OpenCL.
         - Split project into library and Python Interface?
         - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
+        - Bilateral Filter
         - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.
         - scale_lanczos3()?
         - save() / load(), wrapping around save*() / load*().
@@ -242,13 +245,13 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "apply_cvkernel",
          (void *)ImageBuffer_apply_cvkernel,
-         METH_VARARGS,
+         METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
     {
         "apply_rankfilter",
          (void *)ImageBuffer_apply_rankfilter,
-         METH_VARARGS,
+         METH_VARARGS | METH_KEYWORDS,
         "DUMMY"
     },
     {

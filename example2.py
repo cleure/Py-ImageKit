@@ -37,6 +37,12 @@ def main():
     b = ImageBuffer.fromPNG('images/image01.png')
     output = scale_bilinear(b, b.width*2, b.height*2)
     output.savePNG('example2-output.png')
+    
+    print b.get_pixel(1, 0)
+    print b.get_pixel(2, 0)
+    print b.get_pixel(1, 1)
+    print b.get_pixel(2, 1)
+    print output.get_pixel(1, 0)
 
 if __name__ == '__main__':
     main()

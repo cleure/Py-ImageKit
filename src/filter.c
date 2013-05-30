@@ -10,8 +10,15 @@
 #include "imagekit.h"
 #include "imagekit_functions.h"
 
-API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
+API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
+    static char *kwargs_names[] = {
+        "size",
+        "rank",
+        "coordinates",
+        NULL
+    };
+
     Coordinates *coords = NULL;
     size_t coords_length;
 
@@ -32,7 +39,14 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
     int32_t x, y;
     int32_t c, sx, sy, ex, ey, mid, i, i2;
 
-    if (!PyArg_ParseTuple(args, "i|f|O", &matrix_size, &midpoint, &coords)) {
+    if (!PyArg_ParseTupleAndKeywords(
+                    args,
+                    kwargs,
+                    "i|f|O",
+                    kwargs_names,
+                    &matrix_size,
+                    &midpoint,
+                    &coords)) {
         return NULL;
     }
     
@@ -138,16 +152,19 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
     
     
     if (coords == NULL) {
+        /* Process whole image */
         for (y = 0; y < self->height; y++) {
             for (x = 0; x < self->width; x++) {
                 FUNCTION_BODY();
             }
         }
     } else {
+        /* Process specific coordinates only */
+        
         Py_INCREF(coords);
         coords_length = coords->data_items / 2;
-        
         memcpy(ptr_out, self->data, self->data_size);
+        
         for (i2 = 0; i2 < coords_length; i2++) {
             x = coords->coords[i2*2];
             y = coords->coords[i2*2+1];
@@ -178,8 +195,19 @@ API PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args)
 * See this link for more information on CV Kernels:
 * http://lodev.org/cgtutor/filtering.html
 **/
-API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
+API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
+    static char *kwargs_names[] = {
+        "matrix",
+        "factor",
+        "bias",
+        "coordinates",
+        NULL
+    };
+    
+    Coordinates *coords = NULL;
+    size_t coords_length;
+
     PyObject *tuple;
     PyObject *tmp;
     struct ListTypeMethods *lm;
@@ -201,8 +229,17 @@ API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
     
     int32_t x, y;
     int32_t c, sx, sy, ex, ey, mid, i;
+    size_t i2;
 
-    if (!PyArg_ParseTuple(args, "O|ff", &tuple, &factor, &bias)) {
+    if (!PyArg_ParseTupleAndKeywords(
+                    args,
+                    kwargs,
+                    "O|f|f|O",
+                    kwargs_names,
+                    &tuple,
+                    &factor,
+                    &bias,
+                    &coords)) {
         return NULL;
     }
     
@@ -293,60 +330,81 @@ API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
         return PyErr_NoMemory();
     }
     
+    #define FUNCTION_BODY()\
+            /* Reset */\
+            i = 0;\
+            ex = x + mid;\
+            ey = y + mid;\
+            sy = y - mid;\
+            \
+            result[0] = 0;\
+            result[1] = 0;\
+            result[2] = 0;\
+            result[3] = 0;\
+            \
+            /* Get box */\
+            while (sy <= ey) {\
+                sx = x - mid;\
+                \
+                while (sx <= ex) {\
+                    \
+                    if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {\
+                        for (c = 0; c < self->channels; c++) {\
+                            result[c] += self->data[PIXEL_INDEX(self, x, y) + c] * matrix[i];\
+                        }\
+                    } else {\
+                        for (c = 0; c < self->channels; c++) {\
+                            result[c] += self->data[PIXEL_INDEX(self, sx, sy) + c] * matrix[i];\
+                        }\
+                    }\
+                    \
+                    i++;\
+                    sx++;\
+                }\
+                \
+                sy++;\
+            }\
+            \
+            /* Output */\
+            for (c = 0; c < self->channels; c++) {\
+                result[c] = factor * result[c] + bias;\
+                \
+                /* Clamp */\
+                if (result[c] > max[c]) {\
+                    result[c] = max[c];\
+                } else if (result[c] < min[c]) {\
+                    result[c] = min[c];\
+                }\
+                \
+                ptr_out[self->pitch * y + x * self->channels + c] = result[c];\
+            }\
+    
+    
     ptr_out = output;
     mid = matrix_size / 2;
     
-    for (y = 0; y < self->height; y++) {
-        for (x = 0; x < self->width; x++) {
-            
-            /* Reset */
-            i = 0;
-            ex = x + mid;
-            ey = y + mid;
-            sy = y - mid;
-            
-            result[0] = 0;
-            result[1] = 0;
-            result[2] = 0;
-            result[3] = 0;
-            
-            /* Get box */
-            while (sy <= ey) {
-                sx = x - mid;
-                
-                while (sx <= ex) {
-                    
-                    if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
-                        for (c = 0; c < self->channels; c++) {
-                            result[c] += self->data[PIXEL_INDEX(self, x, y) + c] * matrix[i];
-                        }
-                    } else {
-                        for (c = 0; c < self->channels; c++) {
-                            result[c] += self->data[PIXEL_INDEX(self, sx, sy) + c] * matrix[i];
-                        }
-                    }
-                    
-                    i++;
-                    sx++;
-                }
-        
-                sy++;
-            }
-            
-            /* Output */
-            for (c = 0; c < self->channels; c++) {
-                result[c] = factor * result[c] + bias;
-                
-                /* Clamp */
-                if (result[c] > max[c]) {
-                    result[c] = max[c];
-                } else if (result[c] < min[c]) {
-                    result[c] = min[c];
-                }
-                
-                *ptr_out++ = result[c];
+    if (coords == NULL) {
+        /* Process whole image */
+        for (y = 0; y < self->height; y++) {
+            for (x = 0; x < self->width; x++) {
+                FUNCTION_BODY();
             }
         }
+    } else {
+        /* Process specific coordinates only */
+    
+        Py_INCREF(coords);
+        coords_length = coords->data_items / 2;
+        memcpy(ptr_out, self->data, self->data_size);
+        
+        for (i2 = 0; i2 < coords_length; i2++) {
+            x = coords->coords[i2*2];
+            y = coords->coords[i2*2+1];
+            
+            FUNCTION_BODY();
+        }
+        
+        Py_DECREF(coords);
     }
     
     /* Free old buffer, and link up new one */
@@ -359,6 +417,8 @@ API PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     
     return Py_None;
+    
+    #undef FUNCTION_BODY
 }
 
 /* Apply matrix to image channels */
@@ -453,12 +513,10 @@ API PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
                     value[a] = min[a];
                 }
             }
-        }
-        
-        for (a = 0; a < self->channels; a++) {
+            
             *(ptr+a) = value[a];
         }
-            
+        
         ptr += self->channels;
     }
     

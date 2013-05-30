@@ -24,6 +24,35 @@ struct ListTypeMethods {
     PyObject * (*GetSlice)(PyObject *, Py_ssize_t, Py_ssize_t);
 };
 
+/*
+
+typedef struct _Image {
+    REAL_TYPE scale;
+    REAL_TYPE channel_scales[4];
+    
+    int colorspace;
+    int colorspace_format;
+    
+    uint32_t width;
+    uint32_t height;
+    uint32_t channels;
+    uint32_t pitch;
+    size_t data_size;
+    size_t data_items;
+    
+    REAL_TYPE *data;
+};
+
+typedef struct _Coordinates {
+    uint32_t max_width;
+    uint32_t max_height;
+    size_t data_size;
+    size_t data_items;
+    uint32_t *coords;
+};
+
+*/
+
 typedef struct {
     PyObject_HEAD
     
@@ -40,7 +69,7 @@ typedef struct {
     size_t data_size;
     size_t data_items;
     
-    float *data;
+    REAL_TYPE *data;
 } ImageBuffer;
 
 typedef struct {

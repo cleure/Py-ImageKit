@@ -245,8 +245,8 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
     }
     
     /* Check Errors */
-    if (channel <= 0) {
-        PyErr_SetString(PyExc_ValueError, "channel must be greater than zero");
+    if (channel < 0) {
+        PyErr_SetString(PyExc_ValueError, "channel must be zero or greater");
         return NULL;
     }
     
@@ -255,7 +255,7 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
-    if (channel > self->channels) {
+    if (!(channel < self->channels)) {
         PyErr_SetString(PyExc_ValueError, "channel must not exceed self.channels");
         return NULL;
     }
@@ -273,7 +273,7 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
-    hist = malloc(sizeof(*hist) * samples);
+    hist = malloc(sizeof(*hist) * samples + 1);
     if (!hist) {
         Py_DECREF(list);
         return PyErr_NoMemory();
@@ -289,6 +289,8 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         ptr += c;
     }
     
+    printf("A\n");
+    
     /* Set output list */
     for (i = 0; i < samples; i++) {
         tmp = PyInt_FromLong(hist[i]);
@@ -300,6 +302,8 @@ API PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
         
         PyList_SetItem(list, i, tmp);
     }
+    
+    printf("B\n");
     
     free(hist);
     return list;
