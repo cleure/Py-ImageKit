@@ -1,9 +1,5 @@
 #pragma once
 
-/**
-* Error Routines. NOTE: These routines are NOT thread safe.
-**/
-
 #include "imagekit.h"
 
 /* Maximum Error Size */
