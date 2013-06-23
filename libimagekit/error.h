@@ -1,7 +1,5 @@
 #pragma once
 
-#include "imagekit.h"
-
 /* Maximum Error Size */
 #define IMAGEKIT_ERROR_MAX 4096
 
@@ -14,6 +12,7 @@ enum {
     ImageKit_OSError,
     ImageKit_IOError,
     ImageKit_MemoryError,
+    ImageKit_IndexError,
     IMAGEKIT_NUM_ERRORS
 } IMAGEKIT_ERROR;
 
@@ -41,3 +40,14 @@ ImageKit_LastError(int *code, char **msg);
 API
 int
 ImageKit_SetError(int code, const char *msg);
+
+/**
+* Get Error String, for specified code
+*
+* @param    int code
+* @param    char **msg
+* @return   void
+**/
+API
+void
+ImageKit_GetErrorString(int code, char **msg);

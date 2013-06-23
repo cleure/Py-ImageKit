@@ -1,31 +1,27 @@
 #pragma once
 
+/* Internal Header */
+
 #include <stdint.h>
+#include "types.h"
 
 #define API
 #define PRIVATE static
 
-#ifndef REAL
-    #define REAL float
-#endif
+#define CS_FMT(in)  COLORSPACE_FORMAT_##in
+#define CS(in)      COLORSPACE_##in
 
-#ifndef DIMENSION
-    #define DIMENSION uint32_t
-#endif
-
-#define CS_FMT(in) COLORSPACE_FORMAT_##in
-
-/* Constants */
-const int HAVE_PNG;
-const int HAVE_JPEG;
-const int HAVE_GIF;
+#define HAVE_PNG    1
+#define HAVE_JPEG   1
+#define HAVE_GIF    0
 
 static const enum {
-    COLORSPACE_MONO,
-    COLORSPACE_RGB,
-    COLORSPACE_HSV,
-    COLORSPACE_YIQ,
-    COLORSPACE_SIZE
+    CS(MONO),
+    CS(RGB),
+    CS(HSV),
+    CS(YIQ),
+    
+    CS(SIZE) // Size
 } _COLORSPACE;
 
 static const enum {
@@ -36,7 +32,13 @@ static const enum {
     CS_FMT(RGB48),
     CS_FMT(HSV_NATURAL),
     CS_FMT(MONO_NATURAL),
-    COLORSPACE_FORMAT_SIZE
+    
+    CS_FMT(SIZE) // Size
 } _COLORSPACE_FORMAT;
 
-const double COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
+extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
+
+#include "error.h"
+#include "imagebuffer.h"
+#include "png.h"
+#include "coordinates.h"

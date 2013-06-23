@@ -1,8 +1,6 @@
 #pragma once
 
-#include "imagekit.h"
-
-typedef struct ImageBuffer {
+typedef struct ImageKit_Image {
     REAL scale;
     REAL channel_scales[4];
     
@@ -17,11 +15,11 @@ typedef struct ImageBuffer {
     size_t data_items;
     
     REAL *data;
-};
+} ImageKit_Image;
 
 API
-ImageBuffer *
-ImageBuffer_New(
+ImageKit_Image *
+ImageKit_Image_New(
     DIMENSION width,
     DIMENSION height,
     DIMENSION channels,
@@ -32,14 +30,22 @@ ImageBuffer_New(
 
 API
 void
-ImageBuffer_Delete(
-    ImageBuffer *self
+ImageKit_Image_Delete(
+    ImageKit_Image *self
 );
 
 API
-ImageBuffer *
-ImageBuffer_Clone(
-    ImageBuffer *self
+ImageKit_Image *
+ImageKit_Image_Clone(
+    ImageKit_Image *self
+);
+
+API
+void
+ImageKit_Image_ChannelRanges(
+    ImageKit_Image *self,
+    REAL *min,
+    REAL *max
 );
 
 /*

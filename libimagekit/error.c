@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "error.h"
+
+#include "imagekit.h"
 
 PRIVATE int  INITIALIZED = 0;
 PRIVATE int  LAST_ERROR_CODE = 0;
@@ -15,7 +16,8 @@ const char *ImageKit_ErrorStrings[IMAGEKIT_NUM_ERRORS] = {
     "Type Error",
     "OS Error",
     "IO Error",
-    "Memory Error"
+    "Memory Error",
+    "Index Error"
 };
 
 PRIVATE void init()
@@ -75,4 +77,23 @@ ImageKit_SetError(int code, const char *msg)
     strcpy((char *)&LAST_ERROR, msg);
     
     return 1;
+}
+
+/**
+* Get Error String, for specified code
+*
+* @param    int code
+* @param    char **msg
+* @return   void
+**/
+API
+void
+ImageKit_GetErrorString(int code, char **msg)
+{
+    if (code < 0 || !(code < IMAGEKIT_NUM_ERRORS)) {
+        *msg = NULL;
+        return;
+    }
+    
+    *msg = (char *)(ImageKit_ErrorStrings[code]);
 }
