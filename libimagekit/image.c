@@ -248,6 +248,7 @@ enum {
 
 // /Users/cleure/Downloads/skyvase48.png
 
+/*
 #include <assert.h>
 
 int main(void)
@@ -255,16 +256,6 @@ int main(void)
     size_t i, l;
     ImageKit_Image *buf;
     REAL min[4], max[4];
-    
-    /*
-    buf = ImageKit_Image_New(320, 200, 3, -1, CS(RGB), CS_FMT(RGB24));
-    assert(buf != NULL);
-    
-    ImageKit_Image_ChannelRanges(buf, (REAL *)&min, (REAL *)&max);
-    
-    for (i = 0; i < 4; i++) {
-        printf("%f %f\n", min[i], max[i]);
-    }*/
     
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/skyvase48.png");
     assert(buf != NULL);
@@ -274,3 +265,4 @@ int main(void)
 
     return 0;
 }
+*/

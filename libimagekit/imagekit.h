@@ -39,6 +39,6 @@ static const enum {
 extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 
 #include "error.h"
-#include "imagebuffer.h"
+#include "image.h"
 #include "png.h"
-#include "coordinates.h"
+#include "coords.h"

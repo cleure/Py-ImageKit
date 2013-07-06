@@ -3,9 +3,11 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <stdint.h>
-#include <png.h>
-
 #include "imagekit.h"
+
+#ifdef HAVE_PNG
+
+#include <png.h>
 
 API
 ImageKit_Image *
@@ -312,3 +314,21 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
 
     return 1;
 }
+
+#else
+
+API
+ImageKit_Image *
+ImageKit_Image_FromPNG(const char *filepath) {
+    ImageKit_SetError(ImageKit_StandardError, "Not compiled with PNG support");
+    return NULL;
+}
+
+API
+int
+ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath) {
+    ImageKit_SetError(ImageKit_StandardError, "Not compiled with PNG support");
+    return -1;
+}
+
+#endif

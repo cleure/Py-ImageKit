@@ -6,25 +6,6 @@
 
 #include "imagekit.h"
 
-/*
-
-TODO: Work out symbol system
-
-ImageKit_Coordinates
-ImageKit_ImageBuffer
-
-shorthanded to:
-
-Coordinates
-ImageBuffer
-
-OR:
-
-IK_Coordinates
-IK_ImageBuffer
-
-*/
-
 API
 ImageKit_Coords *
 ImageKit_Coords_New(size_t items)
