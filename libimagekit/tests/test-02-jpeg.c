@@ -11,7 +11,7 @@ int main(void)
     int status;
     ImageKit_Image *buf;
     
-    buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/skyvase48.png", -1);
+    buf = ImageKit_Image_FromJPEG("/Users/cleure/Downloads/xVkohgV.jpg", -1);
     assert(buf != NULL);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");

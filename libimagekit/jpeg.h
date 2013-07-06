@@ -2,7 +2,7 @@
 
 API
 ImageKit_Image *
-ImageKit_Image_FromJPEG(const char *filepath);
+ImageKit_Image_FromJPEG(const char *filepath, REAL scale);
 
 API
 int

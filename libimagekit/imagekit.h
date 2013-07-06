@@ -41,4 +41,5 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "error.h"
 #include "image.h"
 #include "png.h"
+#include "jpeg.h"
 #include "coords.h"

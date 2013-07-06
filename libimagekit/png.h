@@ -2,7 +2,7 @@
 
 API
 ImageKit_Image *
-ImageKit_Image_FromPNG(const char *filepath);
+ImageKit_Image_FromPNG(const char *filepath, REAL scale);
 
 API
 int

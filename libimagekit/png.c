@@ -11,13 +11,12 @@
 
 API
 ImageKit_Image *
-ImageKit_Image_FromPNG(const char *filepath)
+ImageKit_Image_FromPNG(const char *filepath, REAL scale)
 {
     FILE *fp;
     ImageKit_Image *self;
     
     REAL *ptr_out;
-    REAL scale = -1;
     int colorspace = COLORSPACE_RGB;
     int colorspace_format = CS_FMT(RGB24);
     REAL *format;
@@ -73,7 +72,6 @@ ImageKit_Image_FromPNG(const char *filepath)
     switch (depth) {
         case 16:
             colorspace_format = CS_FMT(RGB48);
-            //colorspace_format = CS_FMT(RGB24);
             break;
         case 10:
             colorspace_format = CS_FMT(RGB30);
@@ -319,7 +317,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
 
 API
 ImageKit_Image *
-ImageKit_Image_FromPNG(const char *filepath) {
+ImageKit_Image_FromPNG(const char *filepath, REAL scale) {
     ImageKit_SetError(ImageKit_StandardError, "Not compiled with PNG support");
     return NULL;
 }
