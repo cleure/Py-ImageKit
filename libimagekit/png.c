@@ -17,7 +17,7 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
     ImageKit_Image *self;
     
     REAL *ptr_out;
-    int colorspace = COLORSPACE_RGB;
+    int colorspace = CS(RGB);
     int colorspace_format = CS_FMT(RGB24);
     REAL *format;
     
@@ -156,9 +156,9 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     int colorspace_format = -1;
     int value;
     
-    if (self->colorspace == COLORSPACE_HSV) {
+    if (self->colorspace == CS(HSV)) {
         // FIXME: HSV
-    } else if (self->colorspace == COLORSPACE_MONO) {
+    } else if (self->colorspace == CS(MONO)) {
         // FIXME: Greyscale
     } else {
         /* Get output scales */

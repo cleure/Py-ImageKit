@@ -48,7 +48,7 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     JSAMPARRAY buffer;
     
     REAL *ptr_out;
-    int colorspace = COLORSPACE_RGB;
+    int colorspace = CS(RGB);
     int colorspace_format = CS_FMT(RGB24);
     //REAL *format;
 

@@ -33,6 +33,7 @@ set(SOURCE_FILES
     image.c
     jpeg.c
     png.c
+    colorspace.c
 )
 
 add_library(libimagekit ${SOURCE_FILES})
@@ -42,3 +43,6 @@ target_link_libraries(tests/build/test-01-png libimagekit ${JPEG_LIBRARIES} ${PN
 
 add_executable(tests/build/test-02-jpeg tests/test-02-jpeg.c tests/framework.c)
 target_link_libraries(tests/build/test-02-jpeg libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
+
+add_executable(tests/build/test-03-hsv tests/test-03-hsv.c tests/framework.c)
+target_link_libraries(tests/build/test-03-hsv libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
