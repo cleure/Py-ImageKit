@@ -97,6 +97,7 @@ ImageKit_Coords_Append(ImageKit_Coords *self, DIMENSION x, DIMENSION y)
     return 1;
 }
 
+/*
 #include <assert.h>
 
 int main(void)
@@ -123,3 +124,4 @@ int main(void)
 
     return 0;
 }
+*/

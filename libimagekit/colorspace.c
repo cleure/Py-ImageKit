@@ -442,7 +442,6 @@ PRIVATE
 int
 dummy_to_dummy(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    printf("dummy_to_dummy\n");
     return 0;
 }
 
