@@ -17,8 +17,6 @@ int main(void)
     
     ImageKit_Image_SavePNG(buf, "output.png");
     ImageKit_Image_Delete(buf);
-    
-    assert(1 == 0);
 
     return 0;
 }
