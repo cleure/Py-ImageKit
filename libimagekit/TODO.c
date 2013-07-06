@@ -3,6 +3,7 @@
 
 TODO List
 
-- JPEG read / write support
+- JPEG write support
+- Ability to set bit depth in SavePNG()
 
 */

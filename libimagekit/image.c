@@ -206,7 +206,8 @@ ImageKit_Image_Clone(ImageKit_Image *self)
         return NULL;
     }
     
-    memcpy(clone->data, self->data, self->data_size);
+    //memcpy(clone->data, self->data, self->data_size);
+    memcpy(clone->data, self->data, clone->data_size);
     return clone;
 }
 

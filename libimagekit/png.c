@@ -157,16 +157,22 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     int value;
     
     if (self->colorspace == CS(HSV)) {
-        // FIXME: HSV
+        copy = ImageKit_Image_Clone(self);
+        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        
+        self = copy;
     } else if (self->colorspace == CS(MONO)) {
-        // FIXME: Greyscale
-    } else {
-        /* Get output scales */
-        scales[0] = (REAL)1.0 / self->channel_scales[0];
-        scales[1] = (REAL)1.0 / self->channel_scales[1];
-        scales[2] = (REAL)1.0 / self->channel_scales[2];
-        scales[3] = (REAL)1.0 / self->channel_scales[3];
+        copy = ImageKit_Image_Clone(self);
+        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        
+        self = copy;
     }
+    
+    /* Get output scales */
+    scales[0] = (REAL)1.0 / self->channel_scales[0];
+    scales[1] = (REAL)1.0 / self->channel_scales[1];
+    scales[2] = (REAL)1.0 / self->channel_scales[2];
+    scales[3] = (REAL)1.0 / self->channel_scales[3];
     
     if (colorspace_format < 0) {
         colorspace_format = self->colorspace_format;

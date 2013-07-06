@@ -97,8 +97,69 @@ PRIVATE
 int
 rgb_to_mono(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    printf("rgb_to_mono\n");
-    return -1;
+    REAL *ptr_in, *ptr_out;
+    REAL value;
+    REAL scales[4];
+    REAL *csfmt;
+    size_t i, l;
+    int out_channels = 1;
+    
+    colorspace_format = CS_FMT(MONO_NATURAL);
+    if (self->channels == 4) {
+        out_channels = 2;
+    }
+    
+    csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+
+    if (self->scale > 0.0) {
+        scales[0] = self->scale / (REAL)1.0;
+        scales[1] = self->scale / (REAL)1.0;
+        scales[2] = self->scale / (REAL)1.0;
+        scales[3] = self->scale / (REAL)1.0;
+    } else {
+        scales[0] = (REAL)1.0 / (REAL)csfmt[4];
+        scales[1] = (REAL)1.0 / (REAL)csfmt[5];
+        scales[2] = (REAL)1.0 / (REAL)csfmt[6];
+        scales[3] = (REAL)1.0 / (REAL)csfmt[7];
+    }
+    
+    l = self->width * self->height;
+    ptr_in = &(self->data[0]);
+    ptr_out = &(self->data[0]);
+
+    if (out_channels == 2) {
+        for (i = 0; i < l; i++) {
+            value =  ((*ptr_in) * scales[0]) * (REAL)0.299; ptr_in++;
+            value += ((*ptr_in) * scales[1]) * (REAL)0.587; ptr_in++;
+            value += ((*ptr_in) * scales[2]) * (REAL)0.114; ptr_in++;
+            
+            *ptr_out++ = value;
+            *ptr_out++ = (*ptr_in) * scales[3];
+            ptr_in++;
+        }
+    } else {
+        for (i = 0; i < l; i++) {
+            value =  ((*ptr_in) * scales[0]) * (REAL)0.299; ptr_in++;
+            value += ((*ptr_in) * scales[1]) * (REAL)0.587; ptr_in++;
+            value += ((*ptr_in) * scales[2]) * (REAL)0.114; ptr_in++;
+            
+            *ptr_out++ = value;
+        }
+    }
+    
+    self->colorspace = CS(MONO);
+    self->colorspace_format = colorspace_format;
+    self->channels = out_channels;
+    self->scale = (REAL)1.0;
+    self->pitch = self->width * self->channels;
+    self->data_items = self->width * self->height * self->channels;
+    
+    self->channel_scales[0] = (REAL)1.0;
+    self->channel_scales[1] = (REAL)1.0;
+    self->channel_scales[2] = (REAL)1.0;
+    self->channel_scales[3] = (REAL)1.0;
+
+    return 0;
 }
 
 /* HSV */
@@ -212,8 +273,16 @@ PRIVATE
 int
 hsv_to_mono(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    printf("hsv_to_mono\n");
-    return -1;
+    /* Convert to RGB, then convert RGB to Mono (more accurate than desaturating) */
+    if (ImageKit_Image_toRGB(self, -1, -1) < 0) {
+        return -1;
+    }
+    
+    if (ImageKit_Image_toMono(self) < 0) {
+        return -1;
+    }
+    
+    return 0;
 }
 
 /* Mono */
@@ -221,16 +290,152 @@ PRIVATE
 int
 mono_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    printf("mono_to_rgb\n");
-    return -1;
+    REAL *ptr_in, *ptr_out;
+    REAL *buffer;
+    REAL scale_r, scale_g, scale_b, scale_a;
+    REAL *csfmt;
+    
+    int channels_out = 3;
+    size_t i, l;
+    size_t bitems, bsize;
+    
+    if (colorspace_format < 0) {
+        colorspace_format = CS_FMT(RGB24);
+    }
+    
+    csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
+    
+    if (self->channels == 2) {
+        self->channels = 4;
+    }
+    
+    if (scale <= 0.0) {
+        scale_r = (REAL)csfmt[4];
+        scale_g = (REAL)csfmt[5];
+        scale_b = (REAL)csfmt[6];
+        scale_a = (REAL)csfmt[7];
+    } else {
+        scale_r = (REAL)scale;
+        scale_g = (REAL)scale;
+        scale_b = (REAL)scale;
+        scale_a = (REAL)scale;
+    }
+    
+    bitems = self->width * self->height * channels_out;
+    bsize = bitems * sizeof(REAL);
+    
+    buffer = malloc(bsize);
+    if (!buffer) {
+        ImageKit_SetError(ImageKit_MemoryError, "Unable to allocate memory");
+        return -1;
+    }
+    
+    l = self->width * self->height;
+    ptr_in = (REAL *)&(self->data[0]);
+    ptr_out = (REAL *)buffer;
+    
+    if (channels_out == 3) {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (*ptr_in) * scale_r;
+            *ptr_out++ = (*ptr_in) * scale_g;
+            *ptr_out++ = (*ptr_in) * scale_b;
+            ptr_in++;
+        }
+    } else {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (*ptr_in) * scale_r;
+            *ptr_out++ = (*ptr_in) * scale_g;
+            *ptr_out++ = (*ptr_in) * scale_b;
+            ptr_in++;
+            *ptr_out++ = (*ptr_in) * scale_a;
+            ptr_in++;
+        }
+    }
+
+    free(self->data);
+    self->data = buffer;
+    self->colorspace = CS(RGB);
+    self->colorspace_format = colorspace_format;
+    self->scale = scale;
+    self->channels = channels_out;
+    self->data_items = bitems;
+    self->data_size = bsize;
+    self->pitch = self->width * self->channels;
+    
+    if (scale <= 0.0) {
+        self->channel_scales[0] = (REAL)1.0;
+        self->channel_scales[1] = (REAL)1.0;
+        self->channel_scales[2] = (REAL)1.0;
+        self->channel_scales[3] = (REAL)1.0;
+    } else {
+        self->channel_scales[0] = (REAL)scale / (REAL)csfmt[4];
+        self->channel_scales[1] = (REAL)scale / (REAL)csfmt[5];
+        self->channel_scales[2] = (REAL)scale / (REAL)csfmt[6];
+        self->channel_scales[3] = (REAL)scale / (REAL)csfmt[7];
+    }
+
+    return 0;
 }
 
 PRIVATE
 int
 mono_to_hsv(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    printf("mono_to_hsv\n");
-    return -1;
+    REAL *ptr_in, *ptr_out;
+    REAL *buffer;
+    int channels_out = 3;
+    size_t i, l;
+    size_t bitems, bsize;
+    
+    bitems = self->width * self->height * channels_out;
+    bsize = bitems * sizeof(REAL);
+    
+    if (self->channels == 2) {
+        self->channels = 4;
+    }
+    
+    buffer = malloc(bsize);
+    if (!buffer) {
+        ImageKit_SetError(ImageKit_MemoryError, "Unable to allocate memory");
+        return -1;
+    }
+
+    l = self->width * self->height;
+    ptr_in = (REAL *)&(self->data[0]);
+    ptr_out = (REAL *)buffer;
+
+    if (channels_out == 3) {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (REAL)0.0;
+            *ptr_out++ = (REAL)0.0;
+            *ptr_out++ = *ptr_in++;
+        }
+    } else {
+        for (i = 0; i < l; i++) {
+            *ptr_out++ = (REAL)0.0;
+            *ptr_out++ = (REAL)0.0;
+            *ptr_out++ = *ptr_in++;
+            *ptr_out++ = *ptr_in++;
+        }
+    }
+    
+    free(self->data);
+    self->data = buffer;
+    self->colorspace = CS(HSV);
+    self->colorspace_format = CS_FMT(HSV_NATURAL);
+    self->channels = channels_out;
+    self->data_items = bitems;
+    self->data_size = bsize;
+    self->pitch = self->width * self->channels;
+    self->scale = -1;
+    
+    self->channel_scales[0] = (REAL)1.0;
+    self->channel_scales[1] = (REAL)1.0;
+    self->channel_scales[2] = (REAL)1.0;
+    self->channel_scales[3] = (REAL)1.0;
+
+    return 0;
+
 }
 
 PRIVATE
