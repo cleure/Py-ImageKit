@@ -307,6 +307,7 @@ mono_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
     
     if (self->channels == 2) {
         self->channels = 4;
+        channels_out = 4;
     }
     
     if (scale <= 0.0) {

@@ -49,3 +49,6 @@ target_link_libraries(tests/build/test-03-hsv libimagekit ${JPEG_LIBRARIES} ${PN
 
 add_executable(tests/build/test-04-mono tests/test-04-mono.c tests/framework.c)
 target_link_libraries(tests/build/test-04-mono libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
+
+add_executable(tests/build/test-05-jpeg tests/test-05-jpeg.c tests/framework.c)
+target_link_libraries(tests/build/test-05-jpeg libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
