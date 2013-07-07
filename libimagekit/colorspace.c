@@ -387,12 +387,12 @@ mono_to_hsv(ImageKit_Image *self, int colorspace_format, REAL scale)
     size_t i, l;
     size_t bitems, bsize;
     
+    if (self->channels == 2) {
+        channels_out = 4;
+    }
+    
     bitems = self->width * self->height * channels_out;
     bsize = bitems * sizeof(REAL);
-    
-    if (self->channels == 2) {
-        self->channels = 4;
-    }
     
     buffer = malloc(bsize);
     if (!buffer) {
