@@ -14,8 +14,6 @@ int main(void)
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
     
-    ImageKit_Image_toMono(buf);
-    
     status = ImageKit_Image_SaveJPEG(buf, "output.jpg", 95);
     assert(status == 0);
     

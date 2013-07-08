@@ -170,7 +170,7 @@ ImageKit_Image_SaveJPEG(ImageKit_Image *self, const char *filepath, int quality)
     }
     
     /* Convert to RGB, if not already */
-    if (self->colorspace != CS(RGB)) {
+    if (self->colorspace != CS(RGB) || self->colorspace_format != CS_FMT(RGB24)) {
         copy = ImageKit_Image_Clone(self);
         ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
         self = copy;
