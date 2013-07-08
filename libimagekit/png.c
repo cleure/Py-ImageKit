@@ -330,7 +330,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     ImageKit_Image_Delete(copy);
     fclose(fp);
 
-    return 1;
+    return 0;
 }
 
 #else

@@ -19,6 +19,6 @@ int main(void)
     assert(status != 0);
     
     ImageKit_Image_Delete(buf);
-
+    
     return 0;
 }

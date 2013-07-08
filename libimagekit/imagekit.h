@@ -11,9 +11,15 @@
 #define CS_FMT(in)  COLORSPACE_FORMAT_##in
 #define CS(in)      COLORSPACE_##in
 
+//
+// TODO: Remove these
+//
 #define HAVE_PNG    1
 #define HAVE_JPEG   1
 #define HAVE_GIF    0
+
+#define PIXEL_INDEX(self, x, y)\
+    (self->pitch * (y)) + ((x) * self->channels)
 
 static const enum {
     CS(MONO),
@@ -44,3 +50,4 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "jpeg.h"
 #include "coords.h"
 #include "colorspace.h"
+#include "fill.h"
