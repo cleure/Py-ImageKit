@@ -154,7 +154,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     int png_colortype = PNG_COLOR_TYPE_RGB;
     
     int colorspace_format = -1;
-    int value;
+    int32_t value;
     
     if (self->colorspace == CS(HSV)) {
         copy = ImageKit_Image_Clone(self);
@@ -162,6 +162,12 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
         
         self = copy;
     } else if (self->colorspace == CS(MONO)) {
+        copy = ImageKit_Image_Clone(self);
+        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        
+        self = copy;
+    } else if (     self->colorspace_format == CS_FMT(RGB15) ||
+                    self->colorspace_format == CS_FMT(RGB16)) {
         copy = ImageKit_Image_Clone(self);
         ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
         
@@ -187,11 +193,19 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
             break;
         case CS_FMT(RGB24):
         default:
+            colorspace_format = CS_FMT(RGB24);
             depth = 8;
             break;
     }
     
     format = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
+    
+    printf("%f %f %f %f\n",
+        scales[0],
+        scales[1],
+        scales[2],
+        scales[3]
+    );
 
     fp = fopen(filepath, "wb");
     if (!fp) {
@@ -255,7 +269,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
             row_pointers16[y] = png_malloc(png_ptr, sizeof(png_uint_16) * self->width * self->channels);
             for (x = 0; x < self->width; x++) {
                 for (c = 0; c < self->channels; c++) {
-                    value = (png_uint_16)((*ptr_in++) * scales[c]);
+                    value = (int32_t)((*ptr_in++) * scales[c]);
                 
                     if (value < format[c]) {
                         value = (int)(format[c]);
@@ -287,7 +301,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
             row_pointers[y] = png_malloc(png_ptr, sizeof(png_byte) * self->width * self->channels);
             for (x = 0; x < self->width; x++) {
                 for (c = 0; c < self->channels; c++) {
-                    value = (png_byte)((*ptr_in++) * scales[c]);
+                    value = (int32_t)((*ptr_in++) * scales[c]);
                 
                     if (value < format[c]) {
                         value = (int)(format[c]);

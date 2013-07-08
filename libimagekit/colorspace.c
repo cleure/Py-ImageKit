@@ -9,6 +9,80 @@
 /* RGB */
 PRIVATE
 int
+rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
+{
+    REAL scales[4];
+    REAL *fmt_in, *fmt_out;
+    REAL *ptr_in;
+    size_t i, l;
+    REAL value;
+    
+    if (colorspace_format < 0) {
+        colorspace_format = CS_FMT(RGB24);
+    }
+    
+    fmt_in = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    fmt_out = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
+    
+    if (scale > 0) {
+        if (self->scale > 0) {
+            scales[0] = scale / self->scale;
+            scales[1] = scale / self->scale;
+            scales[2] = scale / self->scale;
+            scales[3] = scale / self->scale;
+        } else {
+            scales[0] = scale / fmt_in[4];
+            scales[1] = scale / fmt_in[5];
+            scales[2] = scale / fmt_in[6];
+            scales[3] = scale / fmt_in[7];
+        }
+    } else {
+        if (self->scale > 0) {
+            scales[0] = fmt_out[4] / self->scale;
+            scales[1] = fmt_out[5] / self->scale;
+            scales[2] = fmt_out[6] / self->scale;
+            scales[3] = fmt_out[7] / self->scale;
+        } else {
+            scales[0] = fmt_out[4] / fmt_in[4];
+            scales[1] = fmt_out[5] / fmt_in[5];
+            scales[2] = fmt_out[6] / fmt_in[6];
+            scales[3] = fmt_out[7] / fmt_in[7];
+        }
+    }
+    
+    ptr_in = &self->data[0];
+    l = self->width * self->height * self->channels;
+    
+    for (i = 0; i < l; i++) {
+        value = (*ptr_in) * scales[i % self->channels];
+        *ptr_in++ = value;
+    }
+    
+    self->scale = scale;
+    self->colorspace = CS(RGB);
+    self->colorspace_format = colorspace_format;
+    
+    if (scale <= 0.0) {
+        self->channel_scales[0] = (REAL)1.0;
+        self->channel_scales[1] = (REAL)1.0;
+        self->channel_scales[2] = (REAL)1.0;
+        self->channel_scales[3] = (REAL)1.0;
+    } else {
+        self->channel_scales[0] =
+            self->scale / (REAL)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][4];
+        self->channel_scales[1] =
+            self->scale / (REAL)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][5];
+        self->channel_scales[2] =
+            self->scale / (REAL)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][6];
+        self->channel_scales[3] =
+            self->scale / (REAL)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][7];
+    }
+    
+    return 0;
+}
+
+PRIVATE
+int
 rgb_to_hsv(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
     REAL scale_r, scale_g, scale_b, scale_a;
@@ -456,7 +530,8 @@ PRIVATE int (*fn_table [CS(SIZE)] [CS(SIZE)]) (ImageKit_Image *, int, REAL) = {
     /* RGB */
     {
         &rgb_to_mono,
-        &dummy_to_dummy,
+        &rgb_to_rgb,
+        //&dummy_to_dummy,
         &rgb_to_hsv,
         &dummy_to_dummy
     },
