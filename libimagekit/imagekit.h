@@ -50,4 +50,5 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "jpeg.h"
 #include "coords.h"
 #include "colorspace.h"
+#include "histogram.h"
 #include "fill.h"

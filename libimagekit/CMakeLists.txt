@@ -34,6 +34,7 @@ set(SOURCE_FILES
     jpeg.c
     png.c
     colorspace.c
+    histogram.c
     fill.c
 )
 
@@ -56,3 +57,6 @@ target_link_libraries(tests/build/test-05-jpeg libimagekit ${JPEG_LIBRARIES} ${P
 
 add_executable(tests/build/test-06-fill tests/test-06-fill.c tests/framework.c)
 target_link_libraries(tests/build/test-06-fill libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
+
+add_executable(tests/build/test-07-histogram tests/test-07-histogram.c tests/framework.c)
+target_link_libraries(tests/build/test-07-histogram libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
