@@ -3,8 +3,7 @@
 
 TODO List
 
-- Histogram
-- Blit / Transpose
+- Blit
 - Get box?
 - JPEG Grayscale support
 - Non-RGB colorspaces for JPEG
