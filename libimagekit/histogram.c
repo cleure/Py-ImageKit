@@ -89,6 +89,8 @@ API
 void
 ImageKit_Histogram_Delete(ImageKit_Histogram *self)
 {
-    free(self->a);
-    free(self);
+    if (self) {
+        free(self->a);
+        free(self);
+    }
 }
