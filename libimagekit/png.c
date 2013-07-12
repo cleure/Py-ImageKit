@@ -199,13 +199,6 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     }
     
     format = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
-    
-    printf("%f %f %f %f\n",
-        scales[0],
-        scales[1],
-        scales[2],
-        scales[3]
-    );
 
     fp = fopen(filepath, "wb");
     if (!fp) {

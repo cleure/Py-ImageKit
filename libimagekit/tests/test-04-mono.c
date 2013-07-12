@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #include "imagekit.h"
+#include "tests/framework.h"
 
 int main(void)
 {

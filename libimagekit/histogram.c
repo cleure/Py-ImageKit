@@ -45,7 +45,7 @@ API
 ImageKit_Histogram *
 ImageKit_Histogram_FromImage(ImageKit_Image *self, uint16_t samples)
 {
-    size_t i, l, c, mem_size, idx;
+    size_t i, l, c, idx;
     ImageKit_Histogram *hist;
     REAL *ptr_in;
     REAL *csfmt;
