@@ -1,5 +1,6 @@
 #pragma once
 
+/* Converts between colorspace formats, but does NOT convert colorspaces! */
 API
 int
 ImageKit_Image_BlitRect(

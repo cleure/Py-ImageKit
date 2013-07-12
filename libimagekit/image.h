@@ -48,6 +48,14 @@ ImageKit_Image_ChannelRanges(
     REAL *max
 );
 
+API
+int
+ImageKit_Image_GetConversionScales(
+    ImageKit_Image *out,
+    ImageKit_Image *in,
+    REAL *scales
+);
+
 /*
 
 ImageBuffer_New()

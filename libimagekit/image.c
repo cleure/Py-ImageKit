@@ -229,3 +229,20 @@ ImageKit_Image_ChannelRanges(ImageKit_Image *self, REAL *min, REAL *max)
         max[i] = 0.0;
     }
 }
+
+API
+int
+ImageKit_Image_GetConversionScales(
+    ImageKit_Image *out,
+    ImageKit_Image *in,
+    REAL *scales
+)
+{
+    return ImageKit_GetConversionScales(
+        out->scale,
+        out->colorspace_format,
+        in->scale,
+        in->colorspace_format,
+        scales
+    );
+}

@@ -2,6 +2,15 @@
 
 API
 int
+ImageKit_GetConversionScales(
+    REAL scale_out,
+    int colorspace_format_out,
+    REAL scale_in,
+    int colorspace_format_in,
+    REAL *scales);
+
+API
+int
 ImageKit_Image_toHSV(ImageKit_Image *self);
 
 API

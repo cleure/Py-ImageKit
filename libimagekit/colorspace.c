@@ -12,7 +12,6 @@ int
 rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
     REAL scales[4];
-    REAL *fmt_in, *fmt_out;
     REAL *ptr_in;
     size_t i, l;
     REAL value;
@@ -20,6 +19,17 @@ rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
     if (colorspace_format < 0) {
         colorspace_format = CS_FMT(RGB24);
     }
+    
+    ImageKit_GetConversionScales(
+        scale,
+        colorspace_format,
+        self->scale,
+        self->colorspace_format,
+        (REAL *)&scales
+    );
+    
+    /*
+    REAL *fmt_in, *fmt_out;
     
     fmt_in = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
     fmt_out = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
@@ -49,6 +59,7 @@ rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
             scales[3] = fmt_out[7] / fmt_in[7];
         }
     }
+    */
     
     ptr_in = &self->data[0];
     l = self->width * self->height * self->channels;
@@ -550,6 +561,49 @@ PRIVATE int (*fn_table [CS(SIZE)] [CS(SIZE)]) (ImageKit_Image *, int, REAL) = {
         &dummy_to_dummy
     },
 };
+
+API
+int
+ImageKit_GetConversionScales(
+    REAL scale_out,
+    int colorspace_format_out,
+    REAL scale_in,
+    int colorspace_format_in,
+    REAL *scales)
+{
+    REAL *fmt_in, *fmt_out;
+    
+    fmt_in = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format_in];
+    fmt_out = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format_out];
+
+    if (scale_out > 0) {
+        if (scale_in > 0) {
+            scales[0] = scale_out / scale_in;
+            scales[1] = scale_out / scale_in;
+            scales[2] = scale_out / scale_in;
+            scales[3] = scale_out / scale_in;
+        } else {
+            scales[0] = scale_out / fmt_in[4];
+            scales[1] = scale_out / fmt_in[5];
+            scales[2] = scale_out / fmt_in[6];
+            scales[3] = scale_out / fmt_in[7];
+        }
+    } else {
+        if (scale_in > 0) {
+            scales[0] = fmt_out[4] / scale_in;
+            scales[1] = fmt_out[5] / scale_in;
+            scales[2] = fmt_out[6] / scale_in;
+            scales[3] = fmt_out[7] / scale_in;
+        } else {
+            scales[0] = fmt_out[4] / fmt_in[4];
+            scales[1] = fmt_out[5] / fmt_in[5];
+            scales[2] = fmt_out[6] / fmt_in[6];
+            scales[3] = fmt_out[7] / fmt_in[7];
+        }
+    }
+    
+    return 0;
+}
 
 API
 int
