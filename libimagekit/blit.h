@@ -10,10 +10,12 @@ ImageKit_Image_BlitRect(
     ImageKit_Rect *src_rect
 );
 
-/*
 API
-int ImageKit_Image_BlitCoords(
+int
+ImageKit_Image_BlitCoords(
     ImageKit_Image *dst,
-    ImageKit_Image *src
+    DIMENSION dst_x,
+    DIMENSION dst_y,
+    ImageKit_Image *src,
+    ImageKit_Coords *src_coords
 );
-*/
