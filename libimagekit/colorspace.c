@@ -28,39 +28,6 @@ rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
         (REAL *)&scales
     );
     
-    /*
-    REAL *fmt_in, *fmt_out;
-    
-    fmt_in = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
-    fmt_out = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
-    
-    if (scale > 0) {
-        if (self->scale > 0) {
-            scales[0] = scale / self->scale;
-            scales[1] = scale / self->scale;
-            scales[2] = scale / self->scale;
-            scales[3] = scale / self->scale;
-        } else {
-            scales[0] = scale / fmt_in[4];
-            scales[1] = scale / fmt_in[5];
-            scales[2] = scale / fmt_in[6];
-            scales[3] = scale / fmt_in[7];
-        }
-    } else {
-        if (self->scale > 0) {
-            scales[0] = fmt_out[4] / self->scale;
-            scales[1] = fmt_out[5] / self->scale;
-            scales[2] = fmt_out[6] / self->scale;
-            scales[3] = fmt_out[7] / self->scale;
-        } else {
-            scales[0] = fmt_out[4] / fmt_in[4];
-            scales[1] = fmt_out[5] / fmt_in[5];
-            scales[2] = fmt_out[6] / fmt_in[6];
-            scales[3] = fmt_out[7] / fmt_in[7];
-        }
-    }
-    */
-    
     ptr_in = &self->data[0];
     l = self->width * self->height * self->channels;
     

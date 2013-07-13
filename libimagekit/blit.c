@@ -83,8 +83,6 @@ ImageKit_Image_BlitRect(
     return 0;
 }
 
-//(X ^ (X >> 31)) - (X >> 31)
-
 API
 int
 ImageKit_Image_BlitCoords(

@@ -3,7 +3,7 @@
 
 TODO List
 
-- Blit
+- GIF support
 - Get box?
 - JPEG Grayscale support
 - Non-RGB colorspaces for JPEG
