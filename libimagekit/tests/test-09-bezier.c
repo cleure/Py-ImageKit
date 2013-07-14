@@ -26,7 +26,9 @@ int main(void)
 {
     int status, i;
     ImageKit_Image *buf;
+    
     REAL fill[4] = {0.0, 0.0, 0.0, 255.0};
+    int samples = 16;
     uint32_t xy[] = {
         40, 50,
         50, 60,
@@ -41,7 +43,11 @@ int main(void)
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
     
-    bezier = ImageKit_Bezier_New(100, (uint32_t *)&xy, sizeof(xy)/sizeof(xy[0])/2);
+    bezier = ImageKit_Bezier_New(samples, (uint32_t *)&xy, sizeof(xy)/sizeof(xy[0])/2);
+    assert(bezier != NULL);
+    assert(bezier->coords != NULL);
+    assert(bezier->data_items == samples);
+    
     coords = ImageKit_Coords_New(bezier->data_items);
     
     for (i = 0; i < bezier->data_items; i++) {
@@ -49,22 +55,6 @@ int main(void)
     }
     
     ImageKit_Image_FillCoords(buf, coords, (REAL *)&fill);
-    
-        /*    
-    ImageKit_Image_Fill(out, (REAL *)&fill);
-    
-    status = ImageKit_Image_BlitRect(out, &dst_rect, buf, &src_rect);
-    assert(status == 0);
-    
-    status = ImageKit_Image_BlitCoords(out, 96, 64, buf, coords);
-    assert(status == 0);
-    
-    status = ImageKit_Image_SavePNG(out, "output.png");
-    assert(status == 0);
-    
-    ImageKit_Coords_Delete(coords);
-    ImageKit_Image_Delete(out);
-    */
     
     status = ImageKit_Image_SavePNG(buf, "output.png");
     assert(status == 0);
