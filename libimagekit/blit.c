@@ -100,6 +100,11 @@ ImageKit_Image_BlitCoords(
     int32_t sx, sy;
     int32_t dst_coords[4];
     
+    if (dst->colorspace != src->colorspace) {
+        ImageKit_SetError(ImageKit_TypeError, "Colorspaces must be the same");
+        return -1;
+    }
+    
     channels = (dst->channels < src->channels) ? dst->channels : src->channels;
     
     ptr_in = src_coords->coords;

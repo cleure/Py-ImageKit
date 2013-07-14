@@ -37,6 +37,7 @@ set(SOURCE_FILES
     histogram.c
     fill.c
     blit.c
+    bezier.c
 )
 
 add_library(libimagekit ${SOURCE_FILES})
@@ -64,3 +65,6 @@ target_link_libraries(tests/build/test-07-histogram libimagekit ${JPEG_LIBRARIES
 
 add_executable(tests/build/test-08-blit tests/test-08-blit.c tests/framework.c)
 target_link_libraries(tests/build/test-08-blit libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
+
+add_executable(tests/build/test-09-bezier tests/test-09-bezier.c tests/framework.c)
+target_link_libraries(tests/build/test-09-bezier libimagekit ${JPEG_LIBRARIES} ${PNG_LIBRARIES})

@@ -54,3 +54,4 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "histogram.h"
 #include "fill.h"
 #include "blit.h"
+#include "bezier.h"
