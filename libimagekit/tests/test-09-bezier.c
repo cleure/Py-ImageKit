@@ -7,43 +7,27 @@
 #include "imagekit.h"
 #include "tests/framework.h"
 
-/*
-typedef struct ImageKit_Bezier {
-    DIMENSION data_items;
-    REAL *coords;
-} ImageKit_Bezier;
-
-API
-ImageKit_Bezier *
-ImageKit_Bezier_New(uint32_t samples, uint32_t *xy, size_t xy_items);
-
-API
-void
-ImageKit_Bezier_Delete(ImageKit_Bezier *self);
-*/
-
 int main(void)
 {
     int status, i;
     ImageKit_Image *buf;
     
     REAL fill[4] = {0.0, 0.0, 0.0, 255.0};
-    int samples = 16;
+    int samples = 400;
     uint32_t xy[] = {
-        40, 50,
-        50, 60,
-        60, 0,
-        70, 60,
-        80, 50,
+        0, 0,
+        127, 0,
+        140, 223,
+        255, 223,
     };
     
-    ImageKit_Bezier *bezier;
+    ImageKit_Curves *bezier;
     ImageKit_Coords *coords;
     
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
     
-    bezier = ImageKit_Bezier_New(samples, (uint32_t *)&xy, sizeof(xy)/sizeof(xy[0])/2);
+    bezier = ImageKit_Curves_FromBezier(samples, (uint32_t *)&xy, sizeof(xy)/sizeof(xy[0])/2);
     assert(bezier != NULL);
     assert(bezier->coords != NULL);
     assert(bezier->data_items == samples);
@@ -60,7 +44,7 @@ int main(void)
     assert(status == 0);
     
     ImageKit_Coords_Delete(coords);
-    ImageKit_Bezier_Delete(bezier);
+    ImageKit_Curves_Delete(bezier);
     ImageKit_Image_Delete(buf);
 
     return 0;

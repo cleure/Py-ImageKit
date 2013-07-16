@@ -44,10 +44,12 @@ PascalsTriangle_GetRow(uint32_t n)
 }
 
 API
-ImageKit_Bezier *
-ImageKit_Bezier_New(uint32_t samples, uint32_t *xy, size_t xy_items)
+ImageKit_Curves *
+ImageKit_Curves_FromBezier(uint32_t samples, uint32_t *xy, size_t xy_items)
 {
-    ImageKit_Bezier *bezier = NULL;
+    /* Uses Pascals Triangle for close approximation */
+
+    ImageKit_Curves *bezier = NULL;
     REAL *ptr_out;
     REAL t, coef, sumx, sumy;
     uint32_t *pascal_row;
@@ -98,7 +100,7 @@ ImageKit_Bezier_New(uint32_t samples, uint32_t *xy, size_t xy_items)
 
 API
 void
-ImageKit_Bezier_Delete(ImageKit_Bezier *self)
+ImageKit_Curves_Delete(ImageKit_Curves *self)
 {
     if (self) {
         free(self->coords);

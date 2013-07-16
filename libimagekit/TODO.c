@@ -3,6 +3,12 @@
 
 TODO List
 
+- Bezier point function filter
+- B-Spline point function filter
+    - Generate lookup table based on output
+        - X coordinate is the input (key)
+        - Y coordinate is the output (value)
+    - Apply point function using lookup table
 - GIF support
 - Get box?
 - JPEG Grayscale support

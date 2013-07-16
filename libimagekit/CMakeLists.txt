@@ -37,7 +37,7 @@ set(SOURCE_FILES
     histogram.c
     fill.c
     blit.c
-    bezier.c
+    curves.c
 )
 
 add_library(libimagekit ${SOURCE_FILES})
