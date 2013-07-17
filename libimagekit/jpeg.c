@@ -53,7 +53,8 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     //REAL *format;
 
     size_t x;
-    uint32_t width, height, channels, depth;
+    uint32_t width, height, channels;
+    //uint32_t depth;
     
     fp = fopen(filepath, "rb");
     if (!fp) {
@@ -90,14 +91,14 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     
     width = cinfo.output_width;
     height = cinfo.output_height;
-    depth = 8;
+    //depth = 8;
     channels = cinfo.output_components;
     
     /* Create image instance */
     self = ImageKit_Image_New(
-                    cinfo.image_width,
-                    cinfo.image_height,
-                    cinfo.output_components,
+                    width,
+                    height,
+                    channels,
                     scale,
                     colorspace,
                     colorspace_format

@@ -19,7 +19,6 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
     REAL *ptr_out;
     int colorspace = CS(RGB);
     int colorspace_format = CS_FMT(RGB24);
-    REAL *format;
     
     size_t x, y, c;
     DIMENSION width, height, channels, depth;
@@ -81,8 +80,6 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
             colorspace_format = CS_FMT(RGB24);
             break;
     }
-    
-    format = (REAL *)&COLORSPACE_FORMAT_MINMAX[colorspace_format];
     
     self = ImageKit_Image_New(
         width,
