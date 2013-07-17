@@ -47,31 +47,32 @@ configure_file (
     "${PROJECT_BINARY_DIR}/config.h"
 )
 
-add_library(libimagekit ${SOURCE_FILES})
+add_library(imagekit ${SOURCE_FILES})
 
 add_executable(tests/build/test-01-png tests/test-01-png.c tests/framework.c)
-target_link_libraries(tests/build/test-01-png libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-01-png imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-02-jpeg tests/test-02-jpeg.c tests/framework.c)
-target_link_libraries(tests/build/test-02-jpeg libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-02-jpeg imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-03-hsv tests/test-03-hsv.c tests/framework.c)
-target_link_libraries(tests/build/test-03-hsv libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-03-hsv imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-04-mono tests/test-04-mono.c tests/framework.c)
-target_link_libraries(tests/build/test-04-mono libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-04-mono imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-05-jpeg tests/test-05-jpeg.c tests/framework.c)
-target_link_libraries(tests/build/test-05-jpeg libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-05-jpeg imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-06-fill tests/test-06-fill.c tests/framework.c)
-target_link_libraries(tests/build/test-06-fill libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-06-fill imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-07-histogram tests/test-07-histogram.c tests/framework.c)
-target_link_libraries(tests/build/test-07-histogram libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-07-histogram imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-08-blit tests/test-08-blit.c tests/framework.c)
-target_link_libraries(tests/build/test-08-blit libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-08-blit imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-09-bezier tests/test-09-bezier.c tests/framework.c)
-target_link_libraries(tests/build/test-09-bezier libimagekit ${LINK_LIBRARIES})
+target_link_libraries(tests/build/test-09-bezier imagekit ${LINK_LIBRARIES})
+
