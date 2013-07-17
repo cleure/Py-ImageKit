@@ -11,8 +11,8 @@ set(SOURCE_FILES
     coords.c
     error.c
     image.c
-    jpeg.c
-    png.c
+    io_jpeg.c
+    io_png.c
     colorspace.c
     histogram.c
     fill.c
@@ -20,7 +20,8 @@ set(SOURCE_FILES
     curves.c
 )
 
-add_subdirectory(tests)
+#add_subdirectory(tests)
+include_directories(${PROJECT_SOURCE_DIR})
 
 # JPEG
 find_package (JPEG)
@@ -48,3 +49,29 @@ configure_file (
 
 add_library(libimagekit ${SOURCE_FILES})
 
+add_executable(tests/build/test-01-png tests/test-01-png.c tests/framework.c)
+target_link_libraries(tests/build/test-01-png libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-02-jpeg tests/test-02-jpeg.c tests/framework.c)
+target_link_libraries(tests/build/test-02-jpeg libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-03-hsv tests/test-03-hsv.c tests/framework.c)
+target_link_libraries(tests/build/test-03-hsv libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-04-mono tests/test-04-mono.c tests/framework.c)
+target_link_libraries(tests/build/test-04-mono libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-05-jpeg tests/test-05-jpeg.c tests/framework.c)
+target_link_libraries(tests/build/test-05-jpeg libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-06-fill tests/test-06-fill.c tests/framework.c)
+target_link_libraries(tests/build/test-06-fill libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-07-histogram tests/test-07-histogram.c tests/framework.c)
+target_link_libraries(tests/build/test-07-histogram libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-08-blit tests/test-08-blit.c tests/framework.c)
+target_link_libraries(tests/build/test-08-blit libimagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-09-bezier tests/test-09-bezier.c tests/framework.c)
+target_link_libraries(tests/build/test-09-bezier libimagekit ${LINK_LIBRARIES})
