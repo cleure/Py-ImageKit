@@ -45,7 +45,7 @@ PascalsTriangle_GetRow(uint32_t n)
 
 API
 ImageKit_Curves *
-ImageKit_Curves_FromBezier(uint32_t samples, uint32_t *xy, size_t xy_items)
+ImageKit_Curves_FromBezier(uint32_t samples, REAL *xy, size_t xy_items)
 {
     /* Uses Pascals Triangle for close approximation */
 

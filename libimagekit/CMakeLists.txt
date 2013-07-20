@@ -18,6 +18,7 @@ set(SOURCE_FILES
     fill.c
     blit.c
     curves.c
+    filters/pointfilter.c
 )
 
 #add_subdirectory(tests)
@@ -75,4 +76,7 @@ target_link_libraries(tests/build/test-08-blit imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-09-bezier tests/test-09-bezier.c tests/framework.c)
 target_link_libraries(tests/build/test-09-bezier imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-10-pointfilter tests/test-10-pointfilter.c tests/framework.c)
+target_link_libraries(tests/build/test-10-pointfilter imagekit ${LINK_LIBRARIES})
 

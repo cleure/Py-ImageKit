@@ -9,6 +9,7 @@ TODO List
         - X coordinate is the input (key)
         - Y coordinate is the output (value)
     - Apply point function using lookup table
+- Support for common video frame formats (YCbCr)
 - GIF support
 - Get box?
 - JPEG Grayscale support

@@ -55,3 +55,4 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "fill.h"
 #include "blit.h"
 #include "curves.h"
+#include "filters/pointfilter.h"

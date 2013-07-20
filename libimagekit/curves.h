@@ -7,7 +7,7 @@ typedef struct ImageKit_Curves {
 
 API
 ImageKit_Curves *
-ImageKit_Curves_FromBezier(uint32_t samples, uint32_t *xy, size_t xy_items);
+ImageKit_Curves_FromBezier(uint32_t samples, REAL *xy, size_t xy_items);
 
 API
 void
