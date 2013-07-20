@@ -64,9 +64,9 @@ ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image)
     
     /* Channel scales */
     ch_scales[0] = csfmt[4] * (image->channel_scales[0]);
-    ch_scales[1] = csfmt[4] * (image->channel_scales[1]);
-    ch_scales[2] = csfmt[4] * (image->channel_scales[2]);
-    ch_scales[3] = csfmt[4] * (image->channel_scales[3]);
+    ch_scales[1] = csfmt[5] * (image->channel_scales[1]);
+    ch_scales[2] = csfmt[6] * (image->channel_scales[2]);
+    ch_scales[3] = csfmt[7] * (image->channel_scales[3]);
     
     l = image->width * image->height * image->channels;
     ptr = image->data;
