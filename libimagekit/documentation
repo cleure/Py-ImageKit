@@ -1,0 +1,92 @@
+
+================================================================================
+ImageKit C API Documentation
+================================================================================
+
+Images are represneted with the following struct:
+
+typedef struct ImageKit_Image {
+    REAL scale;
+    REAL channel_scales[4];
+    
+    int colorspace;
+    int colorspace_format;
+    
+    DIMENSION width;
+    DIMENSION height;
+    DIMENSION channels;
+    DIMENSION pitch;
+    size_t data_size;
+    size_t data_items;
+    
+    REAL *data;
+} ImageKit_Image;
+
+Creating a new image is straightforward:
+
+ImageKit_Image *my_image;
+my_image = ImageKit_Image_New(
+    320,
+    200,
+    3,
+    -1,
+    CS(RGB),
+    CS_FMT(RGB24)
+);
+
+This creates a 320x200 image, with 3 color/component channels, in the RGB colorspace
+defaulting to an RGB24 representation. Color components are stored internally as 32bit
+floating point numbers, so specifying CS_FMT(RGB24) is more of a convenience for working
+with data imported from / exported to 24bit RGB.
+
+The arguments for ImageKit_Image_New() are as follows:
+
+ImageKit_Image *
+ImageKit_Image_New(
+    DIMENSION width,
+    DIMENSION height,
+    DIMENSION channels,
+    REAL scale,
+    int colorspace,
+    int colorspace_format
+);
+
+The scale option will normally be set to -1... The reason for it existing is for working
+with data in a different scale. So, for instance, RGB24 normally has a range of 0 - 255,
+but if you're working with an external library that represents colors in the range of
+0.0 - 1.0, then you might want to consider setting it to 1.0.
+
+Other common funtions:
+
+Delete an image, freeing its memory:
+    ImageKit_Image_Delete(my_image);
+
+Clone an image (make a copy):
+    ImageKit_Image * clone;
+    clone = ImageKit_Image_Clone(my_image);
+
+Get channel ranges for image:
+    REAL min[4], max[4];
+    ImageKit_Image_ChannelRanges(my_image, (REAL *)&min, (REAL *)&max);
+    
+    printf("%f %f %f %f\n", min[0], min[1], min[2], min[3]);
+    printf("%f %f %f %f\n", max[0], max[1], max[2], max[3]);
+
+Get conversion scales, for converting between colorspace formats (eg: RGB15 -> RGB24).
+NOTE this does NOT work for images in different colorspaces, only for converting between
+formats in the same colorspace:
+
+    ImageKit_Image *image_a;
+    ImageKit_Image *image_b;
+    REAL cnv_scales[4];
+    
+    image_a = ImageKit_Image_New(320, 200, 4,  -1, CS(RGB), CS_FMT(RGB24));
+    image_b = ImageKit_Image_New(320, 200, 4, 1.0, CS(RGB), CS_FMT(RGB15));
+    
+    ImageKit_Image_GetConversionScales(a, b, (REAL *)&scales);
+    
+    printf("%f %f %f %f\n", cnv_scales[0], cnv_scales[1], cnv_scales[2], cnv_scales[3]);
+
+================================================================================
+TODO: Loading Images From PNG/JPEG/GIF
+================================================================================

@@ -13,6 +13,7 @@ enum {
     ImageKit_IOError,
     ImageKit_MemoryError,
     ImageKit_IndexError,
+    ImageKit_ArgumentError,
     IMAGEKIT_NUM_ERRORS
 } IMAGEKIT_ERROR;
 

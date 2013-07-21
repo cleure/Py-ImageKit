@@ -9,7 +9,7 @@
 
 API
 ImageKit_PointFilter *
-ImageKit_PointFilter_New(uint16_t channels, uint32_t samples)
+ImageKit_PointFilter_New(uint32_t samples)
 {
     size_t mem_size;
     ImageKit_PointFilter *filter;
@@ -34,12 +34,83 @@ ImageKit_PointFilter_New(uint16_t channels, uint32_t samples)
     filter->d = (REAL *)&(filter->a[samples*3]);
     
     filter->samples = samples;
-    filter->channels = channels;
     
     /* Zero out memory */
     memset(filter->a, 0, mem_size);
     
     return filter;
+}
+
+API
+ImageKit_PointFilter *
+ImageKit_PointFilter_FromCurves(
+    ImageKit_Curves *curves_a,
+    ImageKit_Curves *curves_b,
+    ImageKit_Curves *curves_c,
+    ImageKit_Curves *curves_d
+)
+{
+    size_t i, c, samples;
+    ImageKit_Curves *curves[4] = {curves_a, curves_b, curves_c, curves_d};
+    ImageKit_PointFilter *self;
+    
+    REAL *filters[4];
+    uint32_t valid_min, valid_max;
+    
+    /* Not all channels are required to have arguments, BUT ALL channels that do
+       MUST have the same number of samples. */
+    valid_min = 0;
+    valid_max = 0;
+    for (c = 0; c < 4; c++) {
+        if (curves[c] != NULL) {
+            if (valid_min == 0 || curves[c]->data_items < valid_min) {
+                valid_min = curves[c]->data_items;
+            }
+            
+            if (valid_max == 0 || curves[c]->data_items > valid_max) {
+                valid_max = curves[c]->data_items;
+            }
+        }
+    }
+    
+    if (valid_min != valid_max) {
+        ImageKit_SetError(
+            ImageKit_ArgumentError,
+            "Number of samples must be the same for each [Curves] arguemnt");
+        return NULL;
+    }
+    
+    if (valid_min == 0) {
+        ImageKit_SetError(
+            ImageKit_ArgumentError,
+            "At least one argument is required to be non-NULL");
+        return NULL;
+    }
+    
+    samples = valid_max;
+    self = ImageKit_PointFilter_New(samples);
+    if (self == NULL) {
+        return NULL;
+    }
+    
+    filters[0] = self->a;
+    filters[1] = self->b;
+    filters[2] = self->c;
+    filters[3] = self->d;
+    
+    for (c = 0; c < 4; c++) {
+        if (curves[c] == NULL) {
+            for (i = 0; i < samples; i++) {
+                filters[c][i] = (REAL)i / (REAL)samples;
+            }
+        } else {
+            for (i = 0; i < samples; i++) {
+                filters[c][i] = curves[c]->coords[i*2+1];
+            }
+        }
+    }
+    
+    return self;
 }
 
 API
@@ -74,8 +145,7 @@ ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image)
     for (i = 0; i < l; i++) {
         channel = i % image->channels;
         lk = (uint32_t)round((*ptr) * lk_scales[channel]);
-        *ptr = filter[channel][lk] * ch_scales[channel];
-        ptr++;
+        *ptr++ = filter[channel][lk] * ch_scales[channel];
     }
     
     return 0;

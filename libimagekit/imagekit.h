@@ -11,13 +11,6 @@
 #define CS_FMT(in)  COLORSPACE_FORMAT_##in
 #define CS(in)      COLORSPACE_##in
 
-//
-// TODO: Remove these
-//
-#define HAVE_PNG    1
-#define HAVE_JPEG   1
-#define HAVE_GIF    0
-
 #define PIXEL_INDEX(self, x, y)\
     (self->pitch * (y)) + ((x) * self->channels)
 

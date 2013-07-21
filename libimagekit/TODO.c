@@ -24,8 +24,5 @@ TODO List
 - Bilateral filter
 - Resize, nearest, bilinear, cubic family (B-Spline, Mitchell and Catmull-Rom), Lanczos3
 - Rotate
-- Point Functions
-    - brightness / contrast
-    - gamma
 
 */

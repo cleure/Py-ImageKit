@@ -1,9 +1,8 @@
 #pragma once
 
-/* Point filter values should be between 0.0 and 1.0 */
+/* Point filter using lookup table. Values should be between 0.0 and 1.0 */
 
 typedef struct ImageKit_PointFilter {
-    uint16_t channels;
     uint32_t samples;
     
     REAL *a;
@@ -12,9 +11,26 @@ typedef struct ImageKit_PointFilter {
     REAL *d;
 } ImageKit_PointFilter;
 
+/*
+
+TODO:
+    PointFilter_FromCurves()
+    PointFilter_Clear()
+
+*/
+
 API
 ImageKit_PointFilter *
-ImageKit_PointFilter_New(uint16_t channels, uint32_t samples);
+ImageKit_PointFilter_New(uint32_t samples);
+
+API
+ImageKit_PointFilter *
+ImageKit_PointFilter_FromCurves(
+    ImageKit_Curves *curves_a,
+    ImageKit_Curves *curves_b,
+    ImageKit_Curves *curves_c,
+    ImageKit_Curves *curves_d
+);
 
 API
 int

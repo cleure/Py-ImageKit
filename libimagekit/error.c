@@ -17,7 +17,8 @@ const char *ImageKit_ErrorStrings[IMAGEKIT_NUM_ERRORS] = {
     "OS Error",
     "IO Error",
     "Memory Error",
-    "Index Error"
+    "Index Error",
+    "Argument Error"
 };
 
 PRIVATE void init()
