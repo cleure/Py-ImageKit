@@ -4,7 +4,6 @@
 TODO List
 
 - Thread safe error handling
-- Bezier point function filter
 - B-Spline point function filter
     - Generate lookup table based on output
         - X coordinate is the input (key)
