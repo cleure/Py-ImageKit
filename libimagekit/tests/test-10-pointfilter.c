@@ -44,10 +44,10 @@ int main(void)
     assert(filter != NULL);
     
     status = ImageKit_PointFilter_Apply(filter, buf);
-    assert(status == 0);
+    assert(status > 0);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");
-    assert(status == 0);
+    assert(status > 0);
     
     ImageKit_Curves_Delete(bezier);
     ImageKit_Curves_Delete(bezier2);

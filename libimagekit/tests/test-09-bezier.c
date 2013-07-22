@@ -7,23 +7,34 @@
 #include "imagekit.h"
 #include "tests/framework.h"
 
+void drawAA(ImageKit_Image *image, DIMENSION x, DIMENSION y)
+{
+    #define set(color, _x, _y)\
+        image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)] = (image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)] + color) / 2;\
+        image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)+1] = (image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)+1] + color) / 2;\
+        image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)+2] = (image->data[PIXEL_INDEX(image, (_x) % image->width, (_y) % image->height)+2] + color) / 2;
+    
+    set(0, x, y);
+    set(32, x+1, y);
+    set(32, x-1, y);
+    set(32, x, y+1);
+    set(32, x, y-1);
+}
+
 int main(void)
 {
     int status, i;
     ImageKit_Image *buf;
-    
-    REAL fill[4] = {0.0, 0.0, 0.0, 255.0};
-    int samples = 400;
+    int samples = 512;
     
     REAL xy[] = {
         0.0, 0.0,
-        0.3, 0.0,
-        0.7, 1.0,
+        0.5, 0.0,
+        0.5, 1.0,
         1.0, 1.0,
     };
     
     ImageKit_Curves *bezier;
-    ImageKit_Coords *coords;
     
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
@@ -33,20 +44,17 @@ int main(void)
     assert(bezier->coords != NULL);
     assert(bezier->data_items == samples);
     
-    coords = ImageKit_Coords_New(bezier->data_items);
-    
     for (i = 0; i < bezier->data_items; i++) {
-        ImageKit_Coords_Append(coords,
+        drawAA(
+            buf,
             bezier->coords[i*2] * (buf->width - 1),
-            bezier->coords[i*2+1] * (buf->height - 1));
+            bezier->coords[i*2+1] * (buf->height - 1)
+        );
     }
     
-    ImageKit_Image_FillCoords(buf, coords, (REAL *)&fill);
-    
     status = ImageKit_Image_SavePNG(buf, "output.png");
-    assert(status == 0);
+    assert(status > 0);
     
-    ImageKit_Coords_Delete(coords);
     ImageKit_Curves_Delete(bezier);
     ImageKit_Image_Delete(buf);
 

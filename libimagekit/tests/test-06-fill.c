@@ -28,11 +28,14 @@ int main(void)
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
         
-    ImageKit_Image_Fill(buf, (REAL *)&color);
-    ImageKit_Image_FillCoords(buf, coords, (REAL *)&colorB);
+    status = ImageKit_Image_Fill(buf, (REAL *)&color);
+    assert(status > 0);
+    
+    status = ImageKit_Image_FillCoords(buf, coords, (REAL *)&colorB);
+    assert(status > 0);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");
-    assert(status == 0);
+    assert(status > 0);
     
     ImageKit_Image_Delete(buf);
     ImageKit_Coords_Delete(coords);

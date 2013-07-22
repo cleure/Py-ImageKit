@@ -155,18 +155,36 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     
     if (self->colorspace == CS(HSV)) {
         copy = ImageKit_Image_Clone(self);
-        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        if (!copy) {
+            return -1;
+        }
+        
+        if (!ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1)) {
+            return -1;
+        }
         
         self = copy;
     } else if (self->colorspace == CS(MONO)) {
         copy = ImageKit_Image_Clone(self);
-        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        if (!copy) {
+            return -1;
+        }
+        
+        if (!ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1)) {
+            return -1;
+        }
         
         self = copy;
     } else if (     self->colorspace_format == CS_FMT(RGB15) ||
                     self->colorspace_format == CS_FMT(RGB16)) {
         copy = ImageKit_Image_Clone(self);
-        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        if (!copy) {
+            return -1;
+        }
+        
+        if (!ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1)) {
+            return -1;
+        }
         
         self = copy;
     }
@@ -320,7 +338,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     ImageKit_Image_Delete(copy);
     fclose(fp);
 
-    return 0;
+    return 1;
 }
 
 #else

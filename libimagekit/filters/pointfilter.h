@@ -11,14 +11,6 @@ typedef struct ImageKit_PointFilter {
     REAL *d;
 } ImageKit_PointFilter;
 
-/*
-
-TODO:
-    PointFilter_FromCurves()
-    PointFilter_Clear()
-
-*/
-
 API
 ImageKit_PointFilter *
 ImageKit_PointFilter_New(uint32_t samples);

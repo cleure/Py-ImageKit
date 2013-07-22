@@ -56,7 +56,7 @@ rgb_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
             self->scale / (REAL)COLORSPACE_FORMAT_MINMAX[self->colorspace_format][7];
     }
     
-    return 0;
+    return 1;
 }
 
 PRIVATE
@@ -142,7 +142,7 @@ rgb_to_hsv(ImageKit_Image *self, int colorspace_format, REAL scale)
     self->channel_scales[2] = (REAL)1.0;
     self->channel_scales[3] = (REAL)1.0;
 
-    return 0;
+    return 1;
 }
 
 PRIVATE
@@ -211,7 +211,7 @@ rgb_to_mono(ImageKit_Image *self, int colorspace_format, REAL scale)
     self->channel_scales[2] = (REAL)1.0;
     self->channel_scales[3] = (REAL)1.0;
 
-    return 0;
+    return 1;
 }
 
 /* HSV */
@@ -318,7 +318,7 @@ hsv_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
         self->channel_scales[3] = (REAL)scale / (REAL)csfmt[7];
     }
 
-    return 0;
+    return 1;
 }
 
 PRIVATE
@@ -326,15 +326,15 @@ int
 hsv_to_mono(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
     /* Convert to RGB, then convert RGB to Mono (more accurate than desaturating) */
-    if (ImageKit_Image_toRGB(self, -1, -1) < 0) {
-        return -1;
+    if (ImageKit_Image_toRGB(self, -1, -1) <= 0) {
+        return 0;
     }
     
-    if (ImageKit_Image_toMono(self) < 0) {
-        return -1;
+    if (ImageKit_Image_toMono(self) <= 0) {
+        return 0;
     }
     
-    return 0;
+    return 1;
 }
 
 /* Mono */
@@ -379,7 +379,7 @@ mono_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
     buffer = malloc(bsize);
     if (!buffer) {
         ImageKit_SetError(ImageKit_MemoryError, "Unable to allocate memory");
-        return -1;
+        return 0;
     }
     
     l = self->width * self->height;
@@ -426,7 +426,7 @@ mono_to_rgb(ImageKit_Image *self, int colorspace_format, REAL scale)
         self->channel_scales[3] = (REAL)scale / (REAL)csfmt[7];
     }
 
-    return 0;
+    return 1;
 }
 
 PRIVATE
@@ -486,7 +486,7 @@ mono_to_hsv(ImageKit_Image *self, int colorspace_format, REAL scale)
     self->channel_scales[2] = (REAL)1.0;
     self->channel_scales[3] = (REAL)1.0;
 
-    return 0;
+    return 1;
 
 }
 
@@ -494,7 +494,7 @@ PRIVATE
 int
 dummy_to_dummy(ImageKit_Image *self, int colorspace_format, REAL scale)
 {
-    return 0;
+    return 1;
 }
 
 PRIVATE int (*fn_table [CS(SIZE)] [CS(SIZE)]) (ImageKit_Image *, int, REAL) = {
@@ -569,7 +569,7 @@ ImageKit_GetConversionScales(
         }
     }
     
-    return 0;
+    return 1;
 }
 
 API

@@ -49,13 +49,13 @@ int main(void)
     ImageKit_Image_Fill(out, (REAL *)&fill);
     
     status = ImageKit_Image_BlitRect(out, &dst_rect, buf, &src_rect);
-    assert(status == 0);
+    assert(status > 0);
     
     status = ImageKit_Image_BlitCoords(out, 96, 64, buf, coords);
-    assert(status == 0);
+    assert(status > 0);
     
     status = ImageKit_Image_SavePNG(out, "output.png");
-    assert(status == 0);
+    assert(status > 0);
     
     ImageKit_Coords_Delete(coords);
     ImageKit_Image_Delete(out);

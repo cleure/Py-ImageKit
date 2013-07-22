@@ -88,5 +88,145 @@ formats in the same colorspace:
     printf("%f %f %f %f\n", cnv_scales[0], cnv_scales[1], cnv_scales[2], cnv_scales[3]);
 
 ================================================================================
-TODO: Loading Images From PNG/JPEG/GIF
+Colorspaces and Conversions
+================================================================================
+
+The current supported colorspaces / formats are:
+
+    - RGB (15, 16, 24, 30, 48)
+    - HSV
+    - Mono (greyscale)
+
+There are also plans to add YCbCr and YIQ formats in the future. For colorspaces with
+multiple formats, a convenience function is provided to help convert between them:
+
+REAL scales[4];
+ImageKit_GetConversionScales(-1, CS_FMT(RGB24), -1, CS_FMT(RGB15), (REAL *)&scales);
+
+That function call fills the scales array with the conversion scales for each channel,
+for when converting from RGB15 to RGB24. So if you had raw values, you could then
+perform the following to convert RGB15 to RGB24:
+
+REAL rgb15[3] = {31.0, 22.0, 3.0};  // RGB15 format
+REAL rgb24[3];                      // RGB24 format will go here
+
+rgb24[0] = rgb15[0] * scales[0];
+rgb24[1] = rgb15[1] * scales[1];
+rgb24[2] = rgb15[2] * scales[2];
+
+printf("%f %f %f\n", rgb24[0], rgb24[1], rgb24[2]);
+
+Unless you're doing low level processing, you probably want a higher level way of
+converting between colorspaces and formats. Several functions exist to do just that:
+
+// Convert image to HSV
+int ImageKit_Image_toHSV(ImageKit_Image *self);
+
+// Convert image to RGB
+int ImageKit_Image_toRGB(ImageKit_Image *self, int colorspace_format, REAL scale);
+
+// Convert image to Mono (grayscale)
+int ImageKit_Image_toMono(ImageKit_Image *self);
+
+If your image is already in the RGB colorspace, you can convert between RGB formats
+using the ImageKit_Image_toRGB() function, as well. So, for instance, you can use it
+to convert RGB15 to RGB24, or 0.0 - 1.0 scaled images to RGB24, and so on:
+
+ImageKit_Image *image = ImageKit_Image_New(
+    640,
+    480,
+    3,
+    -1,
+    CS(RGB),
+    CS_FMT(RGB15)
+);
+
+...
+... Populate Image
+...
+
+// Convert image to RGB24
+ImageKit_Image_toRGB(image, CS_FMT(RGB24), -1);
+
+Internally, when colorspaces are converted, none of the values are rounded. This can be
+useful, since it allows you to convert RGB24 to RGB15 and back again, without any
+significant loss of precision (ie: a color that would be impossible to perfectly
+represent in RGB15 can be converted back to its original RGB24 value).
+
+================================================================================
+Handling Errors
+================================================================================
+
+Errors in ImageKit follow two primary patterns:
+
+    - For functions that return a pointer, NULL represents an error
+    - For functions that return an int, less than 1 represents an error
+    - Functions that return void CANNOT set errors
+
+By using positive numbers to signify success, instead of 0, this allows you to write
+code that follows the same pattern regardless of return type:
+
+REAL color[4] = {64, 64, 64, 255};
+if (!ImageKit_Image_Fill(my_image, (REAL *)&color)) {
+    // Error
+}
+
+copy = ImageKit_Image_Clone(my_image);
+if (!copy) {
+    // Error
+}
+
+When an error occurs, a status code and error message will be recorded for you to
+retrieve later. This is accomplished internally via the ImageKit_SetError() function:
+
+int ImageKit_SetError(int code, const char *msg);
+
+Note that the error system currently isn't thread-safe (but that's on the priority list
+of things to implement in the future). To retrieve the code and error message, after
+an error, you can call the ImageKit_LastError() function:
+
+int e_code;
+char *e_msg;
+
+copy = ImageKit_Image_Clone(my_image);
+if (!copy) {
+    ImageKit_LastError(&e_code, &e_msg);
+    printf("Error Code %d: %s", e_code, e_msg);
+    exit(1);
+}
+
+You can also get an error string, which explains what the error code means:
+
+int e_code = ImageKit_MemoryError;
+char *e_msg;
+
+ImageKit_GetErrorString(e_code, &e_msg);
+printf("%s\n", e_msg);
+
+================================================================================
+Loading Images From PNG/JPEG/GIF
+================================================================================
+
+================================================================================
+Getting and Setting Pixels
+================================================================================
+
+================================================================================
+Representing Coordinates and Rectangles
+================================================================================
+
+================================================================================
+Bezier Curves
+================================================================================
+
+================================================================================
+Blitting
+================================================================================
+
+================================================================================
+Image Histograms
+================================================================================
+
+================================================================================
+Applying Point Filters
 ================================================================================

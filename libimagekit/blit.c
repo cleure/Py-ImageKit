@@ -80,7 +80,7 @@ ImageKit_Image_BlitRect(
         }
     }
     
-    return 0;
+    return 1;
 }
 
 API
@@ -141,5 +141,5 @@ ImageKit_Image_BlitCoords(
         }
     }
     
-    return 0;
+    return 1;
 }

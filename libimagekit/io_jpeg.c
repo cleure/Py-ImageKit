@@ -173,7 +173,14 @@ ImageKit_Image_SaveJPEG(ImageKit_Image *self, const char *filepath, int quality)
     /* Convert to RGB, if not already */
     if (self->colorspace != CS(RGB) || self->colorspace_format != CS_FMT(RGB24)) {
         copy = ImageKit_Image_Clone(self);
-        ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1);
+        if (!copy) {
+            return -1;
+        }
+        
+        if (!ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1)) {
+            return -1;
+        }
+        
         self = copy;
     }
     
@@ -253,7 +260,7 @@ ImageKit_Image_SaveJPEG(ImageKit_Image *self, const char *filepath, int quality)
     free(pixel_row);
     ImageKit_Image_Delete(copy);
     
-    return 0;
+    return 1;
 }
 
 #else

@@ -96,32 +96,3 @@ ImageKit_Coords_Append(ImageKit_Coords *self, DIMENSION x, DIMENSION y)
     
     return 1;
 }
-
-/*
-#include <assert.h>
-
-int main(void)
-{
-    ImageKit_Coords *coords;
-    
-    coords = ImageKit_Coords_New(64);
-    assert(coords != NULL);
-
-    ImageKit_Coords_Append(coords, 31, 19);
-    ImageKit_Coords_Append(coords, 31, 20);
-    ImageKit_Coords_Append(coords, 31, 21);
-    ImageKit_Coords_Append(coords, 31, 22);
-    
-    ImageKit_Coords_Resize(coords, 2);
-    
-    printf("%d %d\n", coords->coords[0 * 2 + 0], coords->coords[0 * 2 + 1]);
-    printf("%d %d\n", coords->coords[1 * 2 + 0], coords->coords[1 * 2 + 1]);
-    
-    //printf("%d %d\n", coords->coords[2 * 2 + 0], coords->coords[2 * 2 + 1]);
-    //printf("%d %d\n", coords->coords[3 * 2 + 0], coords->coords[3 * 2 + 1]);
-
-    ImageKit_Coords_Delete(coords);
-
-    return 0;
-}
-*/

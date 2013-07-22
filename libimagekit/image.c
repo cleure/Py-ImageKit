@@ -6,42 +6,6 @@
 
 #include "imagekit.h"
 
-/*
-
-typedef struct ImageKit_Image {
-    REAL scale;
-    REAL channel_scales[4];
-    
-    int colorspace;
-    int colorspace_format;
-    
-    DIMENSION width;
-    DIMENSION height;
-    DIMENSION channels;
-    DIMENSION pitch;
-    size_t data_size;
-    size_t data_items;
-    
-    REAL *data;
-};
-
-*/
-
-/*
-    
-enum {
-    ImageKit_NotImplementedError,
-    ImageKit_StandardError,
-    ImageKit_ValueError,
-    ImageKit_TypeError,
-    ImageKit_OSError,
-    ImageKit_IOError,
-    ImageKit_MemoryError,
-    IMAGEKIT_NUM_ERRORS
-} IMAGEKIT_ERROR;
-    
-*/
-
 /* Colorspace Formats (Min/Max) */
 const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8] = {
     {0.0, 0.0, 0.0, 0.0,    31.0,      31.0,       31.0,     1.0},

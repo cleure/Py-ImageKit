@@ -19,7 +19,7 @@ ImageKit_Image_Fill(ImageKit_Image *self, REAL *color)
         *ptr++ = color[i % self->channels];
     }
     
-    return 0;
+    return 1;
 }
 
 API
@@ -41,5 +41,5 @@ ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *c
         }
     }
     
-    return 0;
+    return 1;
 }

@@ -148,7 +148,7 @@ ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image)
         *ptr++ = filter[channel][lk] * ch_scales[channel];
     }
     
-    return 0;
+    return 1;
 }
 
 API

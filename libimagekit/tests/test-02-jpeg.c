@@ -16,7 +16,7 @@ int main(void)
     assert(buf != NULL);
     
     status = ImageKit_Image_SaveJPEG(buf, "output.jpg", 100);
-    assert(status == 0);
+    assert(status > 0);
     
     ImageKit_Image_Delete(buf);
 
