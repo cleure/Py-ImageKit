@@ -1,7 +1,7 @@
 #pragma once
 
 /* Maximum Error Size */
-#define IMAGEKIT_ERROR_MAX 4096
+#define IMAGEKIT_ERROR_MAX 1024
 
 /* Possible Errors */
 enum {

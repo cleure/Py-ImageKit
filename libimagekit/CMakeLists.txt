@@ -8,6 +8,11 @@ set (CMAKE_C_FLAGS "-Wall -std=c99 -g")
 
 set(LINK_LIBRARIES)
 set(SOURCE_FILES
+    # C-hashtable Sources
+    htable/MurmurHash3.c
+    htable/hashtable.c
+    
+    # ImageKit Sources
     coords.c
     error.c
     image.c
@@ -23,6 +28,7 @@ set(SOURCE_FILES
 
 #add_subdirectory(tests)
 include_directories(${PROJECT_SOURCE_DIR})
+include_directories(htable)
 
 # JPEG
 find_package (JPEG)
@@ -39,6 +45,10 @@ if (PNG_FOUND)
     LIST(APPEND LINK_LIBRARIES ${PNG_LIBRARIES})
     add_definitions(-DHAVE_PNG)
 endif (PNG_FOUND)
+
+# Threads
+find_package (Threads)
+LIST(APPEND LINK_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
 # Math
 LIST(APPEND LINK_LIBRARIES m)
@@ -80,3 +90,5 @@ target_link_libraries(tests/build/test-09-bezier imagekit ${LINK_LIBRARIES})
 add_executable(tests/build/test-10-pointfilter tests/test-10-pointfilter.c tests/framework.c)
 target_link_libraries(tests/build/test-10-pointfilter imagekit ${LINK_LIBRARIES})
 
+add_executable(tests/build/test-11-errors tests/test-11-errors.c tests/framework.c htable/MurmurHash3.c htable/hashtable.c)
+target_link_libraries(tests/build/test-11-errors imagekit ${LINK_LIBRARIES})
