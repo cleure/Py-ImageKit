@@ -6,16 +6,12 @@
 #include "imagekit.h"
 #include "hashtable.h"
 
-PRIVATE int  INITIALIZED = 0;
-//PRIVATE int  LAST_ERROR_CODE = 0;
-//PRIVATE char LAST_ERROR[IMAGEKIT_ERROR_MAX + 1];
-
-/* These will be used to make errors per-thread */
 struct error_entry {
     int code;
     char msg[IMAGEKIT_ERROR_MAX + 1];
 };
 
+PRIVATE int  INITIALIZED = 0;
 PRIVATE struct htable *thread_table = NULL;
 PRIVATE pthread_mutex_t thread_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -111,6 +107,7 @@ ImageKit_LastError(int *code, char **msg)
                 *msg = (char *)&error_ent->msg;
             }
         }
+        
     } END_SYNCHRONIZED;
 }
 
@@ -130,6 +127,7 @@ ImageKit_SetError(int code, const char *msg)
     uintptr_t addr;
 
     BEGIN_SYNCHRONIZED {
+    
         if (!INITIALIZED) {
             init();
         }
@@ -151,6 +149,7 @@ ImageKit_SetError(int code, const char *msg)
                 8
             );
         }
+        
     } END_SYNCHRONIZED;
     
     return result;
