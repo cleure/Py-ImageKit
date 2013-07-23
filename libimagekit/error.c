@@ -178,13 +178,11 @@ ImageKit_GetErrorString(int code, char **msg)
 /**
 * Cleanup function, frees and heap allocated data
 *
-* @param    int code
-* @param    char **msg
 * @return   void
 **/
 API
 void
-ImageKit_CleanupError(int code, char **msg)
+ImageKit_CleanupError()
 {
     BEGIN_SYNCHRONIZED {
         if (INITIALIZED) {

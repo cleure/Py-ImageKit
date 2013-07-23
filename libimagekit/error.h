@@ -52,3 +52,12 @@ ImageKit_SetError(int code, const char *msg);
 API
 void
 ImageKit_GetErrorString(int code, char **msg);
+
+/**
+* Cleanup function, frees and heap allocated data
+*
+* @return   void
+**/
+API
+void
+ImageKit_CleanupError();
