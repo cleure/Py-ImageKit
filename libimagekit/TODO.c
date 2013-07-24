@@ -3,6 +3,7 @@
 
 TODO List
 
+- Make errors per image instance, instead of per thread.
 - Test SavePNG() with 16-bit color depth on Big-Endian
 - Support for 12-bit JPEG
 - Update documentation for thread-safe error handling.

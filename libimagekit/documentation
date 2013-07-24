@@ -181,9 +181,8 @@ retrieve later. This is accomplished internally via the ImageKit_SetError() func
 
 int ImageKit_SetError(int code, const char *msg);
 
-Note that the error system currently isn't thread-safe (but that's on the priority list
-of things to implement in the future). To retrieve the code and error message, after
-an error, you can call the ImageKit_LastError() function:
+To retrieve the code and error message, after an error, you can call the
+ImageKit_LastError() function:
 
 int e_code;
 char *e_msg;
@@ -202,6 +201,9 @@ char *e_msg;
 
 ImageKit_GetErrorString(e_code, &e_msg);
 printf("%s\n", e_msg);
+
+Note that errors are on a per-thread basis, so if an error occurs on Thread A, calling
+ImageKit_LastError() on Thread B will NOT give you the error that occurred on Thread A.
 
 ================================================================================
 Loading Images From PNG/JPEG/GIF
