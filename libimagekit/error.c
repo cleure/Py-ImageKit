@@ -4,16 +4,12 @@
 #include <pthread.h>
 
 #include "imagekit.h"
+#include "threading.h"
 #include "hashtable.h"
-
-struct error_entry {
-    int code;
-    char msg[IMAGEKIT_ERROR_MAX + 1];
-};
 
 PRIVATE int  INITIALIZED = 0;
 PRIVATE struct htable *thread_table = NULL;
-PRIVATE pthread_mutex_t thread_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+PRIVATE MUTEX_T thread_table_mutex = MUTEX_T_INITIALIZER;
 
 /* Error Strings */
 const char *ImageKit_ErrorStrings[IMAGEKIT_NUM_ERRORS] = {
@@ -28,10 +24,6 @@ const char *ImageKit_ErrorStrings[IMAGEKIT_NUM_ERRORS] = {
     "Argument Error"
 };
 
-#define BEGIN_SYNCHRONIZED pthread_mutex_lock(&thread_table_mutex);
-#define END_SYNCHRONIZED pthread_mutex_unlock(&thread_table_mutex)
-#define THREAD_ID() pthread_self()
-
 PRIVATE int thread_table_cmpfn(void *A, void *B)
 {
     if (*(void **)A == *(void **)B) {
@@ -44,10 +36,10 @@ PRIVATE int thread_table_cmpfn(void *A, void *B)
 static void thread_table_copyfn(struct htable_entry *ent, void *key, void *value)
 {
     ent->key = malloc(sizeof(uintptr_t));
-    ent->data = malloc(sizeof(struct error_entry));
+    ent->data = malloc(sizeof(ImageKit_Error));
     
     memcpy(ent->key, key, sizeof(uintptr_t));
-    memcpy(ent->data, value, sizeof(struct error_entry));
+    memcpy(ent->data, value, sizeof(ImageKit_Error));
 }
 
 static void thread_table_freefn(struct htable_entry *ent)
@@ -83,16 +75,16 @@ void
 ImageKit_LastError(int *code, char **msg)
 {
     struct htable_entry *table_ent;
-    struct error_entry *error_ent;
+    ImageKit_Error *error_ent;
     uintptr_t addr;
     
-    BEGIN_SYNCHRONIZED {
+    BEGIN_SYNCHRONIZED(thread_table_mutex) {
     
         *msg = NULL;
         *code = -1;
         
         if (INITIALIZED) {
-            addr = (uintptr_t)THREAD_ID();
+            addr = THREAD_ID();
         
             table_ent = htable_get(
                 thread_table,
@@ -108,7 +100,7 @@ ImageKit_LastError(int *code, char **msg)
             }
         }
         
-    } END_SYNCHRONIZED;
+    } END_SYNCHRONIZED(thread_table_mutex);
 }
 
 /**
@@ -123,10 +115,10 @@ int
 ImageKit_SetError(int code, const char *msg)
 {
     int result;
-    struct error_entry ent;
+    ImageKit_Error ent;
     uintptr_t addr;
 
-    BEGIN_SYNCHRONIZED {
+    BEGIN_SYNCHRONIZED(thread_table_mutex) {
     
         if (!INITIALIZED) {
             init();
@@ -139,7 +131,7 @@ ImageKit_SetError(int code, const char *msg)
         } else {
             ent.code = code;
             strcpy((char *)&ent.msg, msg);
-            addr = (uintptr_t)THREAD_ID();
+            addr = THREAD_ID();
             
             result = htable_add_loop(
                 thread_table,
@@ -150,7 +142,7 @@ ImageKit_SetError(int code, const char *msg)
             );
         }
         
-    } END_SYNCHRONIZED;
+    } END_SYNCHRONIZED(thread_table_mutex);
     
     return result;
 }
@@ -183,12 +175,12 @@ API
 void
 ImageKit_CleanupError()
 {
-    BEGIN_SYNCHRONIZED {
+    BEGIN_SYNCHRONIZED(thread_table_mutex) {
         if (INITIALIZED) {
             htable_delete(thread_table);
             //pthread_mutex_destroy(&thread_table_mutex);
         }
         
         INITIALIZED = 0;
-    } END_SYNCHRONIZED;
+    } END_SYNCHRONIZED(thread_table_mutex);
 }

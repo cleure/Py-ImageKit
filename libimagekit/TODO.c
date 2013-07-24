@@ -3,7 +3,8 @@
 
 TODO List
 
-- Make errors per image instance, instead of per thread.
+- Attach ImageKit_Error pointer to ImageKit_Image objects?
+    - Might make multi-threaded algorithms easier.
 - Test SavePNG() with 16-bit color depth on Big-Endian
 - Support for 12-bit JPEG
 - Update documentation for thread-safe error handling.

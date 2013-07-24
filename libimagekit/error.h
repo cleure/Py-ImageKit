@@ -17,6 +17,12 @@ enum {
     IMAGEKIT_NUM_ERRORS
 } IMAGEKIT_ERROR;
 
+/* Error Struct */
+typedef struct ImageKit_Error {
+    int code;
+    char msg[IMAGEKIT_ERROR_MAX + 1];
+} ImageKit_Error;
+
 /* Error Strings */
 extern const char *ImageKit_ErrorStrings[IMAGEKIT_NUM_ERRORS];
 
