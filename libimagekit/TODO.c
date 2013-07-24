@@ -3,7 +3,9 @@
 
 TODO List
 
-- Thread safe error handling
+- Test SavePNG() with 16-bit color depth on Big-Endian
+- Update documentation for thread-safe error handling.
+- ImageKit_Cleanup() function, to cleanup memory (esp. error handling).
 - B-Spline point function filter
     - Generate lookup table based on output
         - X coordinate is the input (key)
@@ -14,10 +16,8 @@ TODO List
 - Get box?
 - JPEG Grayscale support
 - Non-RGB colorspaces for JPEG
-- Ability to set bit depth in SavePNG()
-- RGB-30 in SavePNG
+- Ability to set bit depth in SavePNG()?
 - Better and more complete tests
-- Test alpha support on RGB48 and RGB30 images, in SavePNG()
 - Matrix
 - Convolution kernel
 - Rank filter

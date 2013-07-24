@@ -147,7 +147,8 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     png_byte **row_pointers = NULL;
-    png_uint_16 **row_pointers16 = NULL;
+    png_byte *row = NULL;
+    
     int png_colortype = PNG_COLOR_TYPE_RGB;
     
     int colorspace_format = -1;
@@ -175,25 +176,7 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
         }
         
         self = copy;
-    } else if (     self->colorspace_format == CS_FMT(RGB15) ||
-                    self->colorspace_format == CS_FMT(RGB16)) {
-        copy = ImageKit_Image_Clone(self);
-        if (!copy) {
-            return -1;
-        }
-        
-        if (!ImageKit_Image_toRGB(copy, CS_FMT(RGB24), -1)) {
-            return -1;
-        }
-        
-        self = copy;
     }
-    
-    /* Get output scales */
-    scales[0] = (REAL)1.0 / self->channel_scales[0];
-    scales[1] = (REAL)1.0 / self->channel_scales[1];
-    scales[2] = (REAL)1.0 / self->channel_scales[2];
-    scales[3] = (REAL)1.0 / self->channel_scales[3];
     
     if (colorspace_format < 0) {
         colorspace_format = self->colorspace_format;
@@ -201,15 +184,35 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     
     switch (colorspace_format) {
         case CS_FMT(RGB48):
-            depth = 16;
-            break;
         case CS_FMT(RGB30):
-            depth = 10;
+            
+            /* Get output scales */
+            ImageKit_GetConversionScales(
+                -1,
+                CS_FMT(RGB48),
+                self->scale,
+                self->colorspace_format,
+                (REAL *)&scales
+            );
+            
+            depth = 16;
+            colorspace_format = CS_FMT(RGB48);
             break;
+        
+        //case CS_FMT(RGB30):
         case CS_FMT(RGB24):
         default:
-            colorspace_format = CS_FMT(RGB24);
+            /* Get output scales */
+            ImageKit_GetConversionScales(
+                -1,
+                CS_FMT(RGB24),
+                self->scale,
+                self->colorspace_format,
+                (REAL *)&scales
+            );
+            
             depth = 8;
+            colorspace_format = CS_FMT(RGB24);
             break;
     }
     
@@ -269,37 +272,41 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
     ptr_in = (REAL *)(&(self->data[0]));
     
     if (depth == 16) {
-        // 16 Bits Per Channel
-        row_pointers16 = png_malloc(png_ptr, sizeof(png_uint_16 *) * self->height);
-        
+        // 16 Bits Per Channels
+        row_pointers = png_malloc(png_ptr, sizeof(png_byte *) * self->height);
+    
         // Scale, clamp, copy
         for (y = 0; y < self->height; y++) {
-            row_pointers16[y] = png_malloc(png_ptr, sizeof(png_uint_16) * self->width * self->channels);
+            row_pointers[y] = png_malloc(png_ptr, sizeof(png_byte) * self->width * self->channels * 2);
+            row = row_pointers[y];
+            
             for (x = 0; x < self->width; x++) {
                 for (c = 0; c < self->channels; c++) {
                     value = (int32_t)((*ptr_in++) * scales[c]);
-                
+                    
                     if (value < format[c]) {
                         value = (int)(format[c]);
                     } else if (value > format[4+c]) {
                         value = (int)(format[4+c]);
                     }
-                
-                    row_pointers16[y][x * self->channels + c] = value;
+                    
+                    // TODO: Test on Big-Endian
+                    *row++ = value >> 8 & 0xff;
+                    *row++ = value      & 0xff;
                 }
             }
         }
-        
+    
         // Write file
         png_init_io(png_ptr, fp);
-        png_set_rows(png_ptr, info_ptr, (png_bytepp)row_pointers16);
+        png_set_rows(png_ptr, info_ptr, row_pointers);
         png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-        
+    
         for (y = 0; y < self->height; y++) {
-            png_free(png_ptr, row_pointers16[y]);
+            png_free(png_ptr, row_pointers[y]);
         }
     
-        png_free(png_ptr, row_pointers16);
+        png_free(png_ptr, row_pointers);
     } else {
         // 8 Bits Per Channels
         row_pointers = png_malloc(png_ptr, sizeof(png_byte *) * self->height);
@@ -307,17 +314,19 @@ ImageKit_Image_SavePNG(ImageKit_Image *self, const char *filepath)
         // Scale, clamp, copy
         for (y = 0; y < self->height; y++) {
             row_pointers[y] = png_malloc(png_ptr, sizeof(png_byte) * self->width * self->channels);
+            row = row_pointers[y];
+            
             for (x = 0; x < self->width; x++) {
                 for (c = 0; c < self->channels; c++) {
                     value = (int32_t)((*ptr_in++) * scales[c]);
-                
+                    
                     if (value < format[c]) {
                         value = (int)(format[c]);
                     } else if (value > format[4+c]) {
                         value = (int)(format[4+c]);
                     }
-                
-                    row_pointers[y][x * self->channels + c] = value;
+                    
+                    *row++ = value;
                 }
             }
         }

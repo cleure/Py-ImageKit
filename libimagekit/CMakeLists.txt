@@ -92,3 +92,6 @@ target_link_libraries(tests/build/test-10-pointfilter imagekit ${LINK_LIBRARIES}
 
 add_executable(tests/build/test-11-errors tests/test-11-errors.c tests/framework.c htable/MurmurHash3.c htable/hashtable.c)
 target_link_libraries(tests/build/test-11-errors imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-12-png30 tests/test-12-png30.c tests/framework.c)
+target_link_libraries(tests/build/test-12-png30 imagekit ${LINK_LIBRARIES})
