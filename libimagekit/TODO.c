@@ -4,6 +4,7 @@
 TODO List
 
 - Test SavePNG() with 16-bit color depth on Big-Endian
+- Support for 12-bit JPEG
 - Update documentation for thread-safe error handling.
 - ImageKit_Cleanup() function, to cleanup memory (esp. error handling).
 - B-Spline point function filter
