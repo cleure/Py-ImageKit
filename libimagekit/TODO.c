@@ -18,7 +18,6 @@ TODO List
 - GIF support
 - Get box?
 - Better and more complete tests
-- Matrix
 - Convolution kernel
 - Rank filter
 - Bilateral filter
