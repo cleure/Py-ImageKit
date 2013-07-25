@@ -63,20 +63,12 @@ PRIVATE void init()
     INITIALIZED = 1;
 }
 
-/**
-* Get Last Error
-*
-* @param    int *code
-* @param    char **msg
-* @return   void
-**/
-API
+PRIVATE
 void
-ImageKit_LastError(int *code, char **msg)
+GetLastError(int *code, char **msg, uintptr_t thread_id)
 {
     struct htable_entry *table_ent;
     ImageKit_Error *error_ent;
-    uintptr_t addr;
     
     BEGIN_SYNCHRONIZED(thread_table_mutex) {
     
@@ -84,12 +76,11 @@ ImageKit_LastError(int *code, char **msg)
         *code = -1;
         
         if (INITIALIZED) {
-            addr = THREAD_ID();
         
             table_ent = htable_get(
                 thread_table,
                 sizeof(void *),
-                &addr
+                &thread_id
             );
             
             if (table_ent != NULL) {
@@ -101,6 +92,35 @@ ImageKit_LastError(int *code, char **msg)
         }
         
     } END_SYNCHRONIZED(thread_table_mutex);
+}
+
+/**
+* Get Last Error
+*
+* @param    int *code
+* @param    char **msg
+* @return   void
+**/
+API
+void
+ImageKit_LastError(int *code, char **msg)
+{
+    GetLastError(code, msg, THREAD_ID());
+}
+
+/**
+* Get Last Error for Thread ID
+*
+* @param    int *code
+* @param    char **msg
+* @param    uintptr_t thread_id
+* @return   void
+**/
+API
+void
+ImageKit_LastErrorForThread(int *code, char **msg, uintptr_t thread_id)
+{
+    GetLastError(code, msg, thread_id);
 }
 
 /**

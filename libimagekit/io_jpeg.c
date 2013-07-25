@@ -48,12 +48,13 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     JSAMPARRAY buffer;
     
     REAL *ptr_out;
+    REAL input_scale = 1.0;
     int colorspace = CS(RGB);
     int colorspace_format = CS_FMT(RGB24);
     //REAL *format;
 
     size_t x;
-    uint32_t width, height, channels;
+    uint32_t width, height, channels, depth;
     //uint32_t depth;
     
     fp = fopen(filepath, "rb");
@@ -86,13 +87,30 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     /* Set decompress options */
     cinfo.dct_method = JDCT_FLOAT;
     cinfo.dither_mode = JDITHER_NONE;
+    cinfo.out_color_space = JCS_RGB;
     
     jpeg_start_decompress(&cinfo);
     
     width = cinfo.output_width;
     height = cinfo.output_height;
+    depth = cinfo.data_precision;
     //depth = 8;
     channels = cinfo.output_components;
+    
+    printf("%d\n%d\n%d\n",
+        cinfo.output_components,
+        cinfo.out_color_components,
+        cinfo.data_precision
+    );
+    
+    if (depth == 10) {
+        // 10-bit = 0x3ff
+        colorspace_format = CS_FMT(RGB30);
+    } else if (depth == 12) {
+        // 12-bit = 0xfff
+        input_scale = (REAL)0xffff / (REAL)0xfff;
+        colorspace_format = CS_FMT(RGB48);
+    }
     
     /* Create image instance */
     self = ImageKit_Image_New(
@@ -124,7 +142,7 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
         
         for (x = 0; x < self->pitch; x++) {
             ptr_out[x] =    (REAL)(self->channel_scales[(x % self->channels)]) *
-                            (REAL)(buffer[0][x]);
+                            ((REAL)(buffer[0][x]) * input_scale);
         }
         
         ptr_out += self->pitch;

@@ -38,6 +38,18 @@ void
 ImageKit_LastError(int *code, char **msg);
 
 /**
+* Get Last Error for Thread ID
+*
+* @param    int *code
+* @param    char **msg
+* @param    uintptr_t thread_id
+* @return   void
+**/
+API
+void
+ImageKit_LastErrorForThread(int *code, char **msg, uintptr_t thread_id);
+
+/**
 * Set Error
 *
 * @param    int code
