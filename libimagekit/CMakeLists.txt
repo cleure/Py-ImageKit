@@ -24,6 +24,7 @@ set(SOURCE_FILES
     blit.c
     curves.c
     filters/pointfilter.c
+    filters/matrix.c
 )
 
 #add_subdirectory(tests)

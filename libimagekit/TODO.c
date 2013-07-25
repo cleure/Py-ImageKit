@@ -14,11 +14,6 @@ TODO List
 - Ability to set bit depth in SavePNG()?
 
 - ImageKit_Cleanup() function, to cleanup memory (esp. error handling).
-- B-Spline point function filter
-    - Generate lookup table based on output
-        - X coordinate is the input (key)
-        - Y coordinate is the output (value)
-    - Apply point function using lookup table
 - Support for common video frame formats (YCbCr)
 - GIF support
 - Get box?
