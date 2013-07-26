@@ -26,7 +26,11 @@ ImageKit_PointFilter_FromCurves(
 
 API
 int
-ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image);
+ImageKit_PointFilter_Apply(
+    ImageKit_PointFilter *self,
+    ImageKit_Image *image,
+    ImageKit_Coords *coords
+);
 
 API
 void

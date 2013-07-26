@@ -115,15 +115,21 @@ ImageKit_PointFilter_FromCurves(
 
 API
 int
-ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image)
+ImageKit_PointFilter_Apply(
+    ImageKit_PointFilter *self,
+    ImageKit_Image *image,
+    ImageKit_Coords *coords
+)
 {
-    size_t i, l;
+    size_t i, l, c, idx;
     uint32_t lk, channel;
     REAL *ptr;
     REAL *filter[4] = {self->a, self->b, self->c, self->d};
     REAL lk_scales[4];
     REAL ch_scales[4];
     REAL *csfmt;
+    DIMENSION *ptr_xy;
+    DIMENSION x, y;
     
     csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[image->colorspace_format];
     
@@ -139,13 +145,28 @@ ImageKit_PointFilter_Apply(ImageKit_PointFilter *self, ImageKit_Image *image)
     ch_scales[2] = csfmt[6] * (image->channel_scales[2]);
     ch_scales[3] = csfmt[7] * (image->channel_scales[3]);
     
-    l = image->width * image->height * image->channels;
     ptr = image->data;
     
-    for (i = 0; i < l; i++) {
-        channel = i % image->channels;
-        lk = (uint32_t)round((*ptr) * lk_scales[channel]);
-        *ptr++ = filter[channel][lk] * ch_scales[channel];
+    if (coords == NULL) {
+        l = image->width * image->height * image->channels;
+        for (i = 0; i < l; i++) {
+            channel = i % image->channels;
+            lk = (uint32_t)round((*ptr) * lk_scales[channel]);
+            *ptr++ = filter[channel][lk] * ch_scales[channel];
+        }
+    } else {
+        ptr_xy = coords->coords;
+        
+        for (i = 0; i < coords->data_index; i++) {
+            x = (*ptr_xy++) % image->width;
+            y = (*ptr_xy++) % image->height;
+            
+            for (c = 0; c < image->channels; c++) {
+                idx = PIXEL_INDEX(image, x, y) + c;
+                lk = (uint32_t)round(ptr[idx] * lk_scales[c]);
+                ptr[idx] = filter[c][lk] * ch_scales[c];
+            }
+        }
     }
     
     return 1;
