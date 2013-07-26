@@ -24,17 +24,43 @@ API
 int
 ImageKit_Image_ApplyMatrix(ImageKit_Image *self, REAL *matrix, ImageKit_Coords *coords)
 {
-    size_t i, l, c;
+    size_t i, l, c, idx;
     DIMENSION x, y;
     DIMENSION *ptr_xy;
     REAL *ptr;
+    REAL *csfmt;
+    REAL value;
+    REAL min[4], max[4];
+    
+    csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    
+    if (self->scale <= 0) {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL)csfmt[c];
+            max[c] = (REAL)csfmt[c+4];
+        }
+    } else {
+        for (c = 0; c < self->channels; c++) {
+            min[c] = (REAL)0.0;
+            max[c] = (REAL)self->scale;
+        }
+    }
     
     ptr = self->data;
     
     if (coords == NULL) {
         l = self->width * self->height * self->channels;
         for (i = 0; i < l; i++) {
-            *ptr++ *= matrix[i % self->channels];
+            c = i % self->channels;
+            value = (*ptr) * matrix[c];
+            
+            if (value < min[c]) {
+                value = min[c];
+            } else if (value > max[c]) {
+                value = max[c];
+            }
+            
+            *ptr++ = value;
         }
     } else {
         ptr_xy = coords->coords;
@@ -43,7 +69,16 @@ ImageKit_Image_ApplyMatrix(ImageKit_Image *self, REAL *matrix, ImageKit_Coords *
             y = (*ptr_xy++) % self->height;
             
             for (c = 0; c < self->channels; c++) {
-                ptr[PIXEL_INDEX(self, x, y) + c] *= matrix[c];
+                idx = PIXEL_INDEX(self, x, y) + c;
+                value = ptr[idx] * matrix[c];
+                
+                if (value < min[c]) {
+                    value = min[c];
+                } else if (value > max[c]) {
+                    value = max[c];
+                }
+                
+                ptr[idx] = value;
             }
         }
     }

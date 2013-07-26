@@ -25,6 +25,8 @@ set(SOURCE_FILES
     curves.c
     filters/pointfilter.c
     filters/matrix.c
+    filters/convolution.c
+    filters/rankfilter.c
 )
 
 #add_subdirectory(tests)

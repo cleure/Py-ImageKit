@@ -50,3 +50,5 @@ extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 #include "curves.h"
 #include "filters/pointfilter.h"
 #include "filters/matrix.h"
+#include "filters/convolution.h"
+#include "filters/rankfilter.h"
