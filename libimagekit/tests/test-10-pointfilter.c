@@ -15,6 +15,7 @@ int main(void)
     ImageKit_PointFilter *filter;
     ImageKit_Curves *bezier, *bezier2;
     ImageKit_Coords *coords;
+    ImageKit_Rect rect = {0, 48, 256, 64};
     
     uint32_t samples = 512;
     DIMENSION x, y;
@@ -45,22 +46,16 @@ int main(void)
     /* Test valid inputs */
     filter = ImageKit_PointFilter_FromCurves(bezier, bezier, bezier, NULL);
     assert(filter != NULL);
-    
-    coords = ImageKit_Coords_New(buf->width * buf->height);
 
     // Pointfilter, no coords
     status = ImageKit_PointFilter_Apply(filter, buf, NULL);
     assert(status > 0);
     
-    for (y = 0; y < 64; y++) {
-        for (x = 0; x < buf->width; x++) {
-            ImageKit_Coords_Append(coords, x, y+48);
-        }
-    }
-    
     // Pointfilter, w/coords
+    coords = ImageKit_Coords_FromRect(&rect);
     status = ImageKit_PointFilter_Apply(filter, buf, coords);
     assert(status > 0);
+    ImageKit_Coords_Delete(coords);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");
     assert(status > 0);

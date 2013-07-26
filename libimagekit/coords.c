@@ -47,6 +47,33 @@ ImageKit_Coords_Delete(ImageKit_Coords *self)
 }
 
 API
+ImageKit_Coords *
+ImageKit_Coords_FromRect(ImageKit_Rect *rect)
+{
+    DIMENSION x, y, ex, ey;
+    ImageKit_Coords *coords;
+    
+    coords = ImageKit_Coords_New(rect->w * rect->h);
+    if (!coords) {
+        return NULL;
+    }
+    
+    ex = rect->x + rect->w;
+    ey = rect->y + rect->h;
+    
+    for (y = rect->y; y < ey; y++) {
+        for (x = rect->x; x < ex; x++) {
+            if (!ImageKit_Coords_Append(coords, x, y)) {
+                ImageKit_Coords_Delete(coords);
+                return NULL;
+            }
+        }
+    }
+    
+    return coords;
+}
+
+API
 int
 ImageKit_Coords_Resize(ImageKit_Coords *self, size_t items)
 {

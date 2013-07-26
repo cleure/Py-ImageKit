@@ -3,8 +3,6 @@
 
 TODO List
 
-- ImageKit_Coords_FromRect()
-
 - Test Support for 12-bit JPEG in LoadJPEG
 - Add support for 12-bit JPEG in SaveJPEG
 - Add support for greyscale JPEGs in Load/SaveJPEG

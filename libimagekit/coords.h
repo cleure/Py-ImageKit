@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rect.h"
+
 typedef struct Coordinates {
     size_t data_size;
     size_t data_items;
@@ -10,6 +12,10 @@ typedef struct Coordinates {
 API
 ImageKit_Coords *
 ImageKit_Coords_New(size_t items);
+
+API
+ImageKit_Coords *
+ImageKit_Coords_FromRect(ImageKit_Rect *rect);
 
 API
 void
