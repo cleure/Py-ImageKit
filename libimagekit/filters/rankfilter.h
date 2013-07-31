@@ -1,7 +1,5 @@
 #pragma once
 
-/*
-
 API
 int
 ImageKit_Image_ApplyRankFilter(
@@ -10,5 +8,3 @@ ImageKit_Image_ApplyRankFilter(
     REAL rank,
     ImageKit_Coords *coords
 );
-
-*/

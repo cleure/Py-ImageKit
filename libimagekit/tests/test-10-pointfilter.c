@@ -18,7 +18,6 @@ int main(void)
     ImageKit_Rect rect = {0, 48, 256, 64};
     
     uint32_t samples = 512;
-    DIMENSION x, y;
     
     REAL xy[] = {
         0.0, 0.0,

@@ -98,3 +98,6 @@ target_link_libraries(tests/build/test-11-errors imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-12-png30 tests/test-12-png30.c tests/framework.c)
 target_link_libraries(tests/build/test-12-png30 imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-13-rankfilter tests/test-13-rankfilter.c tests/framework.c)
+target_link_libraries(tests/build/test-13-rankfilter imagekit ${LINK_LIBRARIES})
