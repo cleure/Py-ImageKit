@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <stdint.h>
-#include <math.h>
 
 #include "imagekit.h"
 
