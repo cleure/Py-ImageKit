@@ -97,12 +97,6 @@ ImageKit_Image_FromJPEG(const char *filepath, REAL scale)
     //depth = 8;
     channels = cinfo.output_components;
     
-    printf("%d\n%d\n%d\n",
-        cinfo.output_components,
-        cinfo.out_color_components,
-        cinfo.data_precision
-    );
-    
     if (depth == 10) {
         // 10-bit = 0x3ff
         colorspace_format = CS_FMT(RGB30);
