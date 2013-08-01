@@ -1,4 +1,5 @@
 Py-ImageKit
 ===========
 
-Library for Low Level image manipulation in Python, which I primarily use for prototyping new algorithms.
+ImageKit is a lightweight low level image manipulation library, which I use for quickly prototyping new image processing filters and computer vision algorithms.
+
