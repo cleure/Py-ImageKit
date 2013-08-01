@@ -45,6 +45,10 @@ static const enum {
 
 extern const REAL COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8];
 
+API
+void
+ImageKit_Cleanup();
+
 #include "error.h"
 #include "image.h"
 #include "io_png.h"
