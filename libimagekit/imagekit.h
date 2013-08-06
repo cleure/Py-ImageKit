@@ -64,3 +64,5 @@ ImageKit_Cleanup();
 #include "filters/matrix.h"
 #include "filters/convolution.h"
 #include "filters/rankfilter.h"
+#include "scaling/nearest.h"
+#include "scaling/bilinear.h"

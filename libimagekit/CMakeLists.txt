@@ -27,6 +27,8 @@ set(SOURCE_FILES
     filters/matrix.c
     filters/convolution.c
     filters/rankfilter.c
+    scaling/nearest.c
+    scaling/bilinear.c
 )
 
 #add_subdirectory(tests)
@@ -104,3 +106,9 @@ target_link_libraries(tests/build/test-13-rankfilter imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-14-convolution tests/test-14-convolution.c tests/framework.c)
 target_link_libraries(tests/build/test-14-convolution imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-15-nearest tests/test-15-nearest.c tests/framework.c)
+target_link_libraries(tests/build/test-15-nearest imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-16-bilinear tests/test-16-bilinear.c tests/framework.c)
+target_link_libraries(tests/build/test-16-bilinear imagekit ${LINK_LIBRARIES})
