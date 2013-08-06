@@ -20,7 +20,7 @@ TODO List
 - Get box?
 - Better and more complete tests
 - Bilateral filter
-- Resize, nearest, bilinear, cubic family (B-Spline, Mitchell and Catmull-Rom), Lanczos3
+- Resize, cubic family (B-Spline, Mitchell and Catmull-Rom), Lanczos3
 - Rotate
 
 */
