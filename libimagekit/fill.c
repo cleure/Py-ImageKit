@@ -24,6 +24,24 @@ ImageKit_Image_Fill(ImageKit_Image *self, REAL *color)
 
 API
 int
+ImageKit_Image_FillChannel(ImageKit_Image *self, REAL color, DIMENSION channel)
+{
+    REAL *ptr;
+    size_t i, l;
+    
+    l = self->width * self->height;
+    ptr = (REAL *)&self->data[channel];
+    
+    for (i = 0; i < l; i++) {
+        *ptr = color;
+        ptr += self->channels;
+    }
+    
+    return 1;
+}
+
+API
+int
 ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color)
 {
     DIMENSION *coord_ptr;

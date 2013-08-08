@@ -14,14 +14,14 @@ get_result_convolved(
     ImageKit_Image *self,
     REAL *result,
     REAL *kernel,
+    int32_t channels,
     int32_t mid,
     int32_t x,
     int32_t y
 )
 {
-    int32_t c, sx, sy, ex, ey, i;
+    int32_t c, sx, sy, ex, ey;
     
-    i = 0;
     ex = x + mid;
     ey = y + mid;
     sy = y - mid;
@@ -37,16 +37,16 @@ get_result_convolved(
         
         while (sx <= ex) {
             if (sx < 0 || sy < 0 || sx >= self->width || sy >= self->height) {
-                for (c = 0; c < self->channels; c++) {
-                    result[c] += self->data[PIXEL_INDEX(self, x, y) + c] * kernel[i];
+                for (c = 0; c < channels; c++) {
+                    result[c] += self->data[PIXEL_INDEX(self, x, y) + c] * (*kernel);
                 }
             } else {
-                for (c = 0; c < self->channels; c++) {
-                    result[c] += self->data[PIXEL_INDEX(self, sx, sy) + c] * kernel[i];
+                for (c = 0; c < channels; c++) {
+                    result[c] += self->data[PIXEL_INDEX(self, sx, sy) + c] * (*kernel);
                 }
             }
             
-            i++;
+            kernel++;
             sx++;
         }
         
@@ -62,6 +62,7 @@ ImageKit_Image_ApplyCVKernel(
     DIMENSION kernel_size,
     REAL factor,
     REAL bias,
+    int32_t preserve_alpha,
     ImageKit_Coords *coords
 )
 {
@@ -73,9 +74,13 @@ ImageKit_Image_ApplyCVKernel(
     REAL *output = NULL;
     REAL *ptr_out;
     DIMENSION *coord_ptr;
-
+    
     int32_t x, y;
     int32_t c, mid, i;
+    int32_t channels;
+    int32_t has_alpha;
+    int32_t process_alpha_separately = 0;
+    int32_t loop_mask;
     
     /* Check errors */
     if (kernel_size < 3) {
@@ -90,6 +95,14 @@ ImageKit_Image_ApplyCVKernel(
     }
     
     csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
+    
+    channels = self->channels;
+    
+    /* Process Alpha Separately? */
+    has_alpha = (self->channels == 2 || self->channels == 4);
+    if (has_alpha && preserve_alpha) {
+        process_alpha_separately = 1;
+    }
     
     /* Get min/max */
     if (self->scale <= 0.0) {
@@ -113,50 +126,83 @@ ImageKit_Image_ApplyCVKernel(
         return -1;
     }
     
-    /*
-get_result_convolved(
-    ImageKit_Image *self,
-    REAL *result,
-    REAL *matrix,
-    int32_t mid,
-    int32_t x,
-    int32_t y
-)
-    */
-    
     ptr_out = output;
     mid = kernel_size / 2;
     
-    if (coords == NULL) {
+    /*
+    
+    0b11 = (coords, process_alpha_separately)
+    
+    0x0 == (coords 0, process_alpha_separately 0)
+    0x1 == (coords 0, process_alpha_separately 1)
+    0x2 == (coords 1, process_alpha_separately 0)
+    0x3 == (coords 1, process_alpha_separately 1)
+    
+    */
+    loop_mask = (coords != NULL) << 1 |
+                (process_alpha_separately == 1);
+    
+    #define GET_RESULT_CONVOLUTED()\
+                get_result_convolved(\
+                    self,\
+                    (REAL *)&result,\
+                    kernel,\
+                    channels,\
+                    mid,\
+                    x,\
+                    y);
+    
+    #define FACTOR_AND_CLAMP_RESULT()\
+                    result[c] = factor * result[c] + bias;\
+                    \
+                    if (result[c] > max[c]) {\
+                        result[c] = max[c];\
+                    } else if (result[c] < min[c]) {\
+                        result[c] = min[c];\
+                    }
+    
+    if (loop_mask == 0x0) {
+        // (coords 0, process_alpha_separately 0)
+        
         for (y = 0; y < self->height; y++) {
             for (x = 0; x < self->width; x++) {
             
                 /* Get result */
-                get_result_convolved(
-                    self,
-                    (REAL *)&result,
-                    kernel,
-                    mid,
-                    x,
-                    y);
+                GET_RESULT_CONVOLUTED();
                 
-                for (c = 0; c < self->channels; c++) {
-                    /* Apply factor / bias */
-                    result[c] = factor * result[c] + bias;
-                    
-                    /* Clamp */
-                    if (result[c] > max[c]) {
-                        result[c] = max[c];
-                    } else if (result[c] < min[c]) {
-                        result[c] = min[c];
-                    }
+                for (c = 0; c < channels; c++) {
+                    /* Factor / Bias / Clamp */
+                    FACTOR_AND_CLAMP_RESULT();
                     
                     /* Output */
                     *ptr_out++ = result[c];
                 }
             }
         }
-    } else {
+    } else if (loop_mask == 0x1) {
+        // (coords 0, process_alpha_separately 1)
+        
+        channels--;
+        for (y = 0; y < self->height; y++) {
+            for (x = 0; x < self->width; x++) {
+            
+                /* Get result */
+                GET_RESULT_CONVOLUTED();
+                
+                for (c = 0; c < channels; c++) {
+                    /* Factor / Bias / Clamp */
+                    FACTOR_AND_CLAMP_RESULT();
+                    
+                    /* Output */
+                    *ptr_out++ = result[c];
+                }
+                
+                *ptr_out++ = self->data[PIXEL_INDEX(self, x, y) + channels];
+            }
+        }
+    } else if (loop_mask == 0x2) {
+        // (coords 1, process_alpha_separately 0)
+        
         coord_ptr = coords->coords;
         memcpy(output, self->data, self->data_size);
         
@@ -165,29 +211,40 @@ get_result_convolved(
             y = *coord_ptr++;
             
             /* Get result */
-            get_result_convolved(
-                self,
-                (REAL *)&result,
-                kernel,
-                mid,
-                x,
-                y);
+            GET_RESULT_CONVOLUTED();
             
-            for (c = 0; c < self->channels; c++) {
-                /* Apply factor / bias */
-                result[c] = factor * result[c] + bias;
-                    
-                /* Clamp */
-                if (result[c] > max[c]) {
-                    result[c] = max[c];
-                } else if (result[c] < min[c]) {
-                    result[c] = min[c];
-                }
-                    
+            for (c = 0; c < channels; c++) {
+                /* Factor / Bias / Clamp */
+                FACTOR_AND_CLAMP_RESULT();
+                
+                /* Output */
+                output[self->pitch * y + x * self->channels + c] = result[c];
+            }
+        }
+    } else if (loop_mask == 0x3) {
+        // (coords 1, process_alpha_separately 1)
+        
+        channels--;
+        coord_ptr = coords->coords;
+        memcpy(output, self->data, self->data_size);
+        
+        for (i = 0; i < coords->data_index; i++) {
+            x = *coord_ptr++;
+            y = *coord_ptr++;
+            
+            /* Get result */
+            GET_RESULT_CONVOLUTED();
+            
+            for (c = 0; c < channels; c++) {
+                /* Factor / Bias / Clamp */
+                FACTOR_AND_CLAMP_RESULT();
+                
                 /* Output */
                 output[self->pitch * y + x * self->channels + c] = result[c];
             }
             
+            output[self->pitch * y + x * self->channels + channels] =
+                self->data[PIXEL_INDEX(self, x, y) + channels];
         }
     }
     

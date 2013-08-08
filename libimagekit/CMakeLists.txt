@@ -112,3 +112,6 @@ target_link_libraries(tests/build/test-15-nearest imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-16-bilinear tests/test-16-bilinear.c tests/framework.c)
 target_link_libraries(tests/build/test-16-bilinear imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-17-complex tests/test-17-complex.c tests/framework.c)
+target_link_libraries(tests/build/test-17-complex imagekit ${LINK_LIBRARIES})

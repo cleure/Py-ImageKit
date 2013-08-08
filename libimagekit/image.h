@@ -55,11 +55,3 @@ ImageKit_Image_GetConversionScales(
     ImageKit_Image *in,
     REAL *scales
 );
-
-/*
-
-ImageBuffer_New()
-ImageBuffer_Delete()
-ImageBuffer_Clone()
-
-*/

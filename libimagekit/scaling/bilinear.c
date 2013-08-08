@@ -25,7 +25,7 @@ ImageKit_Image_ScaleBilinear(
     ImageKit_Image *output;
     double x_scale, y_scale;
     double Lx, Ly;
-    REAL A, B, C, D;
+    REAL *A, *B, *C, *D;
     REAL *ptr_out;
     
     DIMENSION x_in, y_in, x_out, y_out, c;
@@ -55,13 +55,13 @@ ImageKit_Image_ScaleBilinear(
             x_in = (DIMENSION) (x_out * x_scale);
             Lx = (double)(x_out * x_scale - x_in);
             
+            A = &self->data[PIXEL_INDEX(self, x_in,   y_in)];
+            B = &self->data[PIXEL_INDEX(self, x_in+1, y_in)];
+            C = &self->data[PIXEL_INDEX(self, x_in,   y_in+1)];
+            D = &self->data[PIXEL_INDEX(self, x_in+1, y_in+1)];
+            
             for (c = 0; c < self->channels; c++) {
-                A = self->data[PIXEL_INDEX(self, x_in,   y_in) + c];
-                B = self->data[PIXEL_INDEX(self, x_in+1, y_in) + c];
-                C = self->data[PIXEL_INDEX(self, x_in,   y_in+1) + c];
-                D = self->data[PIXEL_INDEX(self, x_in+1, y_in+1) + c];
-                
-                *ptr_out++ = BILINEAR(A, B, C, D, Lx, Ly);
+                *ptr_out++ = BILINEAR((*A++), (*B++), (*C++), (*D++), Lx, Ly);
             }
         }
     }

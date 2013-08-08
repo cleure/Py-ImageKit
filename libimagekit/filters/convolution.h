@@ -23,5 +23,6 @@ ImageKit_Image_ApplyCVKernel(
     DIMENSION kernel_size,
     REAL factor,
     REAL bias,
+    int32_t preserve_alpha,
     ImageKit_Coords *coords
 );

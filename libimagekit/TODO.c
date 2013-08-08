@@ -5,6 +5,9 @@ TODO List
 
 - Unit Tests for ImageKit_Image_ApplyMatrix()
 
+- ImageKit_Image_RemoveAlpha() - to strip out alpha channel
+- Add preserve_alpha option to ImageKit_Image_ApplyRankFilter(), like with
+    ImageKit_Image_ApplyCVKernel()
 - Test Support for 12-bit JPEG in LoadJPEG
 - Add support for 12-bit JPEG in SaveJPEG
 - Add support for greyscale JPEGs in Load/SaveJPEG

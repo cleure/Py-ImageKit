@@ -21,7 +21,7 @@ int main(void)
     
     status = ImageKit_Image_SavePNG(output, "output.png");
     assert(status > 0);
-    
+
     ImageKit_Image_Delete(input);
     ImageKit_Image_Delete(output);
     
