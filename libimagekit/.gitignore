@@ -6,3 +6,4 @@ config.h
 Makefile
 liblibimagekit.a
 tests/build/*
+private/*

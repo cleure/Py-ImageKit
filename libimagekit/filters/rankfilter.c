@@ -86,6 +86,12 @@ ImageKit_Image_ApplyRankFilter(
     int32_t matrix_mid, matrix_elements;
     int32_t c, mid, i;
     
+    /*
+    
+    FIXME: int32_t preserve_alpha option, for processing alpha channels
+    
+    */
+    
     if (matrix_size < 3) {
         ImageKit_SetError(ImageKit_ValueError, "Matrix size must be a minimum of 3");
         return -1;
