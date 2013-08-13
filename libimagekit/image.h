@@ -55,3 +55,7 @@ ImageKit_Image_GetConversionScales(
     ImageKit_Image *in,
     REAL *scales
 );
+
+API
+int
+ImageKit_Image_RemoveAlpha(ImageKit_Image *self);

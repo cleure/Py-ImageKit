@@ -8,14 +8,6 @@
 #include "imagekit.h"
 #include "tests/framework.h"
 
-#define BILINEAR(A, B, C, D, Lx, Ly)\
-(\
-    (A * (1 - Lx) * (1 - Ly))    +\
-    (B * (    Lx) * (1 - Ly))    +\
-    (C * (    Ly) * (1 - Lx))    +\
-    (D * (    Lx) * (    Ly))\
-)
-
 int main(void)
 {
     int status, i, x, y;
@@ -40,13 +32,13 @@ int main(void)
     input = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(input != NULL);
     
-    output = ImageKit_Image_ScaleBilinear(input, (DIMENSION)input->width*2.3, input->height*2);
+    output = ImageKit_Image_ScaleBilinear(input, (DIMENSION)input->width*2.333, input->height*2);
     assert(output != NULL);
     
     REAL kernel[] = {
-        -1, 0, 1,
-        -2, 0, 2,
-        -1, 0, 1
+        -1, -1, -1,
+        -1,  8, -1,
+        -1, -1, -1
     };
     
     ImageKit_Image_ApplyCVKernel(
@@ -59,10 +51,18 @@ int main(void)
         NULL
     );
     
-    curves_horz = ImageKit_Curves_FromBezier(output->width*2, (REAL *)&horz_xy, sizeof(horz_xy)/sizeof(horz_xy[0])/2);
+    curves_horz = ImageKit_Curves_FromBezier(
+        output->width*2,
+        (REAL *)&horz_xy,
+        sizeof(horz_xy)/sizeof(horz_xy[0])/2);
+    
     assert(curves_horz != NULL);
     
-    curves_vert = ImageKit_Curves_FromBezier(output->height*2, (REAL *)&vert_xy, sizeof(vert_xy)/sizeof(vert_xy[0])/2);
+    curves_vert = ImageKit_Curves_FromBezier(
+        output->height*2,
+        (REAL *)&vert_xy,
+        sizeof(vert_xy)/sizeof(vert_xy[0])/2);
+    
     assert(curves_vert != NULL);
     
     for (i = 0; i < curves_horz->data_items; i++) {

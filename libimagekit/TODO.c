@@ -5,7 +5,10 @@ TODO List
 
 - Unit Tests for ImageKit_Image_ApplyMatrix()
 
-- ImageKit_Image_RemoveAlpha() - to strip out alpha channel
+- Add internal helper functions:
+    ImageKit_GetClampRanges(int32_t fmt, REAL scale, REAL *min, REAL *max)
+    ImageKit_Image_GetClampRanges(ImageKit_Image *self, REAL *min, REAL *max)
+
 - Add preserve_alpha option to ImageKit_Image_ApplyRankFilter(), like with
     ImageKit_Image_ApplyCVKernel()
 - Test Support for 12-bit JPEG in LoadJPEG

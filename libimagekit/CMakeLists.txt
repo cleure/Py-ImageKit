@@ -13,6 +13,7 @@ set(SOURCE_FILES
     htable/hashtable.c
     
     # ImageKit Sources
+    imagekit.c
     coords.c
     error.c
     image.c
@@ -115,3 +116,6 @@ target_link_libraries(tests/build/test-16-bilinear imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-17-complex tests/test-17-complex.c tests/framework.c)
 target_link_libraries(tests/build/test-17-complex imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-18-remove-alpha tests/test-18-remove-alpha.c tests/framework.c)
+target_link_libraries(tests/build/test-18-remove-alpha imagekit ${LINK_LIBRARIES})

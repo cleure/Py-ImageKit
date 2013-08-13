@@ -210,3 +210,37 @@ ImageKit_Image_GetConversionScales(
         scales
     );
 }
+
+API
+int
+ImageKit_Image_RemoveAlpha(ImageKit_Image *self)
+{
+    REAL *ptr_in;
+    REAL *ptr_out;
+    int32_t channels;
+    size_t i, c, l;
+    
+    if (self->channels != 2 && self->channels != 4) {
+        return 1;
+    }
+    
+    ptr_in = self->data;
+    ptr_out = self->data;
+    
+    l = self->width * self->height;
+    channels = self->channels - 1;
+    
+    for (i = 0; i < l; i++) {
+        for (c = 0; c < channels; c++) {
+            *ptr_out++ = *ptr_in++;
+        }
+        
+        ptr_in++;
+    }
+    
+    self->channels = channels;
+    self->pitch = self->width * channels;
+    self->data_items = self->pitch * self->height;
+    
+    return 1;
+}

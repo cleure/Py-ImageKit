@@ -95,7 +95,6 @@ ImageKit_Image_ApplyCVKernel(
     }
     
     csfmt = (REAL *)&COLORSPACE_FORMAT_MINMAX[self->colorspace_format];
-    
     channels = self->channels;
     
     /* Process Alpha Separately? */
