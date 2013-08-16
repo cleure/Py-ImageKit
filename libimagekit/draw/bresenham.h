@@ -20,3 +20,14 @@ ImageKit_Image_DrawBresenhamCircle(
     DIMENSION radius,
     REAL *color
 );
+
+API
+int
+ImageKit_Image_DrawBresenhamEllipse(
+    ImageKit_Image *self,
+    DIMENSION _x0,
+    DIMENSION _y0,
+    DIMENSION _x1,
+    DIMENSION _y1,
+    REAL *color
+);

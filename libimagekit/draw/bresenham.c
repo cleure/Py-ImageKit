@@ -115,7 +115,7 @@ ImageKit_Image_DrawBresenhamCircle(
             dy += 2;
             f += dy;
         }
-            
+        
         x += 1;
         dx += 2;
         f += dx;
@@ -128,6 +128,90 @@ ImageKit_Image_DrawBresenhamCircle(
         ADD_POINT(sx - y, sy + x);
         ADD_POINT(sx + y, sy - x);
         ADD_POINT(sx - y, sy - x);
+    }
+
+    return 1;
+}
+
+API
+int
+ImageKit_Image_DrawBresenhamEllipse(
+    ImageKit_Image *self,
+    DIMENSION _x0,
+    DIMENSION _y0,
+    DIMENSION _x1,
+    DIMENSION _y1,
+    REAL *color
+)
+{
+    int32_t a, b, b1, x0, y0, x1, y1, c;
+    int64_t dx, dy, err, e2;
+    
+    REAL *ptr;
+    
+    #define ADD_POINT(_x, _y)\
+        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
+        for (c = 0; c < self->channels; c++) {\
+            ptr[c] = color[c];\
+        }
+
+    x0 = _x0;
+    x1 = _x1;
+    y0 = _y0;
+    y1 = _y1;
+
+    a = abs(x1 - x0);
+    b = abs(y1 - y0);
+    b1 = b & 1;
+    
+    dx = 4 * ( 1 - a) * b * b;
+    dy = 4 * (b1 + 1) * a * a;
+    err = dx + dy + b1 * a * a;
+    
+    if (x0 > x1) {
+        x0 = x1;
+        x1 += a;
+    }
+    
+    if (y0 > y1) {
+        y0 = y1;
+    }
+    
+    y0 += (b + 1) / 2;
+    y1 = y0 - b1;
+    a *= 8 * a;
+    b1 = 8 * b * b;
+
+    do {
+       ADD_POINT(x1, y0);
+       ADD_POINT(x0, y0);
+       ADD_POINT(x0, y1);
+       ADD_POINT(x1, y1);
+       
+       e2 = 2 * err;
+       if (e2 <= dy) {
+            // y step
+            y0++;
+            y1--;
+            err += dy += a;
+        }
+        
+        if (e2 >= dx || 2 * err > dy) {
+            // x step
+            x0++;
+            x1--;
+            err += dx += b1;
+        }
+    } while (x0 <= x1);
+    
+    while (y0 - y1 < b) {
+        ADD_POINT(x0 - 1, y0);
+        ADD_POINT(x1 + 1, y0);
+        ADD_POINT(x0 - 1, y1);
+        ADD_POINT(x1 + 1, y1);
+        
+        y0++;
+        y1--;
     }
 
     return 1;
