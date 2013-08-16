@@ -10,3 +10,13 @@ ImageKit_Image_DrawBresenhamLine(
     DIMENSION _y1,
     REAL *color
 );
+
+API
+int
+ImageKit_Image_DrawBresenhamCircle(
+    ImageKit_Image *self,
+    DIMENSION midpoint_x,
+    DIMENSION midpoint_y,
+    DIMENSION radius,
+    REAL *color
+);

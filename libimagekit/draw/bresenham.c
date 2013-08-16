@@ -73,3 +73,62 @@ ImageKit_Image_DrawBresenhamLine(
     
     return 1;
 }
+
+API
+int
+ImageKit_Image_DrawBresenhamCircle(
+    ImageKit_Image *self,
+    DIMENSION midpoint_x,
+    DIMENSION midpoint_y,
+    DIMENSION radius,
+    REAL *color
+)
+{
+    int32_t f, dx, dy, sx, sy, x, y, r;
+    int32_t c;
+    REAL *ptr;
+    
+    #define ADD_POINT(_x, _y)\
+        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
+        for (c = 0; c < self->channels; c++) {\
+            ptr[c] = color[c];\
+        }
+
+    r = radius;
+    sx = midpoint_x;
+    sy = midpoint_y;
+
+    f = 1 - r;
+    dx = 1;
+    dy = -2 * r;
+    x = 0;
+    y = r;
+    
+    ADD_POINT(sx,     sy + r);
+    ADD_POINT(sx,     sy - r);
+    ADD_POINT(sx + r, sy);
+    ADD_POINT(sx - r, sy);
+    
+    while (x < y) {
+        if (f >= 0) {
+            y -= 1;
+            dy += 2;
+            f += dy;
+        }
+            
+        x += 1;
+        dx += 2;
+        f += dx;
+        
+        ADD_POINT(sx + x, sy + y);
+        ADD_POINT(sx - x, sy + y);
+        ADD_POINT(sx + x, sy - y);
+        ADD_POINT(sx - x, sy - y);
+        ADD_POINT(sx + y, sy + x);
+        ADD_POINT(sx - y, sy + x);
+        ADD_POINT(sx + y, sy - x);
+        ADD_POINT(sx - y, sy - x);
+    }
+
+    return 1;
+}

@@ -19,8 +19,10 @@ int main(void)
     buf = ImageKit_Image_FromPNG("/Users/cleure/Downloads/smw-1x.png", -1);
     assert(buf != NULL);
     
-
     status = ImageKit_Image_DrawBresenhamLine(buf, xy0[0], xy0[1], xy1[0], xy1[1], (REAL *)&color);
+    assert(status > 0);
+    
+    status = ImageKit_Image_DrawBresenhamCircle(buf, 48, 48, 20, (REAL *)&color);
     assert(status > 0);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");
