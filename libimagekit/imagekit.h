@@ -66,3 +66,4 @@ ImageKit_Cleanup();
 #include "filters/rankfilter.h"
 #include "scaling/nearest.h"
 #include "scaling/bilinear.h"
+#include "draw/bresenham.h"

@@ -30,6 +30,7 @@ set(SOURCE_FILES
     filters/rankfilter.c
     scaling/nearest.c
     scaling/bilinear.c
+    draw/bresenham.c
 )
 
 #add_subdirectory(tests)
@@ -119,3 +120,6 @@ target_link_libraries(tests/build/test-17-complex imagekit ${LINK_LIBRARIES})
 
 add_executable(tests/build/test-18-remove-alpha tests/test-18-remove-alpha.c tests/framework.c)
 target_link_libraries(tests/build/test-18-remove-alpha imagekit ${LINK_LIBRARIES})
+
+add_executable(tests/build/test-19-bresenham tests/test-19-bresenham.c tests/framework.c)
+target_link_libraries(tests/build/test-19-bresenham imagekit ${LINK_LIBRARIES})
