@@ -17,19 +17,13 @@ ImageKit_Image_DrawBresenhamLine(
     REAL *color
 )
 {
-    int32_t dx,
-            dy,
-            sx,
-            sy,
-            x0,
-            x1,
-            y0,
-            y1,
-            err,
-            e2,
-            c,
-            res1,
-            res2;
+    int32_t dx, dy;
+    int32_t sx, sy;
+    int32_t x0, y0;
+    int32_t x1, y1;
+    int32_t err, e2;
+    int32_t res1, res2;
+    int32_t c;
     
     REAL *ptr;
     
