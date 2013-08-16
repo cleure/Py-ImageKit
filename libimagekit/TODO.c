@@ -3,6 +3,12 @@
 
 TODO List
 
+- Drawing functions:
+    - Bresenham line
+    - Bresenham circle
+    - Bresenham elipse
+    - Antialised drawing methods
+
 - Unit Tests for ImageKit_Image_ApplyMatrix()
 
 - Add internal helper functions:
