@@ -4,6 +4,7 @@
 #define IMAGEKIT_ERROR_MAX 1024
 
 /* Possible Errors */
+/*
 enum {
     ImageKit_NotImplementedError,
     ImageKit_StandardError,
@@ -16,6 +17,27 @@ enum {
     ImageKit_ArgumentError,
     IMAGEKIT_NUM_ERRORS
 } IMAGEKIT_ERROR;
+*/
+
+/*
+
+Uninstall:
+
+py27-wxpython30
+
+
+*/
+
+#define ImageKit_NotImplementedError    0
+#define ImageKit_StandardError          1
+#define ImageKit_ValueError             2
+#define ImageKit_TypeError              3
+#define ImageKit_OSError                4
+#define ImageKit_IOError                5
+#define ImageKit_MemoryError            6
+#define ImageKit_IndexError             7
+#define ImageKit_ArgumentError          8
+#define IMAGEKIT_NUM_ERRORS             9
 
 /* Error Struct */
 typedef struct ImageKit_Error {

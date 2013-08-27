@@ -155,7 +155,7 @@ ImageKit_Image_ApplyRankFilter(
         for (y = 0; y < self->height; y++) {
             for (x = 0; x < self->width; x++) {
                 /* Fill rank matrix */
-                fill_matrix_box(self, rank_matrix, matrix_elements, mid, x, y);
+                fill_matrix_box(self, rank_matrix, matrix_elements, mid, (int32_t)x, (int32_t)y);
                 
                 /* Output */
                 for (c = 0; c < self->channels; c++) {
@@ -187,7 +187,7 @@ ImageKit_Image_ApplyRankFilter(
             y = *coord_ptr++;
             
             /* Fill rank matrix */
-            fill_matrix_box(self, rank_matrix, matrix_elements, mid, x, y);
+            fill_matrix_box(self, rank_matrix, matrix_elements, mid, (int32_t)x, (int32_t)y);
             
             for (c = 0; c < self->channels; c++) {
                 /* Get ptr offset */

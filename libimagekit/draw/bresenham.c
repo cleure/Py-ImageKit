@@ -27,6 +27,12 @@ ImageKit_Image_DrawBresenhamLine(
     
     REAL *ptr;
     
+    #define ADD_POINT(_x, _y)\
+        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
+        for (c = 0; c < self->channels; c++) {\
+            ptr[c] = color[c];\
+        }
+    
     x0 = _x0;
     x1 = _x1;
     y0 = _y0;
@@ -40,11 +46,7 @@ ImageKit_Image_DrawBresenhamLine(
     
     err = dx - dy;
     while (1) {
-        ptr = &(self->data[PIXEL_INDEX(self, (x0 % self->width), (y0 % self->height))]);
-        for (c = 0; c < self->channels; c++) {
-            ptr[c] = color[c];
-        }
-
+        ADD_POINT(x0, y0);
         if (x0 == x1 && y0 == y1) {
             break;
         }

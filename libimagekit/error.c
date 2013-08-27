@@ -50,7 +50,7 @@ static void thread_table_freefn(struct htable_entry *ent)
 
 PRIVATE void init()
 {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     thread_table = htable_new(
         1024,

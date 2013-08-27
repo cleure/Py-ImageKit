@@ -1,62 +1,28 @@
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <memory.h>
-#include <math.h>
+#include <Python.h>
+#include <structmember.h>
 
 #include "imagekit.h"
-#include "imagekit_functions.h"
 
-/*
+#ifdef API
+    #undef API
+#endif
 
-TODO:
-        - Implement coordinate system for apply_matrix()
-        - apply_cvkernel() and apply_rankfilter() have common parts which could be consolidated.
-        - Multi-threaded neighbor functions? Would increase performance of rank filters, and convolution kernels. Fairly easy to implement for a small, fixed size of threads.
-        - Look into OpenCL.
-        - Split project into library and Python Interface?
-        - Coordinate system? It would be cool if you could generate shapes as coordinates, and pass them as parameters for the filter functions to use.
-        - Bilateral Filter
-        - scale_cubic(), implementing B-Spline, Mitchell and Catmull-Rom.
-        - scale_lanczos3()?
-        - save() / load(), wrapping around save*() / load*().
-        - Mode filter?
-        - De-blur?
-        - Cleanup build system.
-        - in filter methods, ability to take x, y, width, height so boxes can be filtered.
-        - Point Functions
-            - brightness / contrast
-            - gamma
-            - polynomial functions
-        - fill()
-        - blit()
-        - crop()
-        - rotate()
-        - Fix loading grayscale images in ImageBuffer_from_png()
-        - Proper exception hierarchy
-        - Cleanup error messages
-        - saveJPG().
-        - Test with RGB30 and RGB48.
-        - Python 3.x support.
-        - Documentation.
+#define API static
 
-*/
+static PyObject *MODULE;
+static const char *documentation;
+static PyTypeObject ImageBuffer_Type;
 
-static PyObject *MODULE = NULL;
-
-/* Constants */
-static const int HAVE_PNG           = HAVE_LIBPNG;
-static const int HAVE_JPEG          = HAVE_LIBJPEG;
-static const int HAVE_GIF           = HAVE_LIBGIF;
-
-static const double COLORSPACE_FORMAT_MINMAX[COLORSPACE_FORMAT_SIZE][8] = {
-    {0.0, 0.0, 0.0, 0.0,    31.0,      31.0,       31.0,     0.0},
-    {0.0, 0.0, 0.0, 0.0,    31.0,      63.0,       31.0,     0.0},
-    {0.0, 0.0, 0.0, 0.0,   255.0,     255.0,      255.0,   255.0},
-    {0.0, 0.0, 0.0, 0.0,  1023.0,    1023.0,     1023.0,     0.0},
-    {0.0, 0.0, 0.0, 0.0, 65535.0,   65535.0,    65535.0, 65535.0},
-    {0.0, 0.0, 0.0, 0.0,   360.0,       1.0,        1.0,     1.0},
-    {0.0, 0.0, 0.0, 0.0,     1.0,       0.0,        0.0,     1.0},
+struct ListTypeMethods {
+    Py_ssize_t (*Size)(PyObject *);
+    PyObject * (*GetItem)(PyObject *, Py_ssize_t);
+    int (*SetItem)(PyObject *, Py_ssize_t, PyObject *);
+    PyObject * (*GetSlice)(PyObject *, Py_ssize_t, Py_ssize_t);
 };
 
 static struct ListTypeMethods LIST_METHODS = {
@@ -73,33 +39,610 @@ static struct ListTypeMethods TUPLE_METHODS = {
     &PyTuple_GetSlice
 };
 
+static struct ListTypeMethods *GetListMethods(PyObject *object)
+{
+    if (PyTuple_Check(object)) {
+        return &TUPLE_METHODS;
+    } else if (PyList_Check(object)) {
+        return &LIST_METHODS;
+    }
+    
+    PyErr_SetString(PyExc_ValueError, "Object must be of type list or tuple");
+    return NULL;
+}
+
+typedef struct {
+    PyObject_HEAD
+    ImageKit_Image *image;
+} ImageBuffer;
+
+API int ImageBuffer_init(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwargs_names[] = {
+                    "width",
+                    "height",
+                    "channels",
+                    "scale_max",
+                    "colorspace",
+                    "colorspace_format",
+                    NULL
+    };
+    
+    ImageKit_Image *image = NULL;
+    
+    REAL scale = -1;
+    int colorspace = -1;
+    int colorspace_format = -1;
+    
+    uint32_t width;
+    uint32_t height;
+    uint32_t channels;
+
+    /* Parse arguments */
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kwargs,
+            "III|fii",
+            kwargs_names,
+            &width,
+            &height,
+            &channels,
+            &scale,
+            &colorspace,
+            &colorspace_format)) {
+        return -1;
+    }
+    
+    image = ImageKit_Image_New(
+        width,
+        height,
+        channels,
+        scale,
+        colorspace,
+        colorspace_format
+    );
+    
+    if (!image) {
+        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        return -1;
+    }
+    
+    self->image = image;
+    return 0;
+}
+
+API void ImageBuffer_dealloc(ImageBuffer *self)
+{
+    ImageKit_Image_Delete(self->image);
+    self->ob_type->tp_free((PyObject *)self);
+}
+
+API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwargs_names[] = {"path", "scale", NULL};
+    char *path;
+    REAL scale = -1;
+    ImageKit_Image *image;
+    
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kwargs,
+            "s|f",
+            kwargs_names,
+            &path,
+            &scale)) {
+        return NULL;
+    }
+    
+    if (!(self = (ImageBuffer *)_PyObject_New(&ImageBuffer_Type))) {
+        return NULL;
+    }
+    
+    image = ImageKit_Image_FromPNG(path, scale);
+    if (!image) {
+        Py_DECREF(self);
+        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        return NULL;
+    }
+    
+    self->image = image;
+    return (PyObject *)self;
+}
+
+PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args)
+{
+    int e_code;
+    char *e_msg;
+    char *path = NULL;
+    if (!PyArg_ParseTuple(args, "s", &path)) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_SavePNG(self->image, path) < 1) {
+        ImageKit_LastError(&e_code, &e_msg);
+        PyErr_SetString(PyExc_StandardError, e_msg);
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwargs_names[] = {"path", "scale", NULL};
+    char *path;
+    REAL scale = -1;
+    ImageKit_Image *image;
+    
+    if (!PyArg_ParseTupleAndKeywords(
+            args,
+            kwargs,
+            "s|f",
+            kwargs_names,
+            &path,
+            &scale)) {
+        return NULL;
+    }
+    
+    if (!(self = (ImageBuffer *)_PyObject_New(&ImageBuffer_Type))) {
+        return NULL;
+    }
+    
+    image = ImageKit_Image_FromJPEG(path, scale);
+    if (!image) {
+        Py_DECREF(self);
+        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        return NULL;
+    }
+    
+    self->image = image;
+    return (PyObject *)self;
+}
+
+PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args)
+{
+    int e_code;
+    int quality = 85;
+    char *e_msg;
+    char *path = NULL;
+    
+    if (!PyArg_ParseTuple(args, "s|i", &path, &quality)) {
+        return NULL;
+    }
+    
+    if (quality < 0 || quality > 100) {
+        PyErr_SetString(PyExc_ValueError, "Quality must be between 0 and 100");
+        return NULL;
+    }
+    
+    if (ImageKit_Image_SaveJPEG(self->image, path, quality) < 1) {
+        ImageKit_LastError(&e_code, &e_msg);
+        PyErr_SetString(PyExc_StandardError, e_msg);
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_channel_ranges(ImageBuffer *self, PyObject *args)
+{
+    int i;
+    volatile int error = 0;
+    REAL min[4] = {0, 0, 0, 0};
+    REAL max[4] = {0, 0, 0, 0};
+    
+    PyObject *rmin = NULL,
+             *rmax = NULL,
+             *outer = NULL;
+    
+    if (!(outer = PyTuple_New(2))) goto error_out;
+    if (!( rmin = PyTuple_New(4))) goto error_out;
+    if (!( rmax = PyTuple_New(4))) goto error_out;
+    
+    ImageKit_Image_ChannelRanges(self->image, (REAL *)&min, (REAL *)&max);
+    for (i = 0; i < 4; i++) {
+        PyTuple_SetItem(rmin, i, PyFloat_FromDouble(min[i]));
+        PyTuple_SetItem(rmax, i, PyFloat_FromDouble(max[i]));
+    }
+    
+    PyTuple_SetItem(outer, 0, rmin);
+    PyTuple_SetItem(outer, 1, rmax);
+    
+    if (error) {
+        error_out:
+            Py_XDECREF(outer);
+            Py_XDECREF(rmin);
+            Py_XDECREF(rmax);
+        return NULL;
+    }
+    
+    return outer;
+}
+
+PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
+{
+    volatile int error = 0;
+    
+    size_t i, l;
+    int32_t channels;
+    int32_t samples = 255;
+    ImageKit_Histogram *hist;
+    PyObject *result[4] = {NULL, NULL, NULL, NULL};
+    PyObject *outer = NULL;
+    PyObject *tmp;
+    
+    if (!PyArg_ParseTuple(args, "i", &samples)) {
+        return NULL;
+    }
+    
+    if (samples < 1 || samples > 0xffff) {
+        PyErr_SetString(PyExc_ValueError, "samples must be between 1 and 65535");
+        return NULL;
+    }
+    
+    channels = self->image->channels;
+    hist = ImageKit_Histogram_FromImage(self->image, (uint16_t)samples);
+    if (!hist) {
+        PyErr_SetString(PyExc_StandardError, "Failed to create histogram object");
+        return NULL;
+    }
+    
+    if (!(outer = PyTuple_New(channels))) goto error_out;
+    
+    for (i = 0; i < channels; i++) {
+        if (!(result[i] = PyTuple_New(samples))) goto error_out;
+    }
+    
+    l = samples * channels;
+    for (i = 0; i < l; i++) {
+        if (!(tmp = PyInt_FromLong(hist->a[i]))) goto error_out;
+        PyTuple_SetItem(result[i / samples], i % samples, tmp);
+    }
+    
+    for (i = 0; i < channels; i++) {
+        PyTuple_SetItem(outer, i, result[i]);
+    }
+    
+    ImageKit_Histogram_Delete(hist);
+    
+    if (error) {
+        error_out:
+            ImageKit_Histogram_Delete(hist);
+            Py_XDECREF(result[0]);
+            Py_XDECREF(result[1]);
+            Py_XDECREF(result[2]);
+            Py_XDECREF(result[3]);
+            Py_XDECREF(outer);
+        return NULL;
+    }
+    
+    return outer;
+}
+
+PyObject *ImageBuffer_get_pixel(ImageBuffer *self, PyObject *args)
+{
+    REAL *ptr;
+    DIMENSION x, y, c;
+    PyObject *result;
+    
+    if (!PyArg_ParseTuple(args, "ii", &x, &y)) {
+        return NULL;
+    }
+    
+    if (!(result = PyTuple_New(self->image->channels))) {
+        return NULL;
+    }
+    
+    x = x % self->image->width;
+    y = y % self->image->height;
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, x, y)]);
+    
+    for (c = 0; c < self->image->channels; c++) {
+        PyTuple_SetItem(result, c, PyFloat_FromDouble(*ptr++));
+    }
+    
+    return result;
+}
+
+PyObject *ImageBuffer_set_pixel(ImageBuffer *self, PyObject *args)
+{
+    REAL *ptr;
+    REAL value;
+    DIMENSION x, y, c;
+    PyObject *pixel, *tmp;
+    struct ListTypeMethods *pixel_methods;
+    
+    if (!PyArg_ParseTuple(args, "iiO", &x, &y, &pixel)) {
+        return NULL;
+    }
+    
+    if (!(pixel_methods = GetListMethods(pixel))) {
+        return NULL;
+    }
+    
+    if (pixel_methods->Size(pixel) < self->image->channels) {
+        PyErr_SetString(PyExc_ValueError, "list/tuple argument does not have enough elements");
+        return NULL;
+    }
+    
+    x = x % self->image->width;
+    y = y % self->image->height;
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, x, y)]);
+    
+    for (c = 0; c < self->image->channels; c++) {
+        tmp = pixel_methods->GetItem(pixel, c);
+        Py_INCREF(tmp);
+        value = (REAL)PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+        
+        *ptr++ = value;
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_hzline_in(ImageBuffer *self, PyObject *args)
+{
+    size_t i, l;
+    DIMENSION y;
+    REAL *ptr;
+    REAL value;
+    PyObject *line, *tmp;
+    struct ListTypeMethods *line_methods;
+    
+    if (!PyArg_ParseTuple(args, "IO", &y, &line)) {
+        return NULL;
+    }
+    
+    if (!(line_methods = GetListMethods(line))) {
+        return NULL;
+    }
+    
+    y = y % self->image->height;
+    l = line_methods->Size(line);
+    if (l > (self->image->width * self->image->channels)) {
+        l = self->image->width * self->image->channels;
+    }
+    
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, 0, y)]);
+    
+    for (i = 0; i < l; i++) {
+        tmp = line_methods->GetItem(line, i);
+        Py_INCREF(tmp);
+        value = (REAL)PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+        
+        *ptr++ = value;
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_hzline_out(ImageBuffer *self, PyObject *args)
+{
+    volatile int error = 0;
+    
+    size_t i, l;
+    DIMENSION y;
+    REAL *ptr;
+    PyObject *tmp = NULL,
+             *line_out = NULL;
+    
+    if (!PyArg_ParseTuple(args, "I", &y)) {
+        return NULL;
+    }
+    
+    y = y % self->image->height;
+    l = self->image->width * self->image->channels;
+    line_out = PyList_New(l);
+    if (!line_out) {
+        return NULL;
+    }
+    
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, 0, y)]);
+    for (i = 0; i < l; i++) {
+        tmp = PyFloat_FromDouble(*ptr);
+        if (!tmp) {
+            goto error_out;
+        }
+        
+        PyList_SetItem(line_out, i, tmp);
+        ptr++;
+    }
+    
+    if (error) {
+        error_out:
+            Py_XDECREF(line_out);
+            return NULL;
+    }
+    
+    return line_out;
+}
+
+PyObject *ImageBuffer_vtline_in(ImageBuffer *self, PyObject *args)
+{
+    size_t y, i, l, c, pitch;
+    DIMENSION x;
+    REAL *ptr;
+    REAL value;
+
+    PyObject *line, *tmp;
+    struct ListTypeMethods *line_methods;
+    
+    if (!PyArg_ParseTuple(args, "IO", &x, &line)) {
+        return NULL;
+    }
+    
+    if (!(line_methods = GetListMethods(line))) {
+        return NULL;
+    }
+    
+    x = x % self->image->width;
+    l = line_methods->Size(line) / self->image->channels;
+    if (l > self->image->height) {
+        l = self->image->height;
+    }
+    
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, x, 0)]);
+    pitch = self->image->pitch;
+    i = 0;
+    
+    for (y = 0; y < l; y++) {
+        for (c = 0; c < self->image->channels; c++) {
+            tmp = line_methods->GetItem(line, i);
+            Py_INCREF(tmp);
+            value = PyFloat_AsDouble(tmp);
+            Py_DECREF(tmp);
+            
+            *(ptr+c) = value;
+            i++;
+        }
+        
+        ptr += pitch;
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_vtline_out(ImageBuffer *self, PyObject *args)
+{
+    volatile int error = 0;
+
+    size_t y, i, l, c, pitch;
+    DIMENSION x;
+    REAL *ptr;
+    PyObject *tmp = NULL,
+             *line_out = NULL;
+    
+    if (!PyArg_ParseTuple(args, "I", &x)) {
+        return NULL;
+    }
+    
+    pitch = self->image->pitch;
+    l = self->image->height;
+    
+    line_out = PyList_New((l * self->image->channels));
+    if (!line_out) {
+        return NULL;
+    }
+    
+    ptr = &(self->image->data[PIXEL_INDEX(self->image, x, 0)]);
+    i = 0;
+    
+    for (y = 0; y < l; y++) {
+        for (c = 0; c < self->image->channels; c++) {
+            tmp = PyFloat_FromDouble(*(ptr+c));
+            if (!tmp) {
+                goto error_out;
+            }
+            
+            PyList_SetItem(line_out, i, tmp);
+            i++;
+        }
+        
+        ptr += pitch;
+    }
+    
+    if (error) {
+        error_out:
+            Py_XDECREF(line_out);
+            return NULL;
+    }
+    
+    return line_out;
+}
+
+PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
+{
+    if (ImageKit_Image_toHSV(self->image) < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to convert image to HSV");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kwargs_names[] = {"colorspace_format", "scale", NULL};
+    REAL scale = -1;
+    int fmt = -1;
+    
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i|f", kwargs_names, &fmt, &scale)) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_toRGB(self->image, fmt, scale) < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to convert image to RGB");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
+{
+    if (ImageKit_Image_toMono(self->image) < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to convert image to Mono");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+
+/*
+
+API
+int
+ImageKit_Image_Fill(ImageKit_Image *self, REAL *color);
+
+API
+int
+ImageKit_Image_FillChannel(ImageKit_Image *self, REAL color, DIMENSION channel);
+
+API
+int
+ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
+
+API
+int
+ImageKit_Image_RemoveAlpha(ImageKit_Image *self);
+*/
+
+/*
+
+from imagekit import *
+b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
+b.toMono()
+b.savePNG('output.png')
+
+*/
+
+
+static PyObject *MODULE = NULL;
 static const char *documentation =
     "TODO: Description";
-
-/* Coordinates Type */
-static PyTypeObject Coordinates_Type = {
-    PyObject_HEAD_INIT(NULL)
-};
-
-static PyMemberDef Coordinates_members[] = {
-    {NULL}
-};
-
-static PyMethodDef Coordinates_methods[] = {
-    {
-        "to_list",
-         (void *)Coordinates_to_list,
-         METH_VARARGS,
-        ""
-    },
-    {
-        "append",
-         (void *)Coordinates_append,
-         METH_VARARGS,
-        ""
-    },
-    {NULL, NULL, 0, NULL}
-};
 
 /* ImageBuffer Type */
 static PyTypeObject ImageBuffer_Type = {
@@ -107,28 +650,18 @@ static PyTypeObject ImageBuffer_Type = {
 };
 
 static PyMemberDef ImageBuffer_members[] = {
+    /*
     {"width", T_INT, offsetof(ImageBuffer, width), 0, "width",},
     {"height", T_INT, offsetof(ImageBuffer, height), 0, "height",},
     {"channels", T_INT, offsetof(ImageBuffer, channels), 0, "channels",},
     {"colorspace", T_INT, offsetof(ImageBuffer, colorspace), 0, "colorspace",},
     {"colorspace_format", T_INT, offsetof(ImageBuffer, colorspace_format), 0, "colorspace_format",},
     {"scale", T_FLOAT, offsetof(ImageBuffer, scale), 0, "scale",},
+    */
     {NULL}
 };
 
 static PyMethodDef ImageBuffer_methods[] = {
-    {
-        "__copy__",
-         (void *)ImageBuffer_copy,
-         METH_VARARGS,
-        "Returns Clone of ImageBuffer Object"
-    },
-    {
-        "__deepcopy__",
-         (void *)ImageBuffer_copy,
-         METH_VARARGS,
-        "Returns Clone of ImageBuffer Object"
-    },
     {
         "fromPNG",
          (void *)ImageBuffer_from_png,
@@ -138,7 +671,7 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "savePNG",
          (void *)ImageBuffer_save_png,
-         METH_VARARGS | METH_KEYWORDS,
+         METH_VARARGS,
         "Saves data contained in instance to PNG file"
     },
     {
@@ -146,6 +679,12 @@ static PyMethodDef ImageBuffer_methods[] = {
          (void *)ImageBuffer_from_jpeg,
          METH_STATIC | METH_KEYWORDS,
         "Creates an ImageBuffer instance from a JPEG file"
+    },
+    {
+        "saveJPEG",
+         (void *)ImageBuffer_save_jpeg,
+         METH_VARARGS,
+        "Saves data contained in instance to JPEG file"
     },
     {
         "channel_ranges",
@@ -160,7 +699,7 @@ static PyMethodDef ImageBuffer_methods[] = {
         "get_histogram",
          (void *)ImageBuffer_get_histogram,
          METH_VARARGS,
-         "Takes: int samples, int channel"
+         "Takes: int samples"
          "Returns list of length samples"
     },
     {
@@ -176,27 +715,6 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS,
          "Set tuple at x/y (slower). "
          "(int x, int y, tuple of float)"
-    },
-    {
-        "set1",
-         (void *)ImageBuffer_set1,
-         METH_VARARGS,
-         "Set channel 0 at x/y\n"
-         "(int x, int y, float v)"
-    },
-    {
-        "set3",
-         (void *)ImageBuffer_set3,
-         METH_VARARGS,
-         "Set channels 0, 1 and 2 at x/y. "
-         "(int x, int y, float v1, float v2, float v3)"
-    },
-    {
-        "set4",
-         (void *)ImageBuffer_set4,
-         METH_VARARGS,
-         "Set channels 0, 1, 2, and 3 at x/y. "
-         "(int x, int y, float v1, float v2, float v3, float v4)"
     },
     {
         "hzline_in",
@@ -223,6 +741,37 @@ static PyMethodDef ImageBuffer_methods[] = {
          (void *)ImageBuffer_vtline_out,
          METH_VARARGS,
         "DUMMY"
+    },
+    {
+        "toHSV",
+         (void *)ImageBuffer_to_hsv,
+         METH_VARARGS,
+        "Convert image to HSV colorspace"
+    },
+    {
+        "toRGB",
+         (void *)ImageBuffer_to_rgb,
+         METH_VARARGS | METH_KEYWORDS,
+        "Convert image to RGB colorspace"
+    },
+    {
+        "toMono",
+         (void *)ImageBuffer_to_mono,
+         METH_VARARGS | METH_KEYWORDS,
+        "Convert image to Mono/Grayscale"
+    },
+    /*
+    {
+        "__copy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
+    },
+    {
+        "__deepcopy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
     },
     {
         "get_box",
@@ -255,24 +804,6 @@ static PyMethodDef ImageBuffer_methods[] = {
         "DUMMY"
     },
     {
-        "toHSV",
-         (void *)ImageBuffer_to_hsv,
-         METH_VARARGS,
-        "DUMMY"
-    },
-    {
-        "toRGB",
-         (void *)ImageBuffer_to_rgb,
-         METH_VARARGS | METH_KEYWORDS,
-        "DUMMY"
-    },
-    {
-        "toMono",
-         (void *)ImageBuffer_to_mono,
-         METH_VARARGS | METH_KEYWORDS,
-        "DUMMY"
-    },
-    {
         "scale_nearest",
          (void *)ImageBuffer_scale_nearest,
          METH_VARARGS,
@@ -283,7 +814,7 @@ static PyMethodDef ImageBuffer_methods[] = {
          (void *)ImageBuffer_scale_bilinear,
          METH_VARARGS,
         "DUMMY"
-    },
+    },*/
     {NULL, NULL, 0, NULL}
 };
 
@@ -325,46 +856,13 @@ static PyMethodDef moduleMethods[] = {
         if (PyType_Ready(&ImageBuffer_Type) < 0) {
             return;
         }
-        
-        /* Init Coordinates Type */
-        Coordinates_Type.tp_new = PyType_GenericNew;
-        Coordinates_Type.tp_name = "imagekit.Coordinates";
-        Coordinates_Type.tp_basicsize = sizeof(Coordinates);
-        Coordinates_Type.tp_getattro = PyObject_GenericGetAttr;
-        Coordinates_Type.tp_setattro = PyObject_GenericSetAttr;
-        Coordinates_Type.tp_flags = Py_TPFLAGS_DEFAULT;
-        Coordinates_Type.tp_init = (initproc)Coordinates_init;
-        Coordinates_Type.tp_dealloc = (destructor)Coordinates_dealloc;
-        Coordinates_Type.tp_methods = Coordinates_methods;
-        Coordinates_Type.tp_members = Coordinates_members;
-        Coordinates_Type.tp_doc = "Doc string for class Bar in module Foo.";
-        
-        if (PyType_Ready(&Coordinates_Type) < 0) {
-            return;
-        }
 
         Py_INCREF(&ImageBuffer_Type);
         PyModule_AddObject(MODULE, "ImageBuffer", (PyObject*)&ImageBuffer_Type);
         PyModule_AddObject(MODULE, "Image", (PyObject*)&ImageBuffer_Type);
-        PyModule_AddObject(MODULE, "Coordinates", (PyObject*)&Coordinates_Type);
         
         /* Module Constants */
         PyModule_AddStringConstant(MODULE, "__version__", "2.0");
-        PyModule_AddIntConstant(MODULE, "HAVE_PNG", HAVE_PNG);
-        PyModule_AddIntConstant(MODULE, "HAVE_JPEG", HAVE_JPEG);
-        PyModule_AddIntConstant(MODULE, "HAVE_GIF", HAVE_GIF);
-        
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_MONO", COLORSPACE_MONO);
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_RGB", COLORSPACE_RGB);
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_HSV", COLORSPACE_HSV);
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_YIQ", COLORSPACE_YIQ);
-        
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB15", CS_FMT(RGB15));
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB16", CS_FMT(RGB16));
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB24", CS_FMT(RGB24));
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB30", CS_FMT(RGB30));
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB48", CS_FMT(RGB48));
-        PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_HSV_NATURAL", CS_FMT(HSV_NATURAL));
     }
 #else
     /* Python 3.x */

@@ -3,6 +3,7 @@
 
 TODO List
 
+- Fill Rect
 - Drawing functions:
     - Bresenham line
     - Bresenham circle

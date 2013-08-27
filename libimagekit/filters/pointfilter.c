@@ -88,7 +88,7 @@ ImageKit_PointFilter_FromCurves(
     }
     
     samples = valid_max;
-    self = ImageKit_PointFilter_New(samples);
+    self = ImageKit_PointFilter_New((uint32_t)samples);
     if (self == NULL) {
         return NULL;
     }

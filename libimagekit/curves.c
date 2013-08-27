@@ -66,7 +66,7 @@ ImageKit_Curves_FromBezier(uint32_t samples, REAL *xy, size_t xy_items)
         return NULL;
     }
 
-    pascal_row = PascalsTriangle_GetRow(xy_items - 1);
+    pascal_row = PascalsTriangle_GetRow((uint32_t)xy_items - 1);
     if (!pascal_row) {
         free(bezier->coords);
         free(bezier);
