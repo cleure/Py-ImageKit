@@ -1,6 +1,5 @@
 from distutils.core import setup, Extension
 import subprocess, os, sys
-import preprocessor
 
 cflags = ['./libimagekit', './libimagekit/htable']
 libs = []
@@ -56,12 +55,12 @@ def configure():
         tmp = runcmd(['libpng-config', '--libdir'])
         libdirs.append(tmp.strip())
         
-        defines.append(('HAVE_PNG', 1))
+        defines.append(('HAVE_PNG', '1'))
     
     # JPEG: FIXME libjpeg-config non-existant on some systems
     cflags.append('/opt/local/include')
     libs.append('jpeg')
-    defines.append(('HAVE_JPEG', 1))
+    defines.append(('HAVE_JPEG', '1'))
     
     """
     tmp = runcmd(['libjpeg-config', '--cflags'])
@@ -82,8 +81,8 @@ def configure():
     # Pthread
     libs.append('pthread')
     
-    defines.append(('HAVE_GIF', 0))
-    print defines
+    #defines.append(('HAVE_GIF', '0'))
+    print(defines)
 
 configure()
 

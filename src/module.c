@@ -1,8 +1,13 @@
 
+#ifdef __cplusplus
+    extern "C"
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <memory.h>
+#include <math.h>
 #include <Python.h>
 #include <structmember.h>
 
@@ -22,6 +27,15 @@ TODO:
     - Drawing functions
 
 */
+
+#if PY_MAJOR_VERSION >= 3
+    #define IS_PY3K
+    #define PyInt_FromLong PyLong_FromLong
+#endif
+
+#ifndef Py_TYPE
+    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
 
 #ifdef API
     #undef API
@@ -118,7 +132,7 @@ API int ImageBuffer_init(ImageBuffer *self, PyObject *args, PyObject *kwargs)
     );
     
     if (!image) {
-        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        PyErr_SetString(PyExc_Exception, "Failed to create image object");
         return -1;
     }
     
@@ -129,7 +143,7 @@ API int ImageBuffer_init(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 API void ImageBuffer_dealloc(ImageBuffer *self)
 {
     ImageKit_Image_Delete(self->image);
-    self->ob_type->tp_free((PyObject *)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *kwargs)
@@ -156,7 +170,7 @@ API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *
     image = ImageKit_Image_FromPNG(path, scale);
     if (!image) {
         Py_DECREF(self);
-        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        PyErr_SetString(PyExc_Exception, "Failed to create image object");
         return NULL;
     }
     
@@ -175,7 +189,7 @@ PyObject *ImageBuffer_save_png(ImageBuffer *self, PyObject *args)
     
     if (ImageKit_Image_SavePNG(self->image, path) < 1) {
         ImageKit_LastError(&e_code, &e_msg);
-        PyErr_SetString(PyExc_StandardError, e_msg);
+        PyErr_SetString(PyExc_Exception, e_msg);
         return NULL;
     }
     
@@ -207,7 +221,7 @@ API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject 
     image = ImageKit_Image_FromJPEG(path, scale);
     if (!image) {
         Py_DECREF(self);
-        PyErr_SetString(PyExc_StandardError, "Failed to create image object");
+        PyErr_SetString(PyExc_Exception, "Failed to create image object");
         return NULL;
     }
     
@@ -233,7 +247,7 @@ PyObject *ImageBuffer_save_jpeg(ImageBuffer *self, PyObject *args)
     
     if (ImageKit_Image_SaveJPEG(self->image, path, quality) < 1) {
         ImageKit_LastError(&e_code, &e_msg);
-        PyErr_SetString(PyExc_StandardError, e_msg);
+        PyErr_SetString(PyExc_Exception, e_msg);
         return NULL;
     }
     
@@ -300,7 +314,7 @@ PyObject *ImageBuffer_get_histogram(ImageBuffer *self, PyObject *args)
     channels = self->image->channels;
     hist = ImageKit_Histogram_FromImage(self->image, (uint16_t)samples);
     if (!hist) {
-        PyErr_SetString(PyExc_StandardError, "Failed to create histogram object");
+        PyErr_SetString(PyExc_Exception, "Failed to create histogram object");
         return NULL;
     }
     
@@ -587,7 +601,7 @@ PyObject *ImageBuffer_vtline_out(ImageBuffer *self, PyObject *args)
 PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
 {
     if (ImageKit_Image_toHSV(self->image) < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to convert image to HSV");
+        PyErr_SetString(PyExc_Exception, "Failed to convert image to HSV");
         return NULL;
     }
     
@@ -606,7 +620,7 @@ PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject *kwargs
     }
     
     if (ImageKit_Image_toRGB(self->image, fmt, scale) < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to convert image to RGB");
+        PyErr_SetString(PyExc_Exception, "Failed to convert image to RGB");
         return NULL;
     }
     
@@ -617,7 +631,7 @@ PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject *kwargs
 PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
 {
     if (ImageKit_Image_toMono(self->image) < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to convert image to Mono");
+        PyErr_SetString(PyExc_Exception, "Failed to convert image to Mono");
         return NULL;
     }
     
@@ -657,7 +671,7 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
     }
     
     if (ImageKit_Image_Fill(self->image, (REAL *)&color4f) < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to fill image");
+        PyErr_SetString(PyExc_Exception, "Failed to fill image");
         return NULL;
     }
     
@@ -703,7 +717,7 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
     }
     
     if (ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, NULL) < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to apply matrix");
+        PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
         return NULL;
     }
     
@@ -794,7 +808,7 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
     
     if (result < 1) {
         free(matrix);
-        PyErr_SetString(PyExc_StandardError, "Failed to apply convolution kernel");
+        PyErr_SetString(PyExc_Exception, "Failed to apply convolution kernel");
         return NULL;
     }
     
@@ -838,7 +852,7 @@ PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObje
     );
     
     if (result < 1) {
-        PyErr_SetString(PyExc_StandardError, "Failed to apply rank filter");
+        PyErr_SetString(PyExc_Exception, "Failed to apply rank filter");
         return NULL;
     }
     
@@ -858,7 +872,7 @@ PyObject *ImageBuffer_scale_nearest(ImageBuffer *self, PyObject *args)
     input = self->image;
     scaled = ImageKit_Image_ScaleNearest(input, width, height);
     if (!scaled) {
-        PyErr_SetString(PyExc_StandardError, "Failed to scale image");
+        PyErr_SetString(PyExc_Exception, "Failed to scale image");
         return NULL;
     }
     
@@ -881,7 +895,7 @@ PyObject *ImageBuffer_scale_bilinear(ImageBuffer *self, PyObject *args)
     input = self->image;
     scaled = ImageKit_Image_ScaleBilinear(input, width, height);
     if (!scaled) {
-        PyErr_SetString(PyExc_StandardError, "Failed to scale image");
+        PyErr_SetString(PyExc_Exception, "Failed to scale image");
         return NULL;
     }
     
@@ -924,7 +938,7 @@ static const char *documentation =
 
 /* ImageBuffer Type */
 static PyTypeObject ImageBuffer_Type = {
-    PyObject_HEAD_INIT(NULL)
+    PyVarObject_HEAD_INIT(NULL, 0)
 };
 
 static PyMemberDef ImageBuffer_members[] = {
@@ -1100,22 +1114,42 @@ static PyMethodDef moduleMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-#if PY_MAJOR_VERSION <= 2
-    /* Python 1.x/2.x */
-    
-    #ifdef __cplusplus
-        extern "C"
-    #endif
+#ifdef IS_PY3K
+    static PyModuleDef ImageKit_Module = {
+        PyModuleDef_HEAD_INIT,
+        "imagekit",
+        NULL,
+        -1,
+        moduleMethods,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    };
+#endif
+
     PyMODINIT_FUNC
     initimagekit(void)
     {
+    #ifdef IS_PY3K
+    #define RETURN_ERROR() return NULL
+    #define RETURN_SUCCESS() return MODULE
+    #else
+    #define RETURN_ERROR() return
+    #define RETURN_SUCCESS() return
+    #endif
+    
+    #ifdef IS_PY3K
+        MODULE = PyModule_Create(&ImageKit_Module);
+    #else
         /* Init Module */
         MODULE = Py_InitModule3(    "imagekit",
                                     moduleMethods,
                                     (char *)documentation);
-        
+    #endif
+    
         if (!MODULE) {
-            return;
+            RETURN_ERROR();
         }
         
         /* Init ImageBuffer Type */
@@ -1132,7 +1166,7 @@ static PyMethodDef moduleMethods[] = {
         ImageBuffer_Type.tp_doc = "Doc string for class Bar in module Foo.";
         
         if (PyType_Ready(&ImageBuffer_Type) < 0) {
-            return;
+            RETURN_ERROR();
         }
 
         Py_INCREF(&ImageBuffer_Type);
@@ -1141,35 +1175,6 @@ static PyMethodDef moduleMethods[] = {
         
         /* Module Constants */
         PyModule_AddStringConstant(MODULE, "__version__", "2.0");
-    }
-#else
-    /* Python 3.x */
-
-/*
-    static PyModuleDef murmur3_module = {
-        PyModuleDef_HEAD_INIT,
-        "murmur3",
-        documentation,
-        -1,
-        methods,
-        NULL,
-        NULL,
-        NULL,
-        NULL
-    };
-
-    #ifdef __cplusplus
-        extern "C"
-    #endif
-    PyMODINIT_FUNC
-    PyInit_murmur3(void)
-    {
-        PyObject *module;
-    
-        module = PyModule_Create(&murmur3_module);
-        if (!module) return module;
-        PyModule_AddStringConstant(module, "__version__", MODULE_VERSION);
         
-        return module;
-    }*/
-#endif
+        RETURN_SUCCESS();
+    }
