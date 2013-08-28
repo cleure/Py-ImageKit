@@ -3,6 +3,7 @@
 
 TODO List
 
+- Cleanup public api polution
 - Fill Rect
 - Drawing functions:
     - Bresenham line

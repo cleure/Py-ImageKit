@@ -8,6 +8,21 @@
 
 #include "imagekit.h"
 
+/*
+
+TODO:
+    - Better error wrapping
+    - ImageBuffer
+        - ImageBuffer members (width, height, channels, etc)
+        - Blit
+        - FillRect
+    - Point Filter wrapper
+    - Coordinates class wrapper
+    - Curves class wrapper
+    - Drawing functions
+
+*/
+
 #ifdef API
     #undef API
 #endif
@@ -610,12 +625,275 @@ PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
+{
+    int i, l;
+    PyObject *color, *tmp;
+    struct ListTypeMethods *color_methods;
+    REAL color4f[4];
+    
+    if (!PyArg_ParseTuple(args, "O", &color)) {
+        return NULL;
+    }
+    
+    if (!(color_methods = GetListMethods(color))) {
+        return NULL;
+    }
+    
+    l = (int)color_methods->Size(color);
+    if (l > self->image->channels) {
+        l = self->image->channels;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = color_methods->GetItem(color, i);
+        Py_INCREF(tmp);
+        color4f[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_Fill(self->image, (REAL *)&color4f) < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to fill image");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
+{
+    /*
+    
+    TODO: Support for coordinates parameter
+    
+    */
+
+    int i, l;
+    PyObject *arg_matrix, *tmp;
+    struct ListTypeMethods *arg_methods;
+    REAL matrix[4];
+    
+    if (!PyArg_ParseTuple(args, "O", &arg_matrix)) {
+        return NULL;
+    }
+    
+    if (!(arg_methods = GetListMethods(arg_matrix))) {
+        return NULL;
+    }
+    
+    l = (int)arg_methods->Size(arg_matrix);
+    if (l > self->image->channels) {
+        l = self->image->channels;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = arg_methods->GetItem(arg_matrix, i);
+        Py_INCREF(tmp);
+        matrix[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, NULL) < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to apply matrix");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    /*
+    
+    TODO: Support for coordinates parameter
+    
+    */
+    
+    static char *kwarg_names[] = {
+        "matrix",
+        "factor",
+        "bias",
+        "preserve_alpha",
+        //"coords",
+        NULL
+    };
+
+    int i, l, result;
+    PyObject *arg_matrix, *tmp;
+    struct ListTypeMethods *arg_methods;
+    REAL *matrix;
+    
+    double kernel_size_d;
+    uint32_t kernel_size;
+    
+    REAL factor = 1.0;
+    REAL bias = 0.0;
+    int32_t preserve_alpha = 1;
+    
+    if (!PyArg_ParseTupleAndKeywords(   args,
+                                        kwargs,
+                                        "O|f|f|i",
+                                        kwarg_names,
+                                        &arg_matrix,
+                                        &factor,
+                                        &bias,
+                                        &preserve_alpha)) {
+        return NULL;
+    }
+    
+    if (!(arg_methods = GetListMethods(arg_matrix))) {
+        return NULL;
+    }
+    
+    l = (int)arg_methods->Size(arg_matrix);
+    kernel_size_d = sqrt(l);
+    kernel_size = (int32_t)floor(kernel_size_d);
+    
+    if (!(kernel_size % 2)) {
+        PyErr_SetString(PyExc_ValueError, "Kernel must be an odd size (eg: 3x3, 5x5)");
+        return NULL;
+    }
+    
+    if ((round(kernel_size_d * 1000) / 1000) != kernel_size_d) {
+        PyErr_SetString(PyExc_ValueError, "Kernel must be square (eg: 3x3, 5x5)");
+        return NULL;
+    }
+    
+    matrix = malloc(sizeof(*matrix) * l);
+    for (i = 0; i < l; i++) {
+        tmp = arg_methods->GetItem(arg_matrix, i);
+        Py_INCREF(tmp);
+        matrix[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        free(matrix);
+        return NULL;
+    }
+    
+    result = ImageKit_Image_ApplyCVKernel(
+        self->image,
+        matrix,
+        kernel_size,
+        factor,
+        bias,
+        preserve_alpha,
+        NULL
+    );
+    
+    if (result < 1) {
+        free(matrix);
+        PyErr_SetString(PyExc_StandardError, "Failed to apply convolution kernel");
+        return NULL;
+    }
+    
+    free(matrix);
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    /*
+    
+    TODO: Support for coordinates parameter
+    
+    */
+
+    static char *kwarg_names[] = {"matrix_size", "rank", NULL};
+    int result;
+    uint32_t matrix_size = 3;
+    REAL rank = 0.5;
+    
+    if (!PyArg_ParseTupleAndKeywords(   args,
+                                        kwargs,
+                                        "|I|f",
+                                        kwarg_names,
+                                        &matrix_size,
+                                        &rank)) {
+        return NULL;
+    }
+    
+    if (!(matrix_size % 2)) {
+        PyErr_SetString(PyExc_ValueError, "matrix_size must be an odd size (eg: 3x3, 5x5)");
+        return NULL;
+    }
+    
+    result = ImageKit_Image_ApplyRankFilter(
+        self->image,
+        matrix_size,
+        rank,
+        NULL
+    );
+    
+    if (result < 1) {
+        PyErr_SetString(PyExc_StandardError, "Failed to apply rank filter");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_scale_nearest(ImageBuffer *self, PyObject *args)
+{
+    ImageKit_Image *input, *scaled;
+    DIMENSION width, height;
+    
+    if (!PyArg_ParseTuple(args, "II", &width, &height)) {
+        return NULL;
+    }
+    
+    input = self->image;
+    scaled = ImageKit_Image_ScaleNearest(input, width, height);
+    if (!scaled) {
+        PyErr_SetString(PyExc_StandardError, "Failed to scale image");
+        return NULL;
+    }
+    
+    self->image = scaled;
+    ImageKit_Image_Delete(input);
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_scale_bilinear(ImageBuffer *self, PyObject *args)
+{
+    ImageKit_Image *input, *scaled;
+    DIMENSION width, height;
+    
+    if (!PyArg_ParseTuple(args, "II", &width, &height)) {
+        return NULL;
+    }
+    
+    input = self->image;
+    scaled = ImageKit_Image_ScaleBilinear(input, width, height);
+    if (!scaled) {
+        PyErr_SetString(PyExc_StandardError, "Failed to scale image");
+        return NULL;
+    }
+    
+    self->image = scaled;
+    ImageKit_Image_Delete(input);
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 /*
-
-API
-int
-ImageKit_Image_Fill(ImageKit_Image *self, REAL *color);
 
 API
 int
@@ -634,7 +912,7 @@ ImageKit_Image_RemoveAlpha(ImageKit_Image *self);
 
 from imagekit import *
 b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
-b.toMono()
+b.scale_bilinear(256*2, 224*2)
 b.savePNG('output.png')
 
 */
@@ -760,25 +1038,6 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS | METH_KEYWORDS,
         "Convert image to Mono/Grayscale"
     },
-    /*
-    {
-        "__copy__",
-         (void *)ImageBuffer_copy,
-         METH_VARARGS,
-        "Returns Clone of ImageBuffer Object"
-    },
-    {
-        "__deepcopy__",
-         (void *)ImageBuffer_copy,
-         METH_VARARGS,
-        "Returns Clone of ImageBuffer Object"
-    },
-    {
-        "get_box",
-         (void *)ImageBuffer_get_box,
-         METH_VARARGS,
-        "DUMMY"
-    },
     {
         "fill_image",
         (void *)ImageBuffer_fill_image,
@@ -812,6 +1071,25 @@ static PyMethodDef ImageBuffer_methods[] = {
     {
         "scale_bilinear",
          (void *)ImageBuffer_scale_bilinear,
+         METH_VARARGS,
+        "DUMMY"
+    },
+    /*
+    {
+        "__copy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
+    },
+    {
+        "__deepcopy__",
+         (void *)ImageBuffer_copy,
+         METH_VARARGS,
+        "Returns Clone of ImageBuffer Object"
+    },
+    {
+        "get_box",
+         (void *)ImageBuffer_get_box,
          METH_VARARGS,
         "DUMMY"
     },*/
