@@ -25,21 +25,6 @@ int main(void)
     status = ImageKit_Image_DrawBresenhamCircle(buf, 48, 48, 20, (REAL *)&color);
     assert(status > 0);
     
-    /*
-    
-API
-int
-ImageKit_Image_DrawBresenhamEllipse(
-    ImageKit_Image *self,
-    DIMENSION _x0,
-    DIMENSION _y0,
-    DIMENSION _x1,
-    DIMENSION _y1,
-    REAL *color
-);
-    
-    */
-    
     status = ImageKit_Image_DrawBresenhamEllipse(buf, 24, 106, 200, 138, (REAL *)&color);
     assert(status > 0);
     

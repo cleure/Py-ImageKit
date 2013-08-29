@@ -679,6 +679,43 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *ImageBuffer_fill_image_channel(ImageBuffer *self, PyObject *args)
+{
+    REAL value;
+    uint32_t channel;
+    
+    if (!PyArg_ParseTuple(args, "fI", &value, &channel)) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_FillChannel(self->image, value, channel) < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to fill channel");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_remove_alpha(ImageBuffer *self, PyObject *args)
+{
+    if (ImageKit_Image_RemoveAlpha(self->image) < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to remove alpha");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*
+
+API
+int
+ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
+
+*/
+
 PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 {
     /*
@@ -906,27 +943,40 @@ PyObject *ImageBuffer_scale_bilinear(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
-
-/*
-
-API
-int
-ImageKit_Image_FillChannel(ImageKit_Image *self, REAL color, DIMENSION channel);
-
-API
-int
-ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
-
-API
-int
-ImageKit_Image_RemoveAlpha(ImageKit_Image *self);
-*/
+PyObject *ImageBuffer_getattr(PyObject *_self, char *name)
+{
+    ImageBuffer *self = (ImageBuffer *)_self;
+    PyObject *value = NULL;
+    
+    if (strcmp(name, "width") == 0) {
+        value = PyInt_FromLong(self->image->width);
+    } else if (strcmp(name, "height") == 0) {
+        value = PyInt_FromLong(self->image->height);
+    } else if (strcmp(name, "channels") == 0) {
+        value = PyInt_FromLong(self->image->channels);
+    } else if (strcmp(name, "colorspace") == 0) {
+        value = PyInt_FromLong(self->image->colorspace);
+    } else if (strcmp(name, "colorspace_format") == 0) {
+        value = PyInt_FromLong(self->image->colorspace_format);
+    } else if (strcmp(name, "scale") == 0) {
+        value = PyFloat_FromDouble(self->image->scale);
+    }
+    
+    if (value != NULL) {
+        return value;
+    }
+    
+    PyErr_SetString(PyExc_AttributeError, "No such attribute");
+    return NULL;
+}
 
 /*
 
 from imagekit import *
 b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
-b.scale_bilinear(256*2, 224*2)
+b.width
+
+b.remove_alpha()
 b.savePNG('output.png')
 
 */
@@ -941,18 +991,7 @@ static PyTypeObject ImageBuffer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
 };
 
-static PyMemberDef ImageBuffer_members[] = {
-    /*
-    {"width", T_INT, offsetof(ImageBuffer, width), 0, "width",},
-    {"height", T_INT, offsetof(ImageBuffer, height), 0, "height",},
-    {"channels", T_INT, offsetof(ImageBuffer, channels), 0, "channels",},
-    {"colorspace", T_INT, offsetof(ImageBuffer, colorspace), 0, "colorspace",},
-    {"colorspace_format", T_INT, offsetof(ImageBuffer, colorspace_format), 0, "colorspace_format",},
-    {"scale", T_FLOAT, offsetof(ImageBuffer, scale), 0, "scale",},
-    */
-    {NULL}
-};
-
+static PyMemberDef ImageBuffer_members[] = {{NULL}};
 static PyMethodDef ImageBuffer_methods[] = {
     {
         "fromPNG",
@@ -1026,13 +1065,15 @@ static PyMethodDef ImageBuffer_methods[] = {
         "vtline_in",
          (void *)ImageBuffer_vtline_in,
          METH_VARARGS,
-        "DUMMY"
+        "Copy vertical line of pixels in. List must be in the "
+        "following format: [A, B, C, A, B, C] where A, B, and C "
+        "are the color channel values."
     },
     {
         "vtline_out",
          (void *)ImageBuffer_vtline_out,
          METH_VARARGS,
-        "DUMMY"
+        "Copy vertical line out to list."
     },
     {
         "toHSV",
@@ -1056,37 +1097,69 @@ static PyMethodDef ImageBuffer_methods[] = {
         "fill_image",
         (void *)ImageBuffer_fill_image,
         METH_VARARGS,
-        "DUMMY"
+        "Fill entire image with color. Argument is list or tuple"
+    },
+    {
+        "fill_channel",
+        (void *)ImageBuffer_fill_image_channel,
+        METH_VARARGS,
+        "Fill entire channel of image with value. Arguments: "
+        "(value, channel)"
+    },
+    {
+        "remove_alpha",
+        (void *)ImageBuffer_remove_alpha,
+        METH_VARARGS,
+        "Remove alpha channel from image."
     },
     {
         "apply_matrix",
          (void *)ImageBuffer_apply_matrix,
          METH_VARARGS,
-        "DUMMY"
+        "Apply multiplication matrix to image. Matrix must have "
+        "the same number of elements as there are channels. Ex:\n"
+        "\t# Reduce red by 50%\n"
+        "\tb.apply_matrix([0.5, 1.0, 1.0])\n"
     },
     {
         "apply_cvkernel",
          (void *)ImageBuffer_apply_cvkernel,
          METH_VARARGS | METH_KEYWORDS,
-        "DUMMY"
+        "Apply convolution kernel to image. Matrix must be flat, "
+        "with an odd number of elements (eg: 3x3, 5x5, 7x7). "
+        "Ex:\n"
+        "\tblur_kernel = [\n"
+        "\t\t0.111, 0.111, 0.111,\n"
+        "\t\t0.111, 0.111, 0.111,\n"
+        "\t\t0.111, 0.111, 0.111,\n"
+        "\t]\n"
+        "\tb.apply_cvkernel(blur_kernel)"
     },
     {
         "apply_rankfilter",
          (void *)ImageBuffer_apply_rankfilter,
          METH_VARARGS | METH_KEYWORDS,
-        "DUMMY"
+        "Apply rank filter to image. Ex:\n"
+        "\t# 3x3 Median\n"
+        "\tb.apply_rankfilter(3, 0.5)\n"
+        "\t# 5x5 Max\n"
+        "\tb.apply_rankfilter(5, 1.0)\n"
+        "\t# 7x7 Min\n"
+        "\tb.apply_rankfilter(7, 0.0)\n"
     },
     {
         "scale_nearest",
          (void *)ImageBuffer_scale_nearest,
          METH_VARARGS,
-        "DUMMY"
+        "Scale image using nearest neighbor algorithm. "
+        "(new_width, new_height)"
     },
     {
         "scale_bilinear",
          (void *)ImageBuffer_scale_bilinear,
          METH_VARARGS,
-        "DUMMY"
+        "Scale image using bilinear algorithm. "
+        "(new_width, new_height)"
     },
     /*
     {
@@ -1156,13 +1229,14 @@ static PyMethodDef moduleMethods[] = {
         ImageBuffer_Type.tp_new = PyType_GenericNew;
         ImageBuffer_Type.tp_name = "imagekit.ImageBuffer";
         ImageBuffer_Type.tp_basicsize = sizeof(ImageBuffer);
-        ImageBuffer_Type.tp_getattro = PyObject_GenericGetAttr;
-        ImageBuffer_Type.tp_setattro = PyObject_GenericSetAttr;
         ImageBuffer_Type.tp_flags = Py_TPFLAGS_DEFAULT;
         ImageBuffer_Type.tp_init = (initproc)ImageBuffer_init;
         ImageBuffer_Type.tp_dealloc = (destructor)ImageBuffer_dealloc;
         ImageBuffer_Type.tp_methods = ImageBuffer_methods;
         ImageBuffer_Type.tp_members = ImageBuffer_members;
+        ImageBuffer_Type.tp_getattr = ImageBuffer_getattr;
+        //ImageBuffer_Type.tp_getattro = PyObject_GenericGetAttr;
+        ImageBuffer_Type.tp_setattro = PyObject_GenericSetAttr;
         ImageBuffer_Type.tp_doc = "Doc string for class Bar in module Foo.";
         
         if (PyType_Ready(&ImageBuffer_Type) < 0) {
