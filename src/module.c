@@ -24,7 +24,7 @@ TODO:
     - Point Filter wrapper
     - Coordinates class wrapper
     - Curves class wrapper
-    - Drawing functions
+    - Anti-alias option for drawing methods (line, circle, etc)
 
 */
 
@@ -708,14 +708,6 @@ PyObject *ImageBuffer_remove_alpha(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
-/*
-
-API
-int
-ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
-
-*/
-
 PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 {
     /*
@@ -943,6 +935,251 @@ PyObject *ImageBuffer_scale_bilinear(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *ImageBuffer_draw_bresenham_line(ImageBuffer *self, PyObject *args)
+{
+    size_t i, l;
+    PyObject *arg_color, *tmp;
+    struct ListTypeMethods *arg_color_methods;
+    DIMENSION x0, y0, x1, y1;
+    REAL color[4] = {0, 0, 0, 0};
+    
+    if (!PyArg_ParseTuple(args, "IIIIO", &x0, &y0, &x1, &y1, &arg_color)) {
+        return NULL;
+    }
+    
+    if (!(arg_color_methods = GetListMethods(arg_color))) {
+        return NULL;
+    }
+    
+    l = arg_color_methods->Size(arg_color);
+    if (l > self->image->channels) {
+        l = self->image->channels;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = arg_color_methods->GetItem(arg_color, i);
+        Py_INCREF(tmp);
+        color[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_DrawBresenhamLine(self->image, x0, y0, x1, y1, (REAL *)&color) < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to draw line");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_draw_bresenham_circle(ImageBuffer *self, PyObject *args)
+{
+    size_t i, l;
+    PyObject *arg_color, *tmp;
+    struct ListTypeMethods *arg_color_methods;
+    DIMENSION mid_x, mid_y, radius;
+    REAL color[4] = {0, 0, 0, 0};
+    
+    if (!PyArg_ParseTuple(args, "IIIO", &mid_x, &mid_y, &radius, &arg_color)) {
+        return NULL;
+    }
+    
+    if (!(arg_color_methods = GetListMethods(arg_color))) {
+        return NULL;
+    }
+    
+    l = arg_color_methods->Size(arg_color);
+    if (l > self->image->channels) {
+        l = self->image->channels;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = arg_color_methods->GetItem(arg_color, i);
+        Py_INCREF(tmp);
+        color[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_DrawBresenhamCircle(self->image, mid_x, mid_y, radius, (REAL *)&color) < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to draw line");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *ImageBuffer_draw_bresenham_ellipse(ImageBuffer *self, PyObject *args)
+{
+    size_t i, l;
+    PyObject *arg_color, *tmp;
+    struct ListTypeMethods *arg_color_methods;
+    DIMENSION x0, y0, x1, y1;
+    REAL color[4] = {0, 0, 0, 0};
+    
+    if (!PyArg_ParseTuple(args, "IIIIO", &x0, &y0, &x1, &y1, &arg_color)) {
+        return NULL;
+    }
+    
+    if (!(arg_color_methods = GetListMethods(arg_color))) {
+        return NULL;
+    }
+    
+    l = arg_color_methods->Size(arg_color);
+    if (l > self->image->channels) {
+        l = self->image->channels;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = arg_color_methods->GetItem(arg_color, i);
+        Py_INCREF(tmp);
+        color[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    if (ImageKit_Image_DrawBresenhamEllipse(self->image, x0, y0, x1, y1, (REAL *)&color) < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to draw line");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*
+
+from imagekit import *
+b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
+b.draw_line(0, 0, 64, 49, (255, 255, 255))
+b.draw_ellipse(0, 0, 64, 49, (0, 255, 255))
+b.draw_circle(96, 96, 16, (255, 255, 0))
+b.savePNG('output.png')
+
+*/
+
+/*
+
+API
+int
+ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
+
+typedef struct Coordinates {
+    size_t data_size;
+    size_t data_items;
+    size_t data_index;
+    DIMENSION *coords;
+} ImageKit_Coords;
+
+API
+ImageKit_Coords *
+ImageKit_Coords_New(size_t items);
+
+API
+ImageKit_Coords *
+ImageKit_Coords_FromRect(ImageKit_Rect *rect);
+
+API
+void
+ImageKit_Coords_Delete(ImageKit_Coords *self);
+
+API
+int
+ImageKit_Coords_Resize(ImageKit_Coords *self, size_t items);
+
+API
+int
+ImageKit_Coords_Append(ImageKit_Coords *self, DIMENSION x, DIMENSION y);
+
+
+API
+int
+ImageKit_Image_BlitRect(
+    ImageKit_Image *dst,
+    ImageKit_Rect *dst_rect,
+    ImageKit_Image *src,
+    ImageKit_Rect *src_rect
+);
+
+API
+int
+ImageKit_Image_BlitCoords(
+    ImageKit_Image *dst,
+    DIMENSION dst_x,
+    DIMENSION dst_y,
+    ImageKit_Image *src,
+    ImageKit_Coords *src_coords
+);
+
+
+typedef struct ImageKit_PointFilter {
+    uint32_t samples;
+    
+    REAL *a;
+    REAL *b;
+    REAL *c;
+    REAL *d;
+} ImageKit_PointFilter;
+
+API
+ImageKit_PointFilter *
+ImageKit_PointFilter_New(uint32_t samples);
+
+API
+ImageKit_PointFilter *
+ImageKit_PointFilter_FromCurves(
+    ImageKit_Curves *curves_a,
+    ImageKit_Curves *curves_b,
+    ImageKit_Curves *curves_c,
+    ImageKit_Curves *curves_d
+);
+
+API
+int
+ImageKit_PointFilter_Apply(
+    ImageKit_PointFilter *self,
+    ImageKit_Image *image,
+    ImageKit_Coords *coords
+);
+
+API
+void
+ImageKit_PointFilter_Delete(ImageKit_PointFilter *self);
+
+
+typedef struct ImageKit_Curves {
+    DIMENSION data_items;
+    REAL *coords;
+} ImageKit_Curves;
+
+API
+ImageKit_Curves *
+ImageKit_Curves_FromBezier(uint32_t samples, REAL *xy, size_t xy_items);
+
+API
+void
+ImageKit_Curves_Delete(ImageKit_Curves *self);
+
+typedef struct ImageKit_Rect {
+    DIMENSION x;
+    DIMENSION y;
+    DIMENSION w;
+    DIMENSION h;
+} ImageKit_Rect;
+
+*/
+
 PyObject *ImageBuffer_getattr(PyObject *_self, char *name)
 {
     ImageBuffer *self = (ImageBuffer *)_self;
@@ -969,18 +1206,6 @@ PyObject *ImageBuffer_getattr(PyObject *_self, char *name)
     PyErr_SetString(PyExc_AttributeError, "No such attribute");
     return NULL;
 }
-
-/*
-
-from imagekit import *
-b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
-b.width
-
-b.remove_alpha()
-b.savePNG('output.png')
-
-*/
-
 
 static PyObject *MODULE = NULL;
 static const char *documentation =
@@ -1161,7 +1386,34 @@ static PyMethodDef ImageBuffer_methods[] = {
         "Scale image using bilinear algorithm. "
         "(new_width, new_height)"
     },
+    {
+        "draw_line",
+        (void *)ImageBuffer_draw_bresenham_line,
+        METH_VARARGS,
+        "Draw line using bresenham algorithm. Args: "
+        "(x0, y0, x1, y1, (color))"
+    },
+    {
+        "draw_circle",
+        (void *)ImageBuffer_draw_bresenham_circle,
+        METH_VARARGS,
+        "Draw circle using bresenham algorithm. Args: "
+        "(mid_x, mid_y, radius, (color))"
+    },
+    {
+        "draw_ellipse",
+        (void *)ImageBuffer_draw_bresenham_ellipse,
+        METH_VARARGS,
+        "Draw circle using bresenham algorithm. Args: "
+        "(x0, y0, x1, y1, (color))"
+    },
     /*
+    {
+        "blit_rect",
+         (void *)ImageBuffer_blit_rect,
+         METH_VARARGS,
+        "Blit rectangle."
+    },
     {
         "__copy__",
          (void *)ImageBuffer_copy,
@@ -1234,8 +1486,8 @@ static PyMethodDef moduleMethods[] = {
         ImageBuffer_Type.tp_dealloc = (destructor)ImageBuffer_dealloc;
         ImageBuffer_Type.tp_methods = ImageBuffer_methods;
         ImageBuffer_Type.tp_members = ImageBuffer_members;
-        ImageBuffer_Type.tp_getattr = ImageBuffer_getattr;
-        //ImageBuffer_Type.tp_getattro = PyObject_GenericGetAttr;
+        //ImageBuffer_Type.tp_getattr = ImageBuffer_getattr;
+        ImageBuffer_Type.tp_getattro = PyObject_GenericGetAttr;
         ImageBuffer_Type.tp_setattro = PyObject_GenericSetAttr;
         ImageBuffer_Type.tp_doc = "Doc string for class Bar in module Foo.";
         
