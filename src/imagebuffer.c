@@ -647,18 +647,18 @@ PyObject *ImageBuffer_remove_alpha(ImageBuffer *self, PyObject *args)
 
 PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 {
-    /*
-    
-    TODO: Support for coordinates parameter
-    
-    */
-
-    int i, l;
+    int i, l, result;
     PyObject *arg_matrix, *tmp;
+    Coords *coords = NULL;
     struct ListTypeMethods *arg_methods;
     REAL matrix[4];
     
-    if (!PyArg_ParseTuple(args, "O", &arg_matrix)) {
+    if (!PyArg_ParseTuple(args, "O|O", &arg_matrix, &coords)) {
+        return NULL;
+    }
+    
+    if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
@@ -682,7 +682,13 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
-    if (ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, NULL) < 1) {
+    if (coords) {
+        result = ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, coords->coords);
+    } else {
+        result = ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, NULL);
+    }
+    
+    if (result < 1) {
         PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
         return NULL;
     }
@@ -693,23 +699,20 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
 
 PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
-    /*
-    
-    TODO: Support for coordinates parameter
-    
-    */
-    
     static char *kwarg_names[] = {
         "matrix",
         "factor",
         "bias",
         "preserve_alpha",
-        //"coords",
+        "coords",
         NULL
     };
 
     int i, l, result;
     PyObject *arg_matrix, *tmp;
+    Coords *coords = NULL;
+    ImageKit_Coords *c_coords = NULL;
+    
     struct ListTypeMethods *arg_methods;
     REAL *matrix;
     
@@ -722,12 +725,18 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "O|f|f|i",
+                                        "O|f|f|i|O",
                                         kwarg_names,
                                         &arg_matrix,
                                         &factor,
                                         &bias,
-                                        &preserve_alpha)) {
+                                        &preserve_alpha,
+                                        &coords)) {
+        return NULL;
+    }
+    
+    if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
@@ -762,6 +771,10 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         return NULL;
     }
     
+    if (coords) {
+        c_coords = coords->coords;
+    }
+    
     result = ImageKit_Image_ApplyCVKernel(
         self->image,
         matrix,
@@ -769,7 +782,7 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         factor,
         bias,
         preserve_alpha,
-        NULL
+        c_coords
     );
     
     if (result < 1) {
@@ -785,23 +798,25 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
 
 PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
-    /*
-    
-    TODO: Support for coordinates parameter
-    
-    */
-
-    static char *kwarg_names[] = {"matrix_size", "rank", NULL};
+    static char *kwarg_names[] = {"matrix_size", "rank", "coords", NULL};
     int result;
     uint32_t matrix_size = 3;
     REAL rank = 0.5;
+    Coords *coords = NULL;
+    ImageKit_Coords *c_coords = NULL;
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "|I|f",
+                                        "|I|f|O",
                                         kwarg_names,
                                         &matrix_size,
-                                        &rank)) {
+                                        &rank,
+                                        &coords)) {
+        return NULL;
+    }
+    
+    if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
@@ -810,11 +825,15 @@ PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObje
         return NULL;
     }
     
+    if (coords) {
+        c_coords = coords->coords;
+    }
+    
     result = ImageKit_Image_ApplyRankFilter(
         self->image,
         matrix_size,
         rank,
-        NULL
+        c_coords
     );
     
     if (result < 1) {
@@ -1017,9 +1036,6 @@ PyObject *ImageBuffer_getattr(PyObject *_self, char *name)
     if (value != NULL) {
         return value;
     }
-    
-    //PyErr_SetString(PyExc_AttributeError, "No such attribute");
-    //return NULL;
     
     return Py_FindMethod(ImageBuffer_methods, _self, name);
 }

@@ -69,14 +69,10 @@ static struct ListTypeMethods *GetListMethods(PyObject *object)
 
 from imagekit import *
 b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
-b.scale_nearest(b.width*2, b.height*2)
-b.draw_line(0*2, 0*2, 64*2, 49*2, (255, 255, 255))
-b.draw_ellipse(0*2, 0*2, 64*2, 49*2, (0, 255, 255))
-b.draw_circle(96*2, 96*2, 16*2, (255, 255, 0))
-b.savePNG('output.png')
-b.width
-b.height
 
+coords = Coords.from_rect(Rect(16, 16, 96, 96))
+b.apply_rankfilter(3, 1.0, coords=coords)
+b.savePNG('output.png')
 
 */
 
