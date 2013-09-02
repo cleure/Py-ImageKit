@@ -68,6 +68,20 @@ typedef struct {
     size_t iter_idx;
 } Coords;
 
+/* Curves */
+static int Curves_InitBindings();
+
+static PyTypeObject Curves_Type;
+static PyMethodDef Curves_methods[];
+static PyMemberDef Curves_members[];
+
+typedef struct {
+    PyObject_HEAD
+    ImageKit_Curves *curves;
+    size_t iter_idx;
+} Curves;
+
+
 /*
 
 typedef struct ImageKit_Rect {

@@ -34,8 +34,6 @@ API int Coords_init(Coords *self, PyObject *args, PyObject *kwargs)
 
 API void Coords_dealloc(Coords *self)
 {
-    printf("DEALLOC\n");
-
     if (self->coords != NULL) {
         ImageKit_Coords_Delete(self->coords);
     }
@@ -192,4 +190,3 @@ static int Coords_InitBindings()
 
     return 1;
 }
-
