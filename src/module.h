@@ -55,6 +55,19 @@ typedef struct {
     ImageKit_Rect rect;
 } Rect;
 
+/* Coordinates */
+static int Coords_InitBindings();
+
+static PyTypeObject Coords_Type;
+static PyMethodDef Coords_methods[];
+static PyMemberDef Coords_members[];
+
+typedef struct {
+    PyObject_HEAD
+    ImageKit_Coords *coords;
+    size_t iter_idx;
+} Coords;
+
 /*
 
 typedef struct ImageKit_Rect {

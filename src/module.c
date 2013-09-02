@@ -62,6 +62,7 @@ static struct ListTypeMethods *GetListMethods(PyObject *object)
 
 #include "rect.c"
 #include "imagebuffer.c"
+#include "coords.c"
 
 /*
 
@@ -83,34 +84,6 @@ b.height
 API
 int
 ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
-
-typedef struct Coordinates {
-    size_t data_size;
-    size_t data_items;
-    size_t data_index;
-    DIMENSION *coords;
-} ImageKit_Coords;
-
-API
-ImageKit_Coords *
-ImageKit_Coords_New(size_t items);
-
-API
-ImageKit_Coords *
-ImageKit_Coords_FromRect(ImageKit_Rect *rect);
-
-API
-void
-ImageKit_Coords_Delete(ImageKit_Coords *self);
-
-API
-int
-ImageKit_Coords_Resize(ImageKit_Coords *self, size_t items);
-
-API
-int
-ImageKit_Coords_Append(ImageKit_Coords *self, DIMENSION x, DIMENSION y);
-
 
 API
 int
@@ -236,7 +209,8 @@ static PyMethodDef moduleMethods[] = {
         }
         
         if (    !ImageBuffer_InitBindings() ||
-                !Rect_InitBindings()) {
+                !Rect_InitBindings() ||
+                !Coords_InitBindings()) {
             RETURN_ERROR();
         }
         
