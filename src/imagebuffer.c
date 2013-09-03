@@ -578,12 +578,19 @@ PyObject *ImageBuffer_to_mono(ImageBuffer *self, PyObject *args)
 
 PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
 {
-    int i, l;
+    int i, l, result;
     PyObject *color, *tmp;
+    Coords *coords = NULL;
+    
     struct ListTypeMethods *color_methods;
     REAL color4f[4];
     
-    if (!PyArg_ParseTuple(args, "O", &color)) {
+    if (!PyArg_ParseTuple(args, "O|O", &color, &coords)) {
+        return NULL;
+    }
+    
+    if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
@@ -607,7 +614,13 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
-    if (ImageKit_Image_Fill(self->image, (REAL *)&color4f) < 1) {
+    if (!coords) {
+        result = ImageKit_Image_Fill(self->image, (REAL *)&color4f);
+    } else {
+        result = ImageKit_Image_FillCoords(self->image, (REAL *)&color4f, coords->coords);
+    }
+    
+    if (result < 1) {
         PyErr_SetString(PyExc_Exception, "Failed to fill image");
         return NULL;
     }
@@ -633,6 +646,137 @@ PyObject *ImageBuffer_fill_image_channel(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+PyObject *ImageBuffer_blit_rect(ImageBuffer *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kw_names[] = {
+        "src_image",
+        "src_rect",
+        "dst_rect",
+        NULL
+    };
+    
+    int result;
+    
+    ImageBuffer *src_image = NULL;
+    Rect *_src_rect = NULL;
+    Rect *_dst_rect = NULL;
+    
+    ImageKit_Rect dst_rect,
+                  src_rect;
+    
+    if (!PyArg_ParseTupleAndKeywords(   args,
+                                        kwargs,
+                                        "O|O|O",
+                                        kw_names,
+                                        &src_image,
+                                        &_src_rect,
+                                        &_dst_rect)) {
+        return NULL;
+    }
+    
+    if (!PyObject_IsInstance((PyObject *)src_image, (PyObject *)&ImageBuffer_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument 'src_image' must be of type ImageBuffer");
+        return NULL;
+    }
+    
+    if (_src_rect && !PyObject_IsInstance((PyObject *)_src_rect, (PyObject *)&Rect_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument 'src_rect' must be of type Rect");
+        return NULL;
+    }
+    
+    if (_dst_rect && !PyObject_IsInstance((PyObject *)_dst_rect, (PyObject *)&Rect_Type)) {
+        PyErr_SetString(PyExc_Exception, "Argument 'dst_rect' must be of type Rect");
+        return NULL;
+    }
+    
+    if (!_src_rect) {
+        src_rect.x = 0;
+        src_rect.y = 0;
+        src_rect.w = src_image->image->width;
+        src_rect.h = src_image->image->height;
+    } else {
+        src_rect.x = _src_rect->rect.x % src_image->image->width;
+        src_rect.y = _src_rect->rect.y % src_image->image->height;
+        src_rect.w = _src_rect->rect.w;
+        src_rect.h = _src_rect->rect.h;
+    }
+    
+    if (!_dst_rect) {
+        dst_rect.x = 0;
+        dst_rect.y = 0;
+        dst_rect.w = src_rect.w;
+        dst_rect.h = src_rect.h;
+    } else {
+        dst_rect.x = _dst_rect->rect.x % self->image->width;
+        dst_rect.y = _dst_rect->rect.y % self->image->height;
+        dst_rect.w = _dst_rect->rect.w;
+        dst_rect.h = _dst_rect->rect.h;
+    }
+    
+    // Clamp src width
+    if (src_rect.x + src_rect.w >= src_image->image->width) {
+        src_rect.w = src_image->image->width - src_rect.x;
+    }
+    
+    // Clamp src height
+    if (src_rect.y + src_rect.h >= src_image->image->height) {
+        src_rect.h = src_image->image->height - src_rect.y;
+    }
+    
+    // Clamp dst width
+    if (dst_rect.x + dst_rect.w >= self->image->width) {
+        dst_rect.w = self->image->width - dst_rect.x;
+    }
+    
+    // Clamp dst height
+    if (dst_rect.y + dst_rect.h >= self->image->width) {
+        dst_rect.h = self->image->height - dst_rect.y;
+    }
+    
+    result = ImageKit_Image_BlitRect(
+        self->image,
+        &dst_rect,
+        src_image->image,
+        &src_rect
+    );
+    
+    if (result < 1) {
+        PyErr_SetString(PyExc_Exception, "Failed to blit image");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*
+
+from imagekit import *
+a = Image(640, 480, 3)
+b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
+
+src = Rect(64, 0, 512, 128)
+dst = Rect(16, 16, 128, 128)
+
+a.blit_rect(b, src, dst)
+a.savePNG('output.png')
+
+*/
+
+/*
+
+API
+int
+ImageKit_Image_BlitCoords(
+    ImageKit_Image *dst,
+    DIMENSION dst_x,
+    DIMENSION dst_y,
+    ImageKit_Image *src,
+    ImageKit_Coords *src_coords
+);
+
+*/
 
 PyObject *ImageBuffer_remove_alpha(ImageBuffer *self, PyObject *args)
 {
@@ -1151,7 +1295,13 @@ static PyMethodDef ImageBuffer_methods[] = {
         "fill_image",
         (void *)ImageBuffer_fill_image,
         METH_VARARGS,
-        "Fill entire image with color. Argument is list or tuple"
+        "Fill with color. Args: (color, [coords])"
+    },
+    {
+        "fill",
+        (void *)ImageBuffer_fill_image,
+        METH_VARARGS,
+        "Fill with color. Args: (color, [coords])"
     },
     {
         "fill_channel",
@@ -1248,13 +1398,21 @@ static PyMethodDef ImageBuffer_methods[] = {
          METH_VARARGS,
         "Returns Clone of ImageBuffer Object"
     },
-    /*
     {
         "blit_rect",
          (void *)ImageBuffer_blit_rect,
-         METH_VARARGS,
-        "Blit rectangle."
+         METH_VARARGS | METH_KEYWORDS,
+        "Blit rectangle. Args: (src_image, [src_rect], [dst_rect])"
     },
+    /*
+    {
+        "blit_coords",
+         (void *)ImageBuffer_blit_coords,
+         METH_VARARGS | METH_KEYWORDS,
+        "Blit rectangle/coords."
+    },
+    */
+    /*
     {
         "get_box",
          (void *)ImageBuffer_get_box,

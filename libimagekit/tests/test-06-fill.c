@@ -31,7 +31,7 @@ int main(void)
     status = ImageKit_Image_Fill(buf, (REAL *)&color);
     assert(status > 0);
     
-    status = ImageKit_Image_FillCoords(buf, coords, (REAL *)&colorB);
+    status = ImageKit_Image_FillCoords(buf, (REAL *)&colorB, coords);
     assert(status > 0);
     
     status = ImageKit_Image_SavePNG(buf, "output.png");

@@ -78,30 +78,6 @@ b.savePNG('output.png')
 
 /*
 
-API
-int
-ImageKit_Image_FillCoords(ImageKit_Image *self, ImageKit_Coords *coords, REAL *color);
-
-API
-int
-ImageKit_Image_BlitRect(
-    ImageKit_Image *dst,
-    ImageKit_Rect *dst_rect,
-    ImageKit_Image *src,
-    ImageKit_Rect *src_rect
-);
-
-API
-int
-ImageKit_Image_BlitCoords(
-    ImageKit_Image *dst,
-    DIMENSION dst_x,
-    DIMENSION dst_y,
-    ImageKit_Image *src,
-    ImageKit_Coords *src_coords
-);
-
-
 typedef struct ImageKit_PointFilter {
     uint32_t samples;
     
@@ -135,27 +111,6 @@ ImageKit_PointFilter_Apply(
 API
 void
 ImageKit_PointFilter_Delete(ImageKit_PointFilter *self);
-
-
-typedef struct ImageKit_Curves {
-    DIMENSION data_items;
-    REAL *coords;
-} ImageKit_Curves;
-
-API
-ImageKit_Curves *
-ImageKit_Curves_FromBezier(uint32_t samples, REAL *xy, size_t xy_items);
-
-API
-void
-ImageKit_Curves_Delete(ImageKit_Curves *self);
-
-typedef struct ImageKit_Rect {
-    DIMENSION x;
-    DIMENSION y;
-    DIMENSION w;
-    DIMENSION h;
-} ImageKit_Rect;
 
 */
 
