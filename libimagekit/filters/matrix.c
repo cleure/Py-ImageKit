@@ -85,3 +85,48 @@ ImageKit_Image_ApplyMatrix(ImageKit_Image *self, REAL *matrix, ImageKit_Coords *
     
     return 1;
 }
+
+/**
+* Apply 2D matrix (point filter). Matrix must be of size channels*channels. Eg:
+*
+*    REAL matrix[] = {
+*        0.299,   0.587,   0.114,
+*        0.596,  -0.275,  -0.321,
+*        0.212,  -0.523,   0.311,
+*    };
+*
+* Note: values are NOT clamped. This function is mainly useful for converting
+* between RGB encoding schemes, such as YPbPr, YUV, YIQ, etc.
+*
+* @param    ImageKit_Image *self
+* @param    REAL *matrix
+* @return   <= 0 on error
+**/
+API
+int
+ImageKit_Image_ApplyMatrix2D(ImageKit_Image *self, REAL *matrix)
+{
+    size_t i, l, a, b;
+    REAL *ptr;
+    REAL value[4];
+    
+    ptr = self->data;
+    l = self->width * self->height;
+
+    for (i = 0; i < l; i++) {
+        for (a = 0; a < self->channels; a++) {
+            value[a] = 0.0;
+            for (b = 0; b < self->channels; b++) {
+                value[a] += ptr[b] * matrix[(a*self->channels)+b];
+            }
+        }
+        
+        for (a = 0; a < self->channels; a++) {
+            ptr[a] = value[a];
+        }
+        
+        ptr += self->channels;
+    }
+    
+    return 1;
+}

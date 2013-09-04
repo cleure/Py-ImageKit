@@ -841,6 +841,54 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
+PyObject *ImageBuffer_apply_matrix2d(ImageBuffer *self, PyObject *args)
+{
+    int result;
+    size_t i, l;
+    PyObject *arg_matrix, *tmp;
+    struct ListTypeMethods *methods;
+    REAL matrix[16];
+    
+    if (!PyArg_ParseTuple(args, "O", &arg_matrix)) {
+        printf("A\n");
+        return NULL;
+    }
+    
+    if (!(methods = GetListMethods(arg_matrix))) {
+        printf("B\n");
+        return NULL;
+    }
+    
+    l = methods->Size(arg_matrix);
+    if (l != self->image->channels * self->image->channels) {
+        printf("C\n");
+        PyErr_SetString(PyExc_ValueError, "List/Tuple must be of size channels * channels");
+        return NULL;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = methods->GetItem(arg_matrix, i);
+        Py_INCREF(tmp);
+        matrix[i] = PyFloat_AsDouble(tmp);
+        Py_DECREF(tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        printf("D\n");
+        return NULL;
+    }
+    
+    result = ImageKit_Image_ApplyMatrix2D(self->image, (REAL *)&matrix);
+    if (result < 1) {
+        printf("E\n");
+        PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     static char *kwarg_names[] = {
@@ -1326,6 +1374,13 @@ static PyMethodDef ImageBuffer_methods[] = {
         "\tb.apply_matrix([0.5, 1.0, 1.0])\n"
     },
     {
+        "apply_matrix2d",
+         (void *)ImageBuffer_apply_matrix2d,
+         METH_VARARGS,
+        "Apply 2D multiplication matrix to image. Matrix must have "
+        "the same number of elements as (channels)x(channels)."
+    },
+    {
         "apply_cvkernel",
          (void *)ImageBuffer_apply_cvkernel,
          METH_VARARGS | METH_KEYWORDS,
@@ -1444,6 +1499,18 @@ static int ImageBuffer_InitBindings()
     Py_INCREF(&ImageBuffer_Type);
     PyModule_AddObject(MODULE, "ImageBuffer", (PyObject*)&ImageBuffer_Type);
     PyModule_AddObject(MODULE, "Image", (PyObject*)&ImageBuffer_Type);
+    
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_MONO", CS(MONO));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_RGB", CS(RGB));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_HSV", CS(HSV));
+    //PyModule_AddIntConstant(MODULE, "COLORSPACE_YIQ", CS(YIQ));
+    
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB15", CS_FMT(RGB15));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB16", CS_FMT(RGB16));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB24", CS_FMT(RGB24));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB30", CS_FMT(RGB30));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_RGB48", CS_FMT(RGB48));
+    PyModule_AddIntConstant(MODULE, "COLORSPACE_FORMAT_HSV_NATURAL", CS_FMT(HSV_NATURAL));
     
     return 1;
 }
