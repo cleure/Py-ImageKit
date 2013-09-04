@@ -4,11 +4,9 @@
 TODO List
 
 - Cleanup public api polution
+- Implement ImageKit_ApplyMatrix_3x3
 - Fill Rect
 - Drawing functions:
-    - Bresenham line
-    - Bresenham circle
-    - Bresenham elipse
     - Antialised drawing methods
 
 - Unit Tests for ImageKit_Image_ApplyMatrix()

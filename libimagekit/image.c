@@ -69,6 +69,9 @@ ImageKit_Image_New(
     } else if (colorspace == CS(HSV) && colorspace_format != CS_FMT(HSV_NATURAL)) {
         ImageKit_SetError(ImageKit_ValueError, "HSV Colorspace must use HSV format");
         return NULL;
+    } else if (colorspace == CS(MONO) && colorspace_format != CS_FMT(MONO_NATURAL)) {
+        ImageKit_SetError(ImageKit_ValueError, "MONO Colorspace must use MONO format");
+        return NULL;
     }
     
     /* If colorspace / format invalid, default to RGB24 */

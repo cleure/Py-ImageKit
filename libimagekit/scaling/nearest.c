@@ -33,8 +33,8 @@ ImageKit_Image_ScaleNearest(
         return NULL;
     }
     
-    x_scale = (double)(self->width - 1) / (double)width;
-    y_scale = (double)(self->height - 1) / (double)height;
+    x_scale = (double)(self->width) / (double)width;
+    y_scale = (double)(self->height) / (double)height;
     ptr_out = output->data;
     
     for (y_out = 0; y_out < height; y_out++) {

@@ -753,13 +753,13 @@ PyObject *ImageBuffer_blit_rect(ImageBuffer *self, PyObject *args, PyObject *kwa
 /*
 
 from imagekit import *
-a = Image(640, 480, 3)
+a = Image(64, 64, 3)
 b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberman_1.png')
 
 src = Rect(64, 0, 512, 128)
 dst = Rect(16, 16, 128, 128)
 
-a.blit_rect(b, src, dst)
+a.blit_rect(b, src)
 a.savePNG('output.png')
 
 */

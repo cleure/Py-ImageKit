@@ -17,6 +17,7 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
     ImageKit_Image *self;
     
     REAL *ptr_out;
+    REAL channel_scales[4];
     int colorspace = CS(RGB);
     int colorspace_format = CS_FMT(RGB24);
     
@@ -68,17 +69,22 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
     depth = png_get_bit_depth(png_ptr, info_ptr);
     
     // Handle input format
-    switch (depth) {
-        case 16:
-            colorspace_format = CS_FMT(RGB48);
-            break;
-        case 10:
-            colorspace_format = CS_FMT(RGB30);
-            break;
-        case 8:
-        default:
-            colorspace_format = CS_FMT(RGB24);
-            break;
+    if (channels < 3) {
+        colorspace = CS(MONO);
+        colorspace_format = CS_FMT(MONO_NATURAL);
+    } else {
+        switch (depth) {
+            case 16:
+                colorspace_format = CS_FMT(RGB48);
+                break;
+            case 10:
+                colorspace_format = CS_FMT(RGB30);
+                break;
+            case 8:
+            default:
+                colorspace_format = CS_FMT(RGB24);
+                break;
+        }
     }
     
     self = ImageKit_Image_New(
@@ -90,6 +96,28 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
         colorspace_format
     );
     
+    // Fill channel_scales
+    for (x = 0; x < channels; x++) {
+        channel_scales[x] = self->channel_scales[x];
+    }
+    
+    if (channels < 3) {
+        // If mono, perform conversion
+        if (depth == 16) {
+            ImageKit_GetConversionScales(   -1, CS_FMT(MONO_NATURAL),
+                                            -1, CS_FMT(RGB48),
+                                            (REAL *)&channel_scales);
+        } else if (depth == 10) {
+            ImageKit_GetConversionScales(   -1, CS_FMT(MONO_NATURAL),
+                                            -1, CS_FMT(RGB30),
+                                            (REAL *)&channel_scales);
+        } else {
+            ImageKit_GetConversionScales(   -1, CS_FMT(MONO_NATURAL),
+                                            -1, CS_FMT(RGB24),
+                                            (REAL *)&channel_scales);
+        }
+    }
+    
     if (!self) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return NULL;
@@ -99,7 +127,7 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
     row_pointers = png_get_rows(png_ptr, info_ptr);
     
     // Get data pointer
-    ptr_out = (REAL *)&(self->data[0]);
+    ptr_out = self->data;
     
     if (depth == 16) {
         // 16 Bits Per Channel
@@ -109,7 +137,7 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
                 for (c = 0; c < channels; c++) {
-                    *ptr_out++ =    (REAL)(self->channel_scales[c]) *
+                    *ptr_out++ =    (REAL)(channel_scales[c]) *
                                     (REAL)row_pointers16[y][x * channels + c];
                 }
             }
@@ -119,7 +147,7 @@ ImageKit_Image_FromPNG(const char *filepath, REAL scale)
         for (y = 0; y < height; y++) {
             for (x = 0; x < width; x++) {
                 for (c = 0; c < channels; c++) {
-                    *ptr_out++ =    (REAL)(self->channel_scales[c]) *
+                    *ptr_out++ =    (REAL)(channel_scales[c]) *
                                     (REAL)row_pointers[y][x * channels + c];
                 }
             }

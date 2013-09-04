@@ -18,18 +18,8 @@
 
 TODO:
     - Implement other classes:
-        - Rect
-        - Coordinates
-        - Curves
         - PointFilter
     - Better error wrapping
-    - ImageBuffer
-        - ImageBuffer members (width, height, channels, etc)
-        - Blit
-        - FillRect
-    - Point Filter wrapper
-    - Coordinates class wrapper
-    - Curves class wrapper
     - Anti-alias option for drawing methods (line, circle, etc)
 
 */
