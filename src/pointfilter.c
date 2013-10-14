@@ -1,18 +1,10 @@
 #pragma once
 
-static const char *POINTFILTER_DOCUMENTATION = "";
+static const char *POINTFILTER_DOCUMENTATION = "TODO";
 
 /* Rect */
 static PyTypeObject PointFilter_Type = {PyVarObject_HEAD_INIT(NULL, 0)};
 static PyMemberDef PointFilter_members[] = {{NULL}};
-
-/*
-
-TODO Methods:
-    set_channel(channel, list, [value_range])
-    get_channel(channel, [value_range])
-
-*/
 
 API int PointFilter_init(PointFilter *self, PyObject *args, PyObject *kwargs)
 {
@@ -278,6 +270,135 @@ API PyObject *PointFilter_get_value(PointFilter *self, PyObject *args, PyObject 
     return result;
 }
 
+API PyObject *PointFilter_set_channel(PointFilter *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kw_names[] = {
+        "channel",
+        "list",
+        "value_range",
+        NULL
+    };
+
+    size_t i, l;
+    PyObject *tuple, *tmp;
+    struct ListTypeMethods *methods;
+    uint32_t channel;
+    REAL value;
+    REAL scale;
+    REAL value_range = 1.0;
+    
+    REAL *abcd[4] = {
+        self->pointfilter->a,
+        self->pointfilter->b,
+        self->pointfilter->c,
+        self->pointfilter->d
+    };
+    
+    if (!PyArg_ParseTupleAndKeywords(   args,
+                                        kwargs,
+                                        "IO|f",
+                                        kw_names,
+                                        &channel,
+                                        &tuple,
+                                        &value_range)) {
+        return NULL;
+    }
+    
+    if (channel > 3) {
+        PyErr_SetString(PyExc_ValueError, "Channel must be between 0 and 3");
+        return NULL;
+    }
+    
+    Py_XINCREF(tuple);
+    if (!(methods = GetListMethods(tuple))) {
+        Py_XDECREF(tuple);
+        return NULL;
+    }
+    
+    scale = 1.0/value_range;
+    l = methods->Size(tuple);
+    if (self->pointfilter->samples < l) {
+        l = self->pointfilter->samples;
+    }
+    
+    for (i = 0; i < l; i++) {
+        tmp = methods->GetItem(tuple, i);
+        Py_XINCREF(tmp);
+        value = PyFloat_AsDouble(tmp) * scale;
+        Py_XDECREF(tmp);
+        
+        abcd[channel][i] = value;
+    }
+    
+    Py_XDECREF(tuple);
+    if (PyErr_Occurred()) {
+        return NULL;
+    }
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+API PyObject *PointFilter_get_channel(PointFilter *self, PyObject *args, PyObject *kwargs)
+{
+    static char *kw_names[] = {
+        "channel",
+        "value_range",
+        NULL
+    };
+    
+    size_t i, l;
+    PyObject *list, *tmp;
+    uint32_t channel;
+    REAL value;
+    REAL value_range = 1.0;
+    
+    REAL *abcd[4] = {
+        self->pointfilter->a,
+        self->pointfilter->b,
+        self->pointfilter->c,
+        self->pointfilter->d
+    };
+    
+    if (!PyArg_ParseTupleAndKeywords(   args,
+                                        kwargs,
+                                        "I|f",
+                                        kw_names,
+                                        &channel,
+                                        &value_range)) {
+        return NULL;
+    }
+    
+    if (channel > 3) {
+        PyErr_SetString(PyExc_ValueError, "Channel must be between 0 and 3");
+        return NULL;
+    }
+    
+    l = self->pointfilter->samples;
+    list = PyList_New(l);
+    if (!list) {
+        return NULL;
+    }
+    
+    for (i = 0; i < l; i++) {
+        value = abcd[channel][i] * value_range;
+        tmp = PyFloat_FromDouble(value);
+        if (!tmp) {
+            Py_XDECREF(list);
+            return NULL;
+        }
+        
+        PyList_SetItem(list, i, tmp);
+    }
+    
+    if (PyErr_Occurred()) {
+        Py_XDECREF(list);
+        return NULL;
+    }
+
+    return list;
+}
+
 static PyMethodDef PointFilter_methods[] = {
     {
         "set_value",
@@ -290,6 +411,18 @@ static PyMethodDef PointFilter_methods[] = {
          (void *)PointFilter_get_value,
          METH_VARARGS | METH_KEYWORDS,
         "get_value(int channel, int index, [float value_range])"
+    },
+    {
+        "set_channel",
+         (void *)PointFilter_set_channel,
+         METH_VARARGS | METH_KEYWORDS,
+        "set_channel(channel, list, [value_range])"
+    },
+    {
+        "get_channel",
+         (void *)PointFilter_get_channel,
+         METH_VARARGS | METH_KEYWORDS,
+        "get_channel(channel, [value_range])"
     },
     {
         "apply",
