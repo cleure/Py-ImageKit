@@ -26,7 +26,7 @@ static const enum {
     CS(MONO),
     CS(RGB),
     CS(HSV),
-    CS(LC),     // Luma/Chroma RGB encoding schemes (YPbPr, YIQ, etc)
+    CS(LC),     // Luma/Chroma RGB encoding schemes (YCbCr, YIQ, etc)
     
     CS(SIZE)    // Size
 } _COLORSPACE;
@@ -39,7 +39,7 @@ static const enum {
     CS_FMT(RGB48),
     CS_FMT(HSV_NATURAL),
     CS_FMT(MONO_NATURAL),
-    CS_FMT(LC_YPBPR),
+    CS_FMT(LC_YCBCR),
     
     CS_FMT(SIZE) // Size
 } _COLORSPACE_FORMAT;

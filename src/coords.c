@@ -56,23 +56,29 @@ API PyObject *Coords_from_rect(Coords *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     
+    Py_XINCREF(rect);
+    
     if (!PyObject_IsInstance((PyObject *)rect, (PyObject *)&Rect_Type)) {
+        Py_XDECREF(rect);
         PyErr_SetString(PyExc_Exception, "Argument must be of type Rect");
         return NULL;
     }
     
     if (!(self = (Coords *)_PyObject_New(&Coords_Type))) {
+        Py_XDECREF(rect);
         return NULL;
     }
     
     coords = ImageKit_Coords_FromRect(&(rect->rect));
     if (!coords) {
         Py_XDECREF(self);
+        Py_XDECREF(rect);
         PyErr_SetString(PyExc_Exception, "Failed to create object");
         return NULL;
     }
     
     self->coords = coords;
+    Py_XDECREF(rect);
     return (PyObject *)self;
 }
 

@@ -43,23 +43,28 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     
+    Py_XINCREF(points);
     methods = GetListMethods(points);
     if (!methods) {
+        Py_XDECREF(points);
         return NULL;
     }
     
     xy_items = methods->Size(points);
     if (xy_items % 2) {
+        Py_XDECREF(points);
         PyErr_SetString(PyExc_ValueError, "Input must be flat list/tuple of x/y pairs.");
         return NULL;
     }
     
     xy = malloc(sizeof(*xy) * xy_items);
     if (!xy) {
+        Py_XDECREF(points);
         return PyErr_NoMemory();
     }
     
     if (!(self = (Curves *)_PyObject_New(&Curves_Type))) {
+        Py_XDECREF(points);
         return NULL;
     }
     
@@ -75,6 +80,7 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
     if (PyErr_Occurred()) {
         free(xy);
         Py_DECREF(self);
+        Py_XDECREF(points);
         return NULL;
     }
     
@@ -82,11 +88,14 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
     if (!curves) {
         free(xy);
         Py_DECREF(self);
+        Py_XDECREF(points);
+        
         PyErr_SetString(PyExc_Exception, "Failed to create object");
         return NULL;
     }
  
     self->curves = curves;
+    Py_XDECREF(points);
     return (PyObject *)self;
 }
 

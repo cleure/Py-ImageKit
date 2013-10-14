@@ -24,6 +24,31 @@ ImageKit_Image_Fill(ImageKit_Image *self, REAL *color)
 
 API
 int
+ImageKit_Image_FillRect(ImageKit_Image *self, REAL *color, ImageKit_Rect *rect)
+{
+    REAL *ptr;
+    size_t xs, ys, xe, ye, pitch;
+    
+    ys = 0;
+    xe = rect->w * self->channels;
+    ye = rect->h;
+    
+    ptr = &(self->data[PIXEL_INDEX(self, rect->x, rect->y)]);
+    pitch = (self->width - rect->w) * self->channels;
+    
+    for (; ys < ye; ys++) {
+        for (xs = 0; xs < xe; xs++) {
+            *ptr++ = color[xs % self->channels];
+        }
+        
+        ptr += pitch;
+    }
+    
+    return 1;
+}
+
+API
+int
 ImageKit_Image_FillChannel(ImageKit_Image *self, REAL color, DIMENSION channel)
 {
     REAL *ptr;

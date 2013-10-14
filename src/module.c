@@ -54,6 +54,7 @@ static struct ListTypeMethods *GetListMethods(PyObject *object)
 #include "imagebuffer.c"
 #include "coords.c"
 #include "curves.c"
+#include "pointfilter.c"
 
 /*
 
@@ -153,7 +154,8 @@ static PyMethodDef moduleMethods[] = {
         if (    !ImageBuffer_InitBindings() ||
                 !Rect_InitBindings() ||
                 !Coords_InitBindings() ||
-                !Curves_InitBindings()) {
+                !Curves_InitBindings() ||
+                !PointFilter_InitBindings()) {
             RETURN_ERROR();
         }
         

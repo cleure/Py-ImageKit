@@ -324,11 +324,14 @@ PyObject *ImageBuffer_set_pixel(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(pixel);
     if (!(pixel_methods = GetListMethods(pixel))) {
+        Py_XDECREF(pixel);
         return NULL;
     }
     
     if (pixel_methods->Size(pixel) < self->image->channels) {
+        Py_XDECREF(pixel);
         PyErr_SetString(PyExc_ValueError, "list/tuple argument does not have enough elements");
         return NULL;
     }
@@ -346,6 +349,7 @@ PyObject *ImageBuffer_set_pixel(ImageBuffer *self, PyObject *args)
         *ptr++ = value;
     }
     
+    Py_XDECREF(pixel);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -367,7 +371,9 @@ PyObject *ImageBuffer_hzline_in(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(line);
     if (!(line_methods = GetListMethods(line))) {
+        Py_XDECREF(line);
         return NULL;
     }
     
@@ -388,6 +394,7 @@ PyObject *ImageBuffer_hzline_in(ImageBuffer *self, PyObject *args)
         *ptr++ = value;
     }
     
+    Py_XDECREF(line);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -451,7 +458,9 @@ PyObject *ImageBuffer_vtline_in(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(line);
     if (!(line_methods = GetListMethods(line))) {
+        Py_XDECREF(line);
         return NULL;
     }
     
@@ -479,6 +488,7 @@ PyObject *ImageBuffer_vtline_in(ImageBuffer *self, PyObject *args)
         ptr += pitch;
     }
     
+    Py_XDECREF(line);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -589,12 +599,19 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(color);
+    Py_XINCREF(coords);
+    
     if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        Py_XDECREF(color);
+        Py_XDECREF(coords);
         PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
     if (!(color_methods = GetListMethods(color))) {
+        Py_XDECREF(color);
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -610,7 +627,9 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(color);
     if (PyErr_Occurred()) {
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -620,6 +639,7 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
         result = ImageKit_Image_FillCoords(self->image, (REAL *)&color4f, coords->coords);
     }
     
+    Py_XDECREF(coords);
     if (result < 1) {
         PyErr_SetString(PyExc_Exception, "Failed to fill image");
         return NULL;
@@ -646,6 +666,21 @@ PyObject *ImageBuffer_fill_image_channel(ImageBuffer *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+/*
+API
+int
+ImageKit_Image_FillRect(ImageKit_Image *self, REAL *color, ImageKit_Rect *rect)
+*/
+
+/*
+PyObject *ImageBuffer_fill_rect(ImageBuffer *self, PyObject *args)
+{
+    PyObject *color, *tmp;
+    struct ListTypeMethods *methods;
+    REAL color4f[4];
+}
+*/
 
 PyObject *ImageBuffer_blit_rect(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
@@ -675,17 +710,33 @@ PyObject *ImageBuffer_blit_rect(ImageBuffer *self, PyObject *args, PyObject *kwa
         return NULL;
     }
     
+    Py_XINCREF(src_image);
+    Py_XINCREF(_src_rect);
+    Py_XINCREF(_dst_rect);
+    
     if (!PyObject_IsInstance((PyObject *)src_image, (PyObject *)&ImageBuffer_Type)) {
+        Py_XDECREF(src_image);
+        Py_XDECREF(_src_rect);
+        Py_XDECREF(_dst_rect);
+        
         PyErr_SetString(PyExc_Exception, "Argument 'src_image' must be of type ImageBuffer");
         return NULL;
     }
     
     if (_src_rect && !PyObject_IsInstance((PyObject *)_src_rect, (PyObject *)&Rect_Type)) {
+        Py_XDECREF(src_image);
+        Py_XDECREF(_src_rect);
+        Py_XDECREF(_dst_rect);
+        
         PyErr_SetString(PyExc_Exception, "Argument 'src_rect' must be of type Rect");
         return NULL;
     }
     
     if (_dst_rect && !PyObject_IsInstance((PyObject *)_dst_rect, (PyObject *)&Rect_Type)) {
+        Py_XDECREF(src_image);
+        Py_XDECREF(_src_rect);
+        Py_XDECREF(_dst_rect);
+        
         PyErr_SetString(PyExc_Exception, "Argument 'dst_rect' must be of type Rect");
         return NULL;
     }
@@ -742,9 +793,17 @@ PyObject *ImageBuffer_blit_rect(ImageBuffer *self, PyObject *args, PyObject *kwa
     );
     
     if (result < 1) {
+        Py_XDECREF(src_image);
+        Py_XDECREF(_src_rect);
+        Py_XDECREF(_dst_rect);
+    
         PyErr_SetString(PyExc_Exception, "Failed to blit image");
         return NULL;
     }
+    
+    Py_XDECREF(src_image);
+    Py_XDECREF(_src_rect);
+    Py_XDECREF(_dst_rect);
     
     Py_INCREF(Py_None);
     return Py_None;
@@ -801,12 +860,19 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(arg_matrix);
+    Py_XINCREF(coords);
+    
     if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        Py_XDECREF(arg_matrix);
+        Py_XDECREF(coords);
         PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
     if (!(arg_methods = GetListMethods(arg_matrix))) {
+        Py_XDECREF(arg_matrix);
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -815,6 +881,7 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         l = self->image->channels;
     }
     
+    // Fill matrix
     for (i = 0; i < l; i++) {
         tmp = arg_methods->GetItem(arg_matrix, i);
         Py_INCREF(tmp);
@@ -822,7 +889,9 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_matrix);
     if (PyErr_Occurred()) {
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -832,6 +901,7 @@ PyObject *ImageBuffer_apply_matrix(ImageBuffer *self, PyObject *args)
         result = ImageKit_Image_ApplyMatrix(self->image, (REAL *)&matrix, NULL);
     }
     
+    Py_XDECREF(coords);
     if (result < 1) {
         PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
         return NULL;
@@ -850,22 +920,27 @@ PyObject *ImageBuffer_apply_matrix2d(ImageBuffer *self, PyObject *args)
     REAL matrix[16];
     
     if (!PyArg_ParseTuple(args, "O", &arg_matrix)) {
-        printf("A\n");
+        //printf("A\n");
         return NULL;
     }
     
+    Py_XINCREF(arg_matrix);
+    
     if (!(methods = GetListMethods(arg_matrix))) {
-        printf("B\n");
+        //printf("B\n");
+        Py_XDECREF(arg_matrix);
         return NULL;
     }
     
     l = methods->Size(arg_matrix);
     if (l != self->image->channels * self->image->channels) {
-        printf("C\n");
+        //printf("C\n");
+        Py_XDECREF(arg_matrix);
         PyErr_SetString(PyExc_ValueError, "List/Tuple must be of size channels * channels");
         return NULL;
     }
     
+    // Fill matrix
     for (i = 0; i < l; i++) {
         tmp = methods->GetItem(arg_matrix, i);
         Py_INCREF(tmp);
@@ -873,14 +948,15 @@ PyObject *ImageBuffer_apply_matrix2d(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_matrix);
     if (PyErr_Occurred()) {
-        printf("D\n");
+        //printf("D\n");
         return NULL;
     }
     
     result = ImageKit_Image_ApplyMatrix2D(self->image, (REAL *)&matrix);
     if (result < 1) {
-        printf("E\n");
+        //printf("E\n");
         PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
         return NULL;
     }
@@ -927,12 +1003,19 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         return NULL;
     }
     
+    Py_XINCREF(arg_matrix);
+    Py_XINCREF(coords);
+    
     if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        Py_XDECREF(arg_matrix);
+        Py_XDECREF(coords);
         PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
     if (!(arg_methods = GetListMethods(arg_matrix))) {
+        Py_XDECREF(arg_matrix);
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -950,6 +1033,7 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         return NULL;
     }
     
+    // Fill matrix
     matrix = malloc(sizeof(*matrix) * l);
     for (i = 0; i < l; i++) {
         tmp = arg_methods->GetItem(arg_matrix, i);
@@ -958,8 +1042,10 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_matrix);
     if (PyErr_Occurred()) {
         free(matrix);
+        Py_XDECREF(coords);
         return NULL;
     }
     
@@ -977,6 +1063,7 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
         c_coords
     );
     
+    Py_XDECREF(coords);
     if (result < 1) {
         free(matrix);
         PyErr_SetString(PyExc_Exception, "Failed to apply convolution kernel");
@@ -1007,12 +1094,16 @@ PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObje
         return NULL;
     }
     
+    Py_XINCREF(coords);
+    
     if (coords && !PyObject_IsInstance((PyObject *)coords, (PyObject *)&Coords_Type)) {
+        Py_XDECREF(coords);
         PyErr_SetString(PyExc_Exception, "Argument must be of type Coords");
         return NULL;
     }
     
     if (!(matrix_size % 2)) {
+        Py_XDECREF(coords);
         PyErr_SetString(PyExc_ValueError, "matrix_size must be an odd size (eg: 3x3, 5x5)");
         return NULL;
     }
@@ -1028,6 +1119,7 @@ PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObje
         c_coords
     );
     
+    Py_XDECREF(coords);
     if (result < 1) {
         PyErr_SetString(PyExc_Exception, "Failed to apply rank filter");
         return NULL;
@@ -1095,7 +1187,10 @@ PyObject *ImageBuffer_draw_bresenham_line(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(arg_color);
+    
     if (!(arg_color_methods = GetListMethods(arg_color))) {
+        Py_XDECREF(arg_color);
         return NULL;
     }
     
@@ -1111,6 +1206,7 @@ PyObject *ImageBuffer_draw_bresenham_line(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -1136,7 +1232,10 @@ PyObject *ImageBuffer_draw_bresenham_circle(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(arg_color);
+    
     if (!(arg_color_methods = GetListMethods(arg_color))) {
+        Py_XDECREF(arg_color);
         return NULL;
     }
     
@@ -1152,6 +1251,7 @@ PyObject *ImageBuffer_draw_bresenham_circle(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_color);
     if (PyErr_Occurred()) {
         return NULL;
     }
@@ -1177,7 +1277,10 @@ PyObject *ImageBuffer_draw_bresenham_ellipse(ImageBuffer *self, PyObject *args)
         return NULL;
     }
     
+    Py_XINCREF(arg_color);
+    
     if (!(arg_color_methods = GetListMethods(arg_color))) {
+        Py_XDECREF(arg_color);
         return NULL;
     }
     
@@ -1193,6 +1296,7 @@ PyObject *ImageBuffer_draw_bresenham_ellipse(ImageBuffer *self, PyObject *args)
         Py_DECREF(tmp);
     }
     
+    Py_XDECREF(arg_color);
     if (PyErr_Occurred()) {
         return NULL;
     }

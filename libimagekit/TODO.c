@@ -4,7 +4,7 @@
 TODO List
 
 - Cleanup public api polution
-- Implement ImageKit_ApplyMatrix_3x3
+- Implement YCbCr color format
 - Fill Rect
 - Drawing functions:
     - Antialised drawing methods
