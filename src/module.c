@@ -17,8 +17,6 @@
 /*
 
 TODO:
-    - Implement other classes:
-        - PointFilter
     - Better error wrapping
     - Anti-alias option for drawing methods (line, circle, etc)
 
@@ -64,44 +62,6 @@ b = Image.fromPNG('/Users/cleure/Development/Projects/TV4X/input-images/bomberma
 coords = Coords.from_rect(Rect(16, 16, 96, 96))
 b.apply_rankfilter(3, 1.0, coords=coords)
 b.savePNG('output.png')
-
-*/
-
-/*
-
-typedef struct ImageKit_PointFilter {
-    uint32_t samples;
-    
-    REAL *a;
-    REAL *b;
-    REAL *c;
-    REAL *d;
-} ImageKit_PointFilter;
-
-API
-ImageKit_PointFilter *
-ImageKit_PointFilter_New(uint32_t samples);
-
-API
-ImageKit_PointFilter *
-ImageKit_PointFilter_FromCurves(
-    ImageKit_Curves *curves_a,
-    ImageKit_Curves *curves_b,
-    ImageKit_Curves *curves_c,
-    ImageKit_Curves *curves_d
-);
-
-API
-int
-ImageKit_PointFilter_Apply(
-    ImageKit_PointFilter *self,
-    ImageKit_Image *image,
-    ImageKit_Coords *coords
-);
-
-API
-void
-ImageKit_PointFilter_Delete(ImageKit_PointFilter *self);
 
 */
 

@@ -920,21 +920,18 @@ PyObject *ImageBuffer_apply_matrix2d(ImageBuffer *self, PyObject *args)
     REAL matrix[16];
     
     if (!PyArg_ParseTuple(args, "O", &arg_matrix)) {
-        //printf("A\n");
         return NULL;
     }
     
     Py_XINCREF(arg_matrix);
     
     if (!(methods = GetListMethods(arg_matrix))) {
-        //printf("B\n");
         Py_XDECREF(arg_matrix);
         return NULL;
     }
     
     l = methods->Size(arg_matrix);
     if (l != self->image->channels * self->image->channels) {
-        //printf("C\n");
         Py_XDECREF(arg_matrix);
         PyErr_SetString(PyExc_ValueError, "List/Tuple must be of size channels * channels");
         return NULL;
@@ -950,13 +947,11 @@ PyObject *ImageBuffer_apply_matrix2d(ImageBuffer *self, PyObject *args)
     
     Py_XDECREF(arg_matrix);
     if (PyErr_Occurred()) {
-        //printf("D\n");
         return NULL;
     }
     
     result = ImageKit_Image_ApplyMatrix2D(self->image, (REAL *)&matrix);
     if (result < 1) {
-        //printf("E\n");
         PyErr_SetString(PyExc_Exception, "Failed to apply matrix");
         return NULL;
     }
