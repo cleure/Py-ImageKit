@@ -8,37 +8,9 @@ static PyMemberDef PointFilter_members[] = {{NULL}};
 
 /*
 
-typedef struct ImageKit_PointFilter {
-    uint32_t samples;
-    
-    REAL *a;
-    REAL *b;
-    REAL *c;
-    REAL *d;
-} ImageKit_PointFilter;
-
-API
-ImageKit_PointFilter *
-ImageKit_PointFilter_FromCurves(
-    ImageKit_Curves *curves_a,
-    ImageKit_Curves *curves_b,
-    ImageKit_Curves *curves_c,
-    ImageKit_Curves *curves_d
-);
-
-*/
-
-/*
-
-Methods:
-    set_value(channel, index, value, [value_range])
-    get_value(channel, index, [value_range])
+TODO Methods:
     set_channel(channel, list, [value_range])
     get_channel(channel, [value_range])
-    apply(image)
-    
-    @static
-    fromCurves(curves)
 
 */
 
@@ -73,30 +45,13 @@ API void PointFilter_dealloc(PointFilter *self)
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-/*
-
-from imagekit import *
-b = Image.fromJPEG('/Users/cleure/Downloads/seattle/sxmC7Bz.jpg')
-curve = [
-    0.0, 0.0,
-    1.0, 0.7,
-]
-
-curves = Curves.from_bezier(512, curve)
-pf = PointFilter.fromCurves(curves, curves, curves, curves)
-
-pf.apply(b)
-b.savePNG('output.png')
-
-*/
-
 API PyObject *PointFilter_from_curves(PointFilter *self, PyObject *args, PyObject *kwargs)
 {
     static char *kw_names[] = {
-        "curves_a",
-        "curves_b",
-        "curves_c",
-        "curves_d",
+        "a",
+        "b",
+        "c",
+        "d",
         NULL
     };
     
@@ -325,58 +280,30 @@ API PyObject *PointFilter_get_value(PointFilter *self, PyObject *args, PyObject 
     return result;
 }
 
-/*
-int PointFilter_Print(PyObject *_self, FILE *file, int flags)
-{
-    PointFilter *self = (PointFilter *)_self;
-    fprintf(file, "FIXME: Print");
-    
-    return 0;
-}
-*/
-
-/*
-
-from imagekit import *
-b = Image.fromJPEG('/Users/cleure/Downloads/seattle/sxmC7Bz.jpg')
-pf = PointFilter(512)
-
-for i in range(512):
-    pf.set_value(0, i, i, 512)
-
-for c in range(1, 4):
-    for i in range(512):
-        pf.set_value(c, i, i/2, 512)
-
-pf.apply(b)
-b.savePNG('output.png')
-
-*/
-
 static PyMethodDef PointFilter_methods[] = {
     {
         "set_value",
          (void *)PointFilter_set_value,
          METH_VARARGS | METH_KEYWORDS,
-        "FIXME: Documentation"
+        "set_value(int channel, int index, float value, [float value_range])"
     },
     {
         "get_value",
          (void *)PointFilter_get_value,
          METH_VARARGS | METH_KEYWORDS,
-        "FIXME: Documentation"
+        "get_value(int channel, int index, [float value_range])"
     },
     {
         "apply",
          (void *)PointFilter_apply,
          METH_VARARGS | METH_KEYWORDS,
-        "FIXME: Documentation"
+        "apply(ImageBuffer image)"
     },
     {
-        "fromCurves",
+        "from_curves",
          (void *)PointFilter_from_curves,
          METH_VARARGS | METH_KEYWORDS | METH_STATIC,
-        "FIXME: Documentation"
+        "from_curves(Curves a, [Curves b], [Curves c], [Curves d])"
     },
     {NULL, NULL, 0, NULL}
 };
@@ -391,7 +318,6 @@ static int PointFilter_InitBindings()
     PointFilter_Type.tp_dealloc = (destructor)PointFilter_dealloc;
     PointFilter_Type.tp_methods = PointFilter_methods;
     PointFilter_Type.tp_members = PointFilter_members;
-    //PointFilter_Type.tp_print = PointFilter_Print;
     PointFilter_Type.tp_getattro = PyObject_GenericGetAttr;
     PointFilter_Type.tp_setattro = PyObject_GenericSetAttr;
     PointFilter_Type.tp_doc = POINTFILTER_DOCUMENTATION;
