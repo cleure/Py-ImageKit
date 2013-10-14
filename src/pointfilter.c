@@ -19,8 +19,6 @@ API int PointFilter_init(PointFilter *self, PyObject *args, PyObject *kwargs)
     static char *kw_names[] = {"samples", NULL};
     uint32_t samples;
 
-    printf("Init Called\n");
-
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "I", kw_names, &samples)) {
         return 0;
     }
