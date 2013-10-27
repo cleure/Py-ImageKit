@@ -70,6 +70,7 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
     
     for (i = 0; i < xy_items; i++) {
         tmp = methods->GetItem(points, i);
+        
         Py_INCREF(tmp);
         value = PyFloat_AsDouble(tmp);
         Py_DECREF(tmp);
@@ -79,7 +80,7 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
     
     if (PyErr_Occurred()) {
         free(xy);
-        Py_DECREF(self);
+        PyObject_Del((PyObject *)self);
         Py_XDECREF(points);
         return NULL;
     }
@@ -87,7 +88,7 @@ API PyObject *Curves_from_bezier(Curves *self, PyObject *args, PyObject *kwargs)
     curves = ImageKit_Curves_FromBezier(samples, xy, xy_items / 2);
     if (!curves) {
         free(xy);
-        Py_DECREF(self);
+        PyObject_Del((PyObject *)self);
         Py_XDECREF(points);
         
         PyErr_SetString(PyExc_Exception, "Failed to create object");
