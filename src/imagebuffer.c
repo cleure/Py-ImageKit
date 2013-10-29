@@ -1345,7 +1345,19 @@ static PyMethodDef ImageBuffer_methods[] = {
         "Creates an ImageBuffer instance from a PNG file"
     },
     {
+        "from_png",
+         (void *)ImageBuffer_from_png,
+         METH_STATIC | METH_KEYWORDS,
+        "Creates an ImageBuffer instance from a PNG file"
+    },
+    {
         "savePNG",
+         (void *)ImageBuffer_save_png,
+         METH_VARARGS,
+        "Saves data contained in instance to PNG file"
+    },
+    {
+        "save_png",
          (void *)ImageBuffer_save_png,
          METH_VARARGS,
         "Saves data contained in instance to PNG file"
@@ -1357,7 +1369,19 @@ static PyMethodDef ImageBuffer_methods[] = {
         "Creates an ImageBuffer instance from a JPEG file"
     },
     {
+        "from_jpeg",
+         (void *)ImageBuffer_from_jpeg,
+         METH_STATIC | METH_KEYWORDS,
+        "Creates an ImageBuffer instance from a JPEG file"
+    },
+    {
         "saveJPEG",
+         (void *)ImageBuffer_save_jpeg,
+         METH_VARARGS,
+        "Saves data contained in instance to JPEG file"
+    },
+    {
+        "save_jpeg",
          (void *)ImageBuffer_save_jpeg,
          METH_VARARGS,
         "Saves data contained in instance to JPEG file"
@@ -1427,13 +1451,31 @@ static PyMethodDef ImageBuffer_methods[] = {
         "Convert image to HSV colorspace"
     },
     {
+        "to_hsv",
+         (void *)ImageBuffer_to_hsv,
+         METH_VARARGS,
+        "Convert image to HSV colorspace"
+    },
+    {
         "toRGB",
          (void *)ImageBuffer_to_rgb,
          METH_VARARGS | METH_KEYWORDS,
         "Convert image to RGB colorspace"
     },
     {
+        "to_rgb",
+         (void *)ImageBuffer_to_rgb,
+         METH_VARARGS | METH_KEYWORDS,
+        "Convert image to RGB colorspace"
+    },
+    {
         "toMono",
+         (void *)ImageBuffer_to_mono,
+         METH_VARARGS | METH_KEYWORDS,
+        "Convert image to Mono/Grayscale"
+    },
+    {
+        "to_mono",
          (void *)ImageBuffer_to_mono,
          METH_VARARGS | METH_KEYWORDS,
         "Convert image to Mono/Grayscale"
