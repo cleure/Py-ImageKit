@@ -23,11 +23,11 @@ API int Rect_init(Rect *self, PyObject *args, PyObject *kwargs)
         NULL
     };
     
-    DIMENSION x, y, w, h;
+    long x, y, w, h;
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "IIII",
+                                        "llll",
                                         kw_names,
                                         &x,
                                         &y,
@@ -36,10 +36,20 @@ API int Rect_init(Rect *self, PyObject *args, PyObject *kwargs)
         return -1;
     }
     
-    self->rect.x = x;
-    self->rect.y = y;
-    self->rect.w = w;
-    self->rect.h = h;
+    if (x < 0 || y < 0 || w < 0 || h < 0) {
+        PyErr_SetString(PyExc_Exception, "Values must be greater than -1");
+        return -1;
+    }
+    
+    if (x > UINT32_MAX || y > UINT32_MAX || w > UINT32_MAX || h > UINT32_MAX) {
+        PyErr_SetString(PyExc_Exception, "Values must not exceed UINT32_MAX");
+        return -1;
+    }
+    
+    self->rect.x = (uint32_t)x;
+    self->rect.y = (uint32_t)y;
+    self->rect.w = (uint32_t)w;
+    self->rect.h = (uint32_t)h;
     
     return 0;
 }

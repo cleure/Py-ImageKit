@@ -106,7 +106,7 @@ API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *
     
     image = ImageKit_Image_FromPNG(path, scale);
     if (!image) {
-        Py_DECREF(self);
+        PyObject_Del(self);
         PyErr_SetString(PyExc_Exception, "Failed to create image object");
         return NULL;
     }
@@ -157,7 +157,7 @@ API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject 
     
     image = ImageKit_Image_FromJPEG(path, scale);
     if (!image) {
-        Py_DECREF(self);
+        PyObject_Del(self);
         PyErr_SetString(PyExc_Exception, "Failed to create image object");
         return NULL;
     }

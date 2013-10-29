@@ -71,7 +71,7 @@ API PyObject *Coords_from_rect(Coords *self, PyObject *args, PyObject *kwargs)
     
     coords = ImageKit_Coords_FromRect(&(rect->rect));
     if (!coords) {
-        Py_XDECREF(self);
+        PyObject_Del(self);
         Py_XDECREF(rect);
         PyErr_SetString(PyExc_Exception, "Failed to create object");
         return NULL;

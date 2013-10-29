@@ -89,7 +89,7 @@ API PyObject *PointFilter_from_curves(PointFilter *self, PyObject *args, PyObjec
     );
     
     if (!pf) {
-        Py_XDECREF(self);
+        PyObject_Del(self);
         self = NULL;
         PyErr_SetString(PyExc_Exception, "Failed to create Point Filter object");
         goto cleanup;
