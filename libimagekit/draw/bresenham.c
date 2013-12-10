@@ -6,6 +6,12 @@
 
 #include "imagekit.h"
 
+#define ADD_POINT(_x, _y)\
+    ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
+    for (c = 0; c < self->channels; c++) {\
+        ptr[c] = color[c];\
+    }
+
 API
 int
 ImageKit_Image_DrawBresenhamLine(
@@ -26,12 +32,6 @@ ImageKit_Image_DrawBresenhamLine(
     int32_t c;
     
     REAL *ptr;
-    
-    #define ADD_POINT(_x, _y)\
-        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
-        for (c = 0; c < self->channels; c++) {\
-            ptr[c] = color[c];\
-        }
     
     x0 = _x0;
     x1 = _x1;
@@ -89,12 +89,6 @@ ImageKit_Image_DrawBresenhamCircle(
     int32_t f, dx, dy, sx, sy, x, y, r;
     int32_t c;
     REAL *ptr;
-    
-    #define ADD_POINT(_x, _y)\
-        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
-        for (c = 0; c < self->channels; c++) {\
-            ptr[c] = color[c];\
-        }
 
     r = radius;
     sx = midpoint_x;
@@ -150,12 +144,6 @@ ImageKit_Image_DrawBresenhamEllipse(
     int64_t dx, dy, err, e2;
     
     REAL *ptr;
-    
-    #define ADD_POINT(_x, _y)\
-        ptr = &(self->data[PIXEL_INDEX(self, ((_x) % self->width), ((_y) % self->height))]);\
-        for (c = 0; c < self->channels; c++) {\
-            ptr[c] = color[c];\
-        }
 
     x0 = _x0;
     x1 = _x1;
