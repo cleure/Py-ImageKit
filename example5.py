@@ -3,14 +3,12 @@ import random
 from imagekit import *
 
 def main():
-    b = ImageBuffer(640, 480, 3)
-    b.to_hsv()
+    b = ImageBuffer(640, 480, 3, 360.0, COLORSPACE_HSV, COLORSPACE_FORMAT_HSV_NATURAL)
     
-    h_scale = 360.0 / b.width
-    
+    hue_scale = 360.0 / b.width
     for y in range(b.height):
         for x in range(b.width):
-            b.set_pixel(x, y, (x * h_scale, 1.0, 1.0))
+            b.set_pixel(x, y, (x * hue_scale, 1.0, 1.0))
 
     b.save_png('example5-output.png')
 
