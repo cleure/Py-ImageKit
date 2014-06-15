@@ -3,6 +3,7 @@
 #if PY_MAJOR_VERSION >= 3
     #define IS_PY3K
     #define PyInt_FromLong PyLong_FromLong
+    #define Py_TPFLAGS_HAVE_ITER 0
 #endif
 
 #ifndef Py_TYPE

@@ -1305,37 +1305,85 @@ PyObject *ImageBuffer_draw_bresenham_ellipse(ImageBuffer *self, PyObject *args)
     return Py_None;
 }
 
-PyObject *ImageBuffer_getattr(PyObject *_self, char *name)
-{
-    ImageBuffer *self = (ImageBuffer *)_self;
-    PyObject *value = NULL;
-    
-    if (strcmp(name, "width") == 0) {
-        value = PyInt_FromLong(self->image->width);
-    } else if (strcmp(name, "height") == 0) {
-        value = PyInt_FromLong(self->image->height);
-    } else if (strcmp(name, "channels") == 0) {
-        value = PyInt_FromLong(self->image->channels);
-    } else if (strcmp(name, "colorspace") == 0) {
-        value = PyInt_FromLong(self->image->colorspace);
-    } else if (strcmp(name, "colorspace_format") == 0) {
-        value = PyInt_FromLong(self->image->colorspace_format);
-    } else if (strcmp(name, "scale") == 0) {
-        value = PyFloat_FromDouble(self->image->scale);
-    }
-    
-    if (value != NULL) {
-        return value;
-    }
-    
-    return Py_FindMethod(ImageBuffer_methods, _self, name);
+/* ImageBuffer Getter and Setter Functions */
+PyObject *ImageBuffer_getter_width(PyObject *_self, void *closure) {
+    return PyInt_FromLong(((ImageBuffer *)_self)->image->width);
 }
+
+PyObject *ImageBuffer_getter_height(PyObject *_self, void *closure) {
+    return PyInt_FromLong(((ImageBuffer *)_self)->image->height);
+}
+
+PyObject *ImageBuffer_getter_channels(PyObject *_self, void *closure) {
+    return PyInt_FromLong(((ImageBuffer *)_self)->image->channels);
+}
+
+PyObject *ImageBuffer_getter_colorspace(PyObject *_self, void *closure) {
+    return PyInt_FromLong(((ImageBuffer *)_self)->image->colorspace);
+}
+
+PyObject *ImageBuffer_getter_colorspace_format(PyObject *_self, void *closure) {
+    return PyInt_FromLong(((ImageBuffer *)_self)->image->colorspace_format);
+}
+
+PyObject *ImageBuffer_getter_scale(PyObject *_self, void *closure) {
+    printf("%f\n", ((ImageBuffer *)_self)->image->scale);
+    return PyFloat_FromDouble(((ImageBuffer *)_self)->image->scale);
+}
+
+/* ImageBuffer Getter and Setter Definitions */
+static PyGetSetDef ImageBuffer_getseters[] = {
+    {
+        "width",
+        (getter)ImageBuffer_getter_width,
+        NULL,
+        "Image Width",
+        NULL
+    },
+    {
+        "height",
+        (getter)ImageBuffer_getter_height,
+        NULL,
+        "Image Height",
+        NULL
+    },
+    {
+        "channels",
+        (getter)ImageBuffer_getter_channels,
+        NULL,
+        "Image Channels",
+        NULL
+    },
+    {
+        "colorspace",
+        (getter)ImageBuffer_getter_colorspace,
+        NULL,
+        "Image Colorspace",
+        NULL
+    },
+    {
+        "colorspace_format",
+        (getter)ImageBuffer_getter_colorspace_format,
+        NULL,
+        "Image Colorspace Format",
+        NULL
+    },
+    {
+        "scale",
+        (getter)ImageBuffer_getter_scale,
+        NULL,
+        "Image Channel Scale",
+        NULL
+    },
+    {NULL}
+};
 
 /* ImageBuffer Type */
 static PyTypeObject ImageBuffer_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
 };
 
+/* ImageBuffer Members */
 static PyMemberDef ImageBuffer_members[] = {{NULL}};
 static PyMethodDef ImageBuffer_methods[] = {
     {
@@ -1628,8 +1676,9 @@ static int ImageBuffer_InitBindings()
     ImageBuffer_Type.tp_dealloc     = (destructor)ImageBuffer_dealloc;
     ImageBuffer_Type.tp_methods     = ImageBuffer_methods;
     ImageBuffer_Type.tp_members     = ImageBuffer_members;
-    ImageBuffer_Type.tp_getattr     = ImageBuffer_getattr;
+    //ImageBuffer_Type.tp_getattr     = ImageBuffer_getattr;
     //ImageBuffer_Type.tp_getattro    = PyObject_GenericGetAttr;
+    ImageBuffer_Type.tp_getset      = ImageBuffer_getseters;
     ImageBuffer_Type.tp_setattro    = PyObject_GenericSetAttr;
     ImageBuffer_Type.tp_doc         = IMAGEBUFFER_DOCUMENTATION;
     

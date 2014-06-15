@@ -66,8 +66,11 @@ b.savePNG('output.png')
 */
 
 static PyObject *MODULE = NULL;
-static const char *documentation =
-    "TODO: Description";
+
+#ifndef IS_PY3K
+    static const char *documentation =
+        "TODO: Description";
+#endif
 
 static PyMethodDef moduleMethods[] = {
     {NULL, NULL, 0, NULL}
@@ -77,7 +80,7 @@ static PyMethodDef moduleMethods[] = {
     static PyModuleDef ImageKit_Module = {
         PyModuleDef_HEAD_INIT,
         "imagekit",
-        NULL,
+        PyDoc_STR("TODO: Description"),
         -1,
         moduleMethods,
         NULL,
@@ -87,17 +90,20 @@ static PyMethodDef moduleMethods[] = {
     };
 #endif
 
-    PyMODINIT_FUNC
-    initimagekit(void)
-    {
+/* ImageKit Module Initialization Function */
+#if PY_MAJOR_VERSION >= 3
+    PyMODINIT_FUNC PyInit_imagekit(void) {
+#else
+    PyMODINIT_FUNC initimagekit(void) {
+#endif
     #ifdef IS_PY3K
-    #define RETURN_ERROR() return NULL
-    #define RETURN_SUCCESS() return MODULE
+        #define RETURN_ERROR() return NULL
+        #define RETURN_SUCCESS() return MODULE
     #else
-    #define RETURN_ERROR() return
-    #define RETURN_SUCCESS() return
+        #define RETURN_ERROR() return
+        #define RETURN_SUCCESS() return
     #endif
-    
+
     #ifdef IS_PY3K
         MODULE = PyModule_Create(&ImageKit_Module);
     #else
@@ -106,21 +112,21 @@ static PyMethodDef moduleMethods[] = {
                                     moduleMethods,
                                     (char *)documentation);
     #endif
-    
-        if (!MODULE) {
-            RETURN_ERROR();
-        }
-        
-        if (    !ImageBuffer_InitBindings() ||
-                !Rect_InitBindings() ||
-                !Coords_InitBindings() ||
-                !Curves_InitBindings() ||
-                !PointFilter_InitBindings()) {
-            RETURN_ERROR();
-        }
-        
-        /* Module Constants */
-        PyModule_AddStringConstant(MODULE, "__version__", "2.0");
-        
-        RETURN_SUCCESS();
+
+    if (!MODULE) {
+        RETURN_ERROR();
     }
+    
+    if (    !ImageBuffer_InitBindings() ||
+            !Rect_InitBindings() ||
+            !Coords_InitBindings() ||
+            !Curves_InitBindings() ||
+            !PointFilter_InitBindings()) {
+        RETURN_ERROR();
+    }
+    
+    /* Module Constants */
+    PyModule_AddStringConstant(MODULE, "__version__", "2.0");
+    
+    RETURN_SUCCESS();
+}

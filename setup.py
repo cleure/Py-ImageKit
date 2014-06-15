@@ -47,13 +47,13 @@ def configure():
     # PNG
     tmp = runcmd(['libpng-config', '--cflags'])
     if tmp is not None:
-        cflags.append(tmp.strip()[2:])
+        cflags.append(tmp.strip()[2:].decode('utf-8'))
         
         tmp = runcmd(['libpng-config', '--libs'])
-        libs.append(tmp.strip()[2:])
+        libs.append(tmp.strip()[2:].decode('utf-8'))
         
         tmp = runcmd(['libpng-config', '--libdir'])
-        libdirs.append(tmp.strip())
+        libdirs.append(tmp.strip().decode('utf-8'))
         
         defines.append(('HAVE_PNG', '1'))
     
@@ -85,7 +85,6 @@ def configure():
     print(defines)
 
 configure()
-
 setup(
     name = 'imagekit',
     version = "2.0",
