@@ -1,5 +1,4 @@
 
-import copy
 from imagekit import *
 
 def main():
