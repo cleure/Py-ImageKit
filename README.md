@@ -30,7 +30,7 @@ Rank Filter:
     if __name__ == '__main__':
         main()
 
-Rotatae 90 Degress:
+Rotate 90 Degress:
 
     from imagekit import *
 
@@ -49,3 +49,24 @@ Rotatae 90 Degress:
 
     if __name__ == '__main__':
         main()
+
+Generate HSV Color Pattern:
+
+    import random
+    from imagekit import *
+
+    def main():
+        b = ImageBuffer(640, 480, 3)
+        b.to_hsv()
+        
+        h_scale = 360.0 / b.width
+        
+        for y in range(b.height):
+            for x in range(b.width):
+                b.set_pixel(x, y, (x * h_scale, 1.0, 1.0))
+
+        b.save_png('example5-output.png')
+
+    if __name__ == '__main__':
+        main()
+
