@@ -34,9 +34,9 @@ def scale_bilinear(input, width, height):
     return output
 
 def main():
-    b = ImageBuffer.fromPNG('images/image01.png')
+    b = ImageBuffer.from_png('images/image01.png')
     output = scale_bilinear(b, b.width*2, b.height*2)
-    output.savePNG('example2-output.png')
+    output.save_png('example2-output.png')
     
     print b.get_pixel(1, 0)
     print b.get_pixel(2, 0)

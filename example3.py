@@ -94,7 +94,7 @@ def main():
         b.set_pixel(x, y, palette[i])
 
     b.scale_nearest(b.width*32, b.height*32)
-    b.savePNG('output2.png')
+    b.save_png('example3-output.png')
 
 if __name__ == '__main__':
     main()
