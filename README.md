@@ -23,9 +23,9 @@ Rank Filter:
     from imagekit import *
 
     def main():
-        b = ImageBuffer.fromPNG('images/image02.png')
+        b = ImageBuffer.from_png('images/image02.png')
         b.apply_rankfilter(3, 0.5) # Neighborhood size, Rank (0.0 - 1.0)
-        b.savePNG('output.png')
+        b.save_png('output.png')
 
     if __name__ == '__main__':
         main()
@@ -35,17 +35,17 @@ Rotate 90 Degress:
     from imagekit import *
 
     def main():
-        input = ImageBuffer.fromPNG('images/image01.png')
+        input = ImageBuffer.from_png('images/image01.png')
         output = ImageBuffer(   width=input.height,
                                 height=input.width,
                                 channels=input.channels)
         
         # Rotate image by 90 degrees
-        for y in xrange(input.height):
+        for y in range(input.height):
             line = input.hzline_out(y)
             output.vtline_in(input.height - y - 1, line)
         
-        output.savePNG('example1-output.png')
+        output.save_png('example1-output.png')
 
     if __name__ == '__main__':
         main()

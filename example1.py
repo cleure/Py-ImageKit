@@ -8,7 +8,7 @@ def main():
                             channels=input.channels)
     
     # Rotate image by 90 degrees
-    for y in xrange(input.height):
+    for y in range(input.height):
         line = input.hzline_out(y)
         output.vtline_in(input.height - y - 1, line)
     

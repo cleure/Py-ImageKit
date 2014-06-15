@@ -80,7 +80,7 @@ def chunks(array, n):
     if len(array) % n:
         raise ValueError('array must be divisible by n')
     
-    for i in xrange(len(array) / n):
+    for i in range(len(array) / n):
         yield array[i*n:i*n+n]
 
 def main():
@@ -88,7 +88,7 @@ def main():
     height = int(math.ceil(float(len(palette)) / width))
     
     b = ImageBuffer(width, height, 3)
-    for i in xrange(len(palette)):
+    for i in range(len(palette)):
         y = i / width
         x = i % width
         b.set_pixel(x, y, palette[i])

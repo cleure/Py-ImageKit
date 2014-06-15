@@ -9,11 +9,11 @@ def scale_bilinear(input, width, height):
     x_scale = float(in_width - 1) / width
     y_scale = float(in_height - 1) / height
     
-    for y in xrange(height):
+    for y in range(height):
         y_in = int(y * y_scale)
         Ly = y * y_scale - y_in
         
-        for x in xrange(width):
+        for x in range(width):
             x_in = int(x * x_scale)
             Lx = x * x_scale - x_in
             
@@ -37,12 +37,6 @@ def main():
     b = ImageBuffer.from_png('images/image01.png')
     output = scale_bilinear(b, b.width*2, b.height*2)
     output.save_png('example2-output.png')
-    
-    print b.get_pixel(1, 0)
-    print b.get_pixel(2, 0)
-    print b.get_pixel(1, 1)
-    print b.get_pixel(2, 1)
-    print output.get_pixel(1, 0)
 
 if __name__ == '__main__':
     main()
