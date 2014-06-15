@@ -67,3 +67,14 @@ Generate HSV Color Pattern:
 
     if __name__ == '__main__':
         main()
+
+TODO
+====
+
+- API Documentation
+- Easing / Tweening Module
+- Cubic Family Scaling Algorithms
+- Bilateral Filter
+- YCbCr Color Format
+- Anti-aliased drawing methods
+- Font Support
