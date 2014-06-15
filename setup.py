@@ -58,11 +58,12 @@ def configure():
         defines.append(('HAVE_PNG', '1'))
     
     # JPEG: FIXME libjpeg-config non-existant on some systems
+    '''
     cflags.append('/opt/local/include')
     libs.append('jpeg')
     defines.append(('HAVE_JPEG', '1'))
+    '''
     
-    """
     tmp = runcmd(['libjpeg-config', '--cflags'])
     if tmp is not None:
         cflags.append(tmp.strip()[2:])
@@ -76,7 +77,6 @@ def configure():
         defines.append(('HAVE_LIBJPEG', 1))
     else:
         defines.append(('HAVE_LIBJPEG', 0))
-    """
     
     # Pthread
     libs.append('pthread')
