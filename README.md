@@ -71,6 +71,7 @@ Generate HSV Color Pattern:
 TODO
 ====
 
+- Force channele ranges between 0.0 and 1.0, conversion handled by I/O modules.
 - API Documentation
 - Easing / Tweening Module
 - Cubic Family Scaling Algorithms
@@ -78,4 +79,3 @@ TODO
 - YCbCr Color Format
 - Anti-aliased drawing methods
 - Font Support
-- Branchless Clamp?

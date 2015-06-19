@@ -1327,7 +1327,6 @@ PyObject *ImageBuffer_getter_colorspace_format(PyObject *_self, void *closure) {
 }
 
 PyObject *ImageBuffer_getter_scale(PyObject *_self, void *closure) {
-    printf("%f\n", ((ImageBuffer *)_self)->image->scale);
     return PyFloat_FromDouble(((ImageBuffer *)_self)->image->scale);
 }
 
