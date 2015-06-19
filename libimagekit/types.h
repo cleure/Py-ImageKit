@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef REAL
-    #define REAL float
+    #define REAL double
 #endif
 
 #ifndef DIMENSION

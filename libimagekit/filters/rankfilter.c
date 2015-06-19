@@ -6,8 +6,8 @@
 
 #include "imagekit.h"
 
-#define QUICK_SELECT_TYPE float
-#define QUICK_SELECT_SYMBOL(sym) sym##_float
+#define QUICK_SELECT_TYPE double
+#define QUICK_SELECT_SYMBOL(sym) sym##_real
 #define QUICK_SELECT_LINKAGE PRIVATE INLINE
     #include "quickselect.h"
 #undef QUICK_SELECT_TYPE
@@ -164,7 +164,7 @@ ImageKit_Image_ApplyRankFilter(
                     
                     /* QuickSelect Algorithm */
                     matrix_ptr[0] =
-                        quick_select_float(matrix_ptr, 0, matrix_elements-1, matrix_mid);
+                        quick_select_real(matrix_ptr, 0, matrix_elements-1, matrix_mid);
                 
                     /* Clamp */
                     if (matrix_ptr[0] > max[c]) {
@@ -195,7 +195,7 @@ ImageKit_Image_ApplyRankFilter(
                     
                 /* QuickSelect Algorithm */
                 matrix_ptr[0] =
-                    quick_select_float(matrix_ptr, 0, matrix_elements-1, matrix_mid);
+                    quick_select_real(matrix_ptr, 0, matrix_elements-1, matrix_mid);
                 
                 /* Clamp */
                 if (matrix_ptr[0] > max[c]) {
