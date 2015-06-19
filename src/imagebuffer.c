@@ -16,7 +16,7 @@ API int ImageBuffer_init(ImageBuffer *self, PyObject *args, PyObject *kwargs)
     
     ImageKit_Image *image = NULL;
     
-    REAL scale = -1;
+    float scale = -1;
     int colorspace = -1;
     int colorspace_format = -1;
     
@@ -87,7 +87,7 @@ API PyObject *ImageBuffer_from_png(ImageBuffer *self, PyObject *args, PyObject *
 {
     static char *kwargs_names[] = {"path", "scale", NULL};
     char *path;
-    REAL scale = -1;
+    float scale = -1;
     ImageKit_Image *image;
     
     if (!PyArg_ParseTupleAndKeywords(
@@ -138,7 +138,7 @@ API PyObject *ImageBuffer_from_jpeg(ImageBuffer *self, PyObject *args, PyObject 
 {
     static char *kwargs_names[] = {"path", "scale", NULL};
     char *path;
-    REAL scale = -1;
+    float scale = -1;
     ImageKit_Image *image;
     
     if (!PyArg_ParseTupleAndKeywords(
@@ -559,7 +559,7 @@ PyObject *ImageBuffer_to_hsv(ImageBuffer *self, PyObject *args)
 PyObject *ImageBuffer_to_rgb(ImageBuffer *self, PyObject *args, PyObject *kwargs)
 {
     static char *kwargs_names[] = {"colorspace_format", "scale", NULL};
-    REAL scale = -1;
+    float scale = -1;
     int fmt = -1;
     
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i|f", kwargs_names, &fmt, &scale)) {
@@ -651,10 +651,10 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
 
 PyObject *ImageBuffer_fill_image_channel(ImageBuffer *self, PyObject *args)
 {
-    REAL value;
+    double value;
     uint32_t channel;
     
-    if (!PyArg_ParseTuple(args, "fI", &value, &channel)) {
+    if (!PyArg_ParseTuple(args, "dI", &value, &channel)) {
         return NULL;
     }
     
@@ -982,8 +982,8 @@ PyObject *ImageBuffer_apply_cvkernel(ImageBuffer *self, PyObject *args, PyObject
     double kernel_size_d;
     uint32_t kernel_size;
     
-    REAL factor = 1.0;
-    REAL bias = 0.0;
+    float factor = 1.0;
+    float bias = 0.0;
     int32_t preserve_alpha = 1;
     
     if (!PyArg_ParseTupleAndKeywords(   args,
@@ -1075,7 +1075,7 @@ PyObject *ImageBuffer_apply_rankfilter(ImageBuffer *self, PyObject *args, PyObje
     static char *kwarg_names[] = {"matrix_size", "rank", "coords", NULL};
     int result;
     uint32_t matrix_size = 3;
-    REAL rank = 0.5;
+    float rank = 0.5;
     Coords *coords = NULL;
     ImageKit_Coords *c_coords = NULL;
     

@@ -182,8 +182,8 @@ API PyObject *PointFilter_set_value(PointFilter *self, PyObject *args, PyObject 
     
     uint32_t channel;
     uint32_t index;
-    REAL value;
-    REAL value_range = 1.0;
+    double value;
+    double value_range = 1.0;
     
     REAL *abcd[4] = {
         self->pointfilter->a,
@@ -194,7 +194,7 @@ API PyObject *PointFilter_set_value(PointFilter *self, PyObject *args, PyObject 
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "IIf|f",
+                                        "IId|d",
                                         kw_names,
                                         &channel,
                                         &index,
@@ -230,7 +230,7 @@ API PyObject *PointFilter_get_value(PointFilter *self, PyObject *args, PyObject 
     
     uint32_t channel;
     uint32_t index;
-    REAL value_range = 1.0;
+    double value_range = 1.0;
     REAL value;
     PyObject *result;
     
@@ -243,7 +243,7 @@ API PyObject *PointFilter_get_value(PointFilter *self, PyObject *args, PyObject 
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "II|f",
+                                        "II|d",
                                         kw_names,
                                         &channel,
                                         &index,
@@ -285,7 +285,7 @@ API PyObject *PointFilter_set_channel(PointFilter *self, PyObject *args, PyObjec
     uint32_t channel;
     REAL value;
     REAL scale;
-    REAL value_range = 1.0;
+    double value_range = 1.0;
     
     REAL *abcd[4] = {
         self->pointfilter->a,
@@ -296,7 +296,7 @@ API PyObject *PointFilter_set_channel(PointFilter *self, PyObject *args, PyObjec
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "IO|f",
+                                        "IO|d",
                                         kw_names,
                                         &channel,
                                         &tuple,
@@ -351,7 +351,7 @@ API PyObject *PointFilter_get_channel(PointFilter *self, PyObject *args, PyObjec
     PyObject *list, *tmp;
     uint32_t channel;
     REAL value;
-    REAL value_range = 1.0;
+    double value_range = 1.0;
     
     REAL *abcd[4] = {
         self->pointfilter->a,
@@ -362,7 +362,7 @@ API PyObject *PointFilter_get_channel(PointFilter *self, PyObject *args, PyObjec
     
     if (!PyArg_ParseTupleAndKeywords(   args,
                                         kwargs,
-                                        "I|f",
+                                        "I|d",
                                         kw_names,
                                         &channel,
                                         &value_range)) {
