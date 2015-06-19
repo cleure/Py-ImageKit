@@ -651,7 +651,7 @@ PyObject *ImageBuffer_fill_image(ImageBuffer *self, PyObject *args)
 
 PyObject *ImageBuffer_fill_image_channel(ImageBuffer *self, PyObject *args)
 {
-    REAL value;
+    double value;
     uint32_t channel;
     
     if (!PyArg_ParseTuple(args, "dI", &value, &channel)) {
