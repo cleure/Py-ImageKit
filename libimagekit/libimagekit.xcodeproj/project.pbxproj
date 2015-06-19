@@ -1,0 +1,238 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		606E88E21B33B1A600FA2E61 /* .DS_Store */ = {isa = PBXFileReference; lastKnownFileType = file; path = .DS_Store; sourceTree = "<group>"; };
+		606E88E31B33B1A600FA2E61 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		606E88E41B33B1A600FA2E61 /* blit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = blit.c; sourceTree = "<group>"; };
+		606E88E51B33B1A600FA2E61 /* blit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = blit.h; sourceTree = "<group>"; };
+		606E88E61B33B1A600FA2E61 /* cmake_install.cmake */ = {isa = PBXFileReference; lastKnownFileType = text; path = cmake_install.cmake; sourceTree = "<group>"; };
+		606E88E71B33B1A600FA2E61 /* CMakeCache.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeCache.txt; sourceTree = "<group>"; };
+		606E88E81B33B1A600FA2E61 /* CMakeFiles */ = {isa = PBXFileReference; lastKnownFileType = folder; path = CMakeFiles; sourceTree = "<group>"; };
+		606E88E91B33B1A600FA2E61 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = "<group>"; };
+		606E88EA1B33B1A600FA2E61 /* colorspace.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = colorspace.c; sourceTree = "<group>"; };
+		606E88EB1B33B1A600FA2E61 /* colorspace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = colorspace.h; sourceTree = "<group>"; };
+		606E88EC1B33B1A600FA2E61 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		606E88ED1B33B1A600FA2E61 /* config.h.in */ = {isa = PBXFileReference; lastKnownFileType = text; path = config.h.in; sourceTree = "<group>"; };
+		606E88EE1B33B1A600FA2E61 /* coords.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = coords.c; sourceTree = "<group>"; };
+		606E88EF1B33B1A600FA2E61 /* coords.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = coords.h; sourceTree = "<group>"; };
+		606E88F01B33B1A600FA2E61 /* curves.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = curves.c; sourceTree = "<group>"; };
+		606E88F11B33B1A600FA2E61 /* curves.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = curves.h; sourceTree = "<group>"; };
+		606E88F21B33B1A600FA2E61 /* documentation */ = {isa = PBXFileReference; lastKnownFileType = text; path = documentation; sourceTree = "<group>"; };
+		606E88F31B33B1A600FA2E61 /* draw */ = {isa = PBXFileReference; lastKnownFileType = folder; path = draw; sourceTree = "<group>"; };
+		606E88F41B33B1A600FA2E61 /* error.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = error.c; sourceTree = "<group>"; };
+		606E88F51B33B1A600FA2E61 /* error.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = error.h; sourceTree = "<group>"; };
+		606E88F61B33B1A600FA2E61 /* fill.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fill.c; sourceTree = "<group>"; };
+		606E88F71B33B1A600FA2E61 /* fill.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fill.h; sourceTree = "<group>"; };
+		606E88F81B33B1A600FA2E61 /* filters */ = {isa = PBXFileReference; lastKnownFileType = folder; path = filters; sourceTree = "<group>"; };
+		606E88F91B33B1A600FA2E61 /* histogram.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = histogram.c; sourceTree = "<group>"; };
+		606E88FA1B33B1A600FA2E61 /* histogram.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = histogram.h; sourceTree = "<group>"; };
+		606E88FB1B33B1A600FA2E61 /* htable */ = {isa = PBXFileReference; lastKnownFileType = folder; path = htable; sourceTree = "<group>"; };
+		606E88FC1B33B1A600FA2E61 /* image.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = image.c; sourceTree = "<group>"; };
+		606E88FD1B33B1A600FA2E61 /* image.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = image.h; sourceTree = "<group>"; };
+		606E88FE1B33B1A600FA2E61 /* imagekit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = imagekit.c; sourceTree = "<group>"; };
+		606E88FF1B33B1A600FA2E61 /* imagekit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imagekit.h; sourceTree = "<group>"; };
+		606E89001B33B1A600FA2E61 /* io_gif.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_gif.c; sourceTree = "<group>"; };
+		606E89011B33B1A600FA2E61 /* io_gif.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_gif.h; sourceTree = "<group>"; };
+		606E89021B33B1A600FA2E61 /* io_jpeg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_jpeg.c; sourceTree = "<group>"; };
+		606E89031B33B1A600FA2E61 /* io_jpeg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_jpeg.h; sourceTree = "<group>"; };
+		606E89041B33B1A600FA2E61 /* io_png.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = io_png.c; sourceTree = "<group>"; };
+		606E89051B33B1A600FA2E61 /* io_png.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = io_png.h; sourceTree = "<group>"; };
+		606E89061B33B1A600FA2E61 /* libimagekit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libimagekit.a; sourceTree = "<group>"; };
+		606E89071B33B1A600FA2E61 /* libimagekit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libimagekit.h; sourceTree = "<group>"; };
+		606E89081B33B1A600FA2E61 /* liblibimagekit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = liblibimagekit.a; sourceTree = "<group>"; };
+		606E89091B33B1A600FA2E61 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		606E890A1B33B1A600FA2E61 /* output.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = output.jpg; sourceTree = "<group>"; };
+		606E890B1B33B1A600FA2E61 /* output.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = output.png; sourceTree = "<group>"; };
+		606E890C1B33B1A600FA2E61 /* private */ = {isa = PBXFileReference; lastKnownFileType = folder; path = private; sourceTree = "<group>"; };
+		606E890D1B33B1A600FA2E61 /* quickselect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = quickselect.h; sourceTree = "<group>"; };
+		606E890E1B33B1A600FA2E61 /* rect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = rect.h; sourceTree = "<group>"; };
+		606E890F1B33B1A600FA2E61 /* scaling */ = {isa = PBXFileReference; lastKnownFileType = folder; path = scaling; sourceTree = "<group>"; };
+		606E89101B33B1A600FA2E61 /* tests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = tests; sourceTree = "<group>"; };
+		606E89111B33B1A600FA2E61 /* threading.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = threading.h; sourceTree = "<group>"; };
+		606E89121B33B1A600FA2E61 /* TODO.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TODO.c; sourceTree = "<group>"; };
+		606E89131B33B1A600FA2E61 /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		606E89141B33B1A600FA2E61 /* yiq.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = yiq.py; sourceTree = "<group>"; };
+		606E89151B33B1A600FA2E61 /* yiq.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = yiq.pyc; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		606E88DC1B33B1A600FA2E61 = {
+			isa = PBXGroup;
+			children = (
+				606E88E21B33B1A600FA2E61 /* .DS_Store */,
+				606E88E31B33B1A600FA2E61 /* .gitignore */,
+				606E88E41B33B1A600FA2E61 /* blit.c */,
+				606E88E51B33B1A600FA2E61 /* blit.h */,
+				606E88E61B33B1A600FA2E61 /* cmake_install.cmake */,
+				606E88E71B33B1A600FA2E61 /* CMakeCache.txt */,
+				606E88E81B33B1A600FA2E61 /* CMakeFiles */,
+				606E88E91B33B1A600FA2E61 /* CMakeLists.txt */,
+				606E88EA1B33B1A600FA2E61 /* colorspace.c */,
+				606E88EB1B33B1A600FA2E61 /* colorspace.h */,
+				606E88EC1B33B1A600FA2E61 /* config.h */,
+				606E88ED1B33B1A600FA2E61 /* config.h.in */,
+				606E88EE1B33B1A600FA2E61 /* coords.c */,
+				606E88EF1B33B1A600FA2E61 /* coords.h */,
+				606E88F01B33B1A600FA2E61 /* curves.c */,
+				606E88F11B33B1A600FA2E61 /* curves.h */,
+				606E88F21B33B1A600FA2E61 /* documentation */,
+				606E88F31B33B1A600FA2E61 /* draw */,
+				606E88F41B33B1A600FA2E61 /* error.c */,
+				606E88F51B33B1A600FA2E61 /* error.h */,
+				606E88F61B33B1A600FA2E61 /* fill.c */,
+				606E88F71B33B1A600FA2E61 /* fill.h */,
+				606E88F81B33B1A600FA2E61 /* filters */,
+				606E88F91B33B1A600FA2E61 /* histogram.c */,
+				606E88FA1B33B1A600FA2E61 /* histogram.h */,
+				606E88FB1B33B1A600FA2E61 /* htable */,
+				606E88FC1B33B1A600FA2E61 /* image.c */,
+				606E88FD1B33B1A600FA2E61 /* image.h */,
+				606E88FE1B33B1A600FA2E61 /* imagekit.c */,
+				606E88FF1B33B1A600FA2E61 /* imagekit.h */,
+				606E89001B33B1A600FA2E61 /* io_gif.c */,
+				606E89011B33B1A600FA2E61 /* io_gif.h */,
+				606E89021B33B1A600FA2E61 /* io_jpeg.c */,
+				606E89031B33B1A600FA2E61 /* io_jpeg.h */,
+				606E89041B33B1A600FA2E61 /* io_png.c */,
+				606E89051B33B1A600FA2E61 /* io_png.h */,
+				606E89061B33B1A600FA2E61 /* libimagekit.a */,
+				606E89071B33B1A600FA2E61 /* libimagekit.h */,
+				606E89081B33B1A600FA2E61 /* liblibimagekit.a */,
+				606E89091B33B1A600FA2E61 /* Makefile */,
+				606E890A1B33B1A600FA2E61 /* output.jpg */,
+				606E890B1B33B1A600FA2E61 /* output.png */,
+				606E890C1B33B1A600FA2E61 /* private */,
+				606E890D1B33B1A600FA2E61 /* quickselect.h */,
+				606E890E1B33B1A600FA2E61 /* rect.h */,
+				606E890F1B33B1A600FA2E61 /* scaling */,
+				606E89101B33B1A600FA2E61 /* tests */,
+				606E89111B33B1A600FA2E61 /* threading.h */,
+				606E89121B33B1A600FA2E61 /* TODO.c */,
+				606E89131B33B1A600FA2E61 /* types.h */,
+				606E89141B33B1A600FA2E61 /* yiq.py */,
+				606E89151B33B1A600FA2E61 /* yiq.pyc */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		606E88E11B33B1A600FA2E61 /* libimagekit */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION)";
+			buildConfigurationList = 606E89161B33B1A600FA2E61 /* Build configuration list for PBXLegacyTarget "libimagekit" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "/Users/cleure/Development/Projects/Py-ImageKit/libimagekit";
+			dependencies = (
+			);
+			name = libimagekit;
+			passBuildSettingsInEnvironment = 1;
+			productName = libimagekit;
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		606E88DD1B33B1A600FA2E61 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+			};
+			buildConfigurationList = 606E88E01B33B1A600FA2E61 /* Build configuration list for PBXProject "libimagekit" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 606E88DC1B33B1A600FA2E61;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				606E88E11B33B1A600FA2E61 /* libimagekit */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		606E88DE1B33B1A600FA2E61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx10.6;
+			};
+			name = Debug;
+		};
+		606E88DF1B33B1A600FA2E61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				COPY_PHASE_STRIP = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				SDKROOT = macosx10.6;
+			};
+			name = Release;
+		};
+		606E89171B33B1A600FA2E61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DEBUGGING_SYMBOLS = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = libimagekit;
+			};
+			name = Debug;
+		};
+		606E89181B33B1A600FA2E61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = libimagekit;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		606E88E01B33B1A600FA2E61 /* Build configuration list for PBXProject "libimagekit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				606E88DE1B33B1A600FA2E61 /* Debug */,
+				606E88DF1B33B1A600FA2E61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		606E89161B33B1A600FA2E61 /* Build configuration list for PBXLegacyTarget "libimagekit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				606E89171B33B1A600FA2E61 /* Debug */,
+				606E89181B33B1A600FA2E61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 606E88DD1B33B1A600FA2E61 /* Project object */;
+}

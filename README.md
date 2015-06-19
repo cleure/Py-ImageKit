@@ -78,3 +78,4 @@ TODO
 - YCbCr Color Format
 - Anti-aliased drawing methods
 - Font Support
+- Branchless Clamp?
